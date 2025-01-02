@@ -38,11 +38,12 @@ namespace AITechDATA.DataLayer
         public DbSet<Ticket> Tickets { get; set; }
         public DbSet<TicketMessage> TicketMessages { get; set; }
         public DbSet<User> Users { get; set; }
+        public DbSet<Token> Tokens { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
             var configHelper = new ConfigurationHelper();
-            string _connectionString = configHelper.GetConnectionString("localdb");
+            string _connectionString = configHelper.GetConnectionString("publicdb");
             optionsBuilder.UseSqlServer(_connectionString);
         }
 

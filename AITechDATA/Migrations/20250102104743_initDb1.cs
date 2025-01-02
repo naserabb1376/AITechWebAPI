@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace AITechDATA.Migrations
 {
     /// <inheritdoc />
-    public partial class initilas : Migration
+    public partial class initDb1 : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)

@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace AITechDATA.Migrations
 {
     [DbContext(typeof(AiITechContext))]
-    [Migration("20250101115048_initilas")]
-    partial class initilas
+    [Migration("20250102104743_initDb1")]
+    partial class initDb1
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)

@@ -1,0 +1,200 @@
+﻿using AITechDATA.DataLayer;
+using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.Linq;
+using System.Security.Cryptography;
+using System.Text;
+using System.Threading.Tasks;
+using System.Linq.Dynamic.Core;
+
+namespace NobatPlusDATA.Tools
+{
+    public static class DbTools
+    {
+        private static AiITechContext _context;
+
+
+        public static AiITechContext GetDbContext()
+        {
+            //if (_context == null)
+            //{
+            _context = new AiITechContext();
+            //}
+            return _context;
+        }
+
+        public static List<T> ToPaging<T>(this List<T> list, int pageIndex = 1, int pageSize = 20)
+        {
+            if (pageSize > 0)
+            {
+                int skipSize = (pageIndex - 1) * pageSize;
+                list = list.Skip(skipSize).Take(pageSize).ToList();
+            }
+            return list;
+        }
+
+
+           public static IQueryable<T> ToPaging<T>(this IQueryable<T>? list, int pageIndex = 1, int pageSize = 20)
+        {
+            if (pageSize > 0)
+            {
+                int skipSize = (pageIndex - 1) * pageSize;
+                list = list.Skip(skipSize).Take(pageSize);
+            }
+            return list;
+        }
+
+        public static IQueryable<T> SortBy<T>(this IQueryable<T> query, string sorting)
+        {
+            if (string.IsNullOrEmpty(sorting))
+            {
+                return query;
+            }
+
+            // تجزیه رشته مرتب سازی به ترتیب‌های جداگانه
+            var sortingOptions = sorting.Split(',');
+
+            // ساختن دستور مرتب سازی
+            var sortingString = new StringBuilder();
+            foreach (var sortOption in sortingOptions)
+            {
+                var sortParts = sortOption.Trim().Split('-');
+
+                if (sortParts.Length == 2)
+                {
+                    var field = sortParts[0];
+                    var direction = sortParts[1].ToLower();
+
+                    // اضافه کردن به رشته دستور مرتب سازی
+                    if (sortingString.Length > 0)
+                    {
+                        sortingString.Append(", ");
+                    }
+
+                    sortingString.Append($"{field} {direction}");
+                }
+            }
+
+            // اعمال مرتب سازی به صورت پویا با استفاده از System.Linq.Dynamic.Core
+            return query.OrderBy(sortingString.ToString());
+        }
+
+
+        public static string ToShamsi(this string value) // use this word for use the method for all DateTime variables in project
+        {
+            var date = value.Split(' ')[0].Split('/');
+            var time = value.Split(' ')[1].Split(':');
+            DateTime dateTime = new DateTime(Convert.ToInt32(date[0]), Convert.ToInt32(date[1]), Convert.ToInt32(date[2]), Convert.ToInt32(time[0]), Convert.ToInt32(time[1]), Convert.ToInt32(time[2]));
+            PersianCalendar persianCalendar = new PersianCalendar();
+            string shamsiDate = $"{persianCalendar.GetYear(dateTime)}/{persianCalendar.GetMonth(dateTime)}/{persianCalendar.GetDayOfMonth(dateTime)} {persianCalendar.GetHour(dateTime)}:{persianCalendar.GetMinute(dateTime)}:{persianCalendar.GetSecond(dateTime)}";
+            return shamsiDate;
+        }
+
+        public static DateTime ToShamsi(this DateTime value) // use this word for use the method for all DateTime variables in project
+        {
+            var strDate = $"{value.Year}/{value.Month}/{value.Day} {value.Hour}:{value.Minute}:{value.Second}";
+            var strshamsi = ToShamsi(strDate);
+            var date = strshamsi.Split(' ')[0].Split('/');
+            var time = strshamsi.Split(' ')[1].Split(':');
+            DateTime shamsiDate = new DateTime(Convert.ToInt32(date[0]), Convert.ToInt32(date[1]), Convert.ToInt32(date[2]), Convert.ToInt32(time[0]), Convert.ToInt32(time[1]), Convert.ToInt32(time[2]));
+            return shamsiDate;
+
+        }
+
+        public static string FixPrice(this decimal value)
+        {
+            return value.ToString("#,0");
+        }
+        public static string ToHash(this string value)
+        {
+            if (string.IsNullOrEmpty(value)) return "";
+            return Convert.ToBase64String(Encoding.UTF8.GetBytes(value));
+        }
+
+        public static string ToUnHash(this string value)
+        {
+            if (string.IsNullOrEmpty(value)) return "";
+            return Encoding.UTF8.GetString(Convert.FromBase64String(value));
+        }
+
+        public static void SaveLog(object log)
+        {
+            StringBuilder sb = new StringBuilder();
+            sb.AppendLine($"{log.ToString()}");
+            sb.AppendLine(DateTime.Now.ToShortTimeString());
+            sb.AppendLine($"--------------------------------");
+            System.IO.File.AppendAllText(Path.Combine(Directory.GetCurrentDirectory(),
+                      "wwwroot",
+                      "log.txt"), sb.ToString());
+        }
+
+        public static string GenerateToken()
+        {
+            byte[] randomBytes = new byte[10]; // اندازه توکن را می‌توانید تغییر دهید
+            using (var rngCryptoServiceProvider = new RNGCryptoServiceProvider())
+            {
+                rngCryptoServiceProvider.GetBytes(randomBytes);
+            }
+            return $"{Convert.ToBase64String(randomBytes)}{Convert.ToBase64String(Encoding.UTF8.GetBytes(DateTime.Now.ToString("yyyy/MM/dd - HH:mm").ToShamsi()))}";
+        }
+
+        public static decimal RetreivePrice(this string finalPrice)
+        {
+            finalPrice = finalPrice.ToEnglishNumbers();
+            for (int i = 0; i < finalPrice.Length; i++)
+            {
+                if (finalPrice[i] == ',') finalPrice.Remove(i, 1);
+            }
+            return decimal.Parse(finalPrice);
+        }
+
+        public static string ToEnglishNumbers(this string persianStr)
+        {
+            string[] persianDigits = { "۰", "۱", "۲", "۳", "۴", "۵", "۶", "۷", "۸", "۹" };
+            string[] englishDigits = { "0", "1", "2", "3", "4", "5", "6", "7", "8", "9" };
+
+            for (int i = 0; i < persianDigits.Length; i++)
+            {
+                persianStr = persianStr.Replace(persianDigits[i], englishDigits[i]);
+            }
+
+            return persianStr;
+        }
+
+
+        public static int GetPageCount(int totalItemsCount, int pageItemsCount)
+        {
+            if(totalItemsCount == 0 || pageItemsCount == 0) return 1;
+            int pageCount = totalItemsCount / pageItemsCount;
+            if (totalItemsCount % pageItemsCount != 0)
+            {
+                pageCount++;
+            }
+            return pageCount;
+        }
+
+        public static string ToSummary(this string? value)
+        {
+            string summary = value ?? "";
+            if (value != null && value.Length > 70)
+                summary = value.Substring(0, 70) + "...";
+            return summary;
+        }
+
+        public static DateTime? StringToDate(this string stringDate)
+        {
+            if (string.IsNullOrEmpty(stringDate))return null;
+            var arr = stringDate.Split('/');
+            var date = new DateTime(int.Parse(arr[0]), int.Parse(arr[1]), int.Parse(arr[2]));
+            return date;
+        }
+
+        public static string DateToString(this DateTime? date)
+        {
+            if (date == null) return "";
+            string stringDate = $"{date?.Year}/{date?.Month}/{date?.Day} {date?.Hour}:{date?.Minute}";
+            return stringDate;
+        }
+    }
+}
