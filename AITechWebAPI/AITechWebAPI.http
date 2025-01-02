@@ -1,0 +1,6 @@
+@AITechWebAPI_HostAddress = http://localhost:5144
+
+GET {{AITechWebAPI_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
