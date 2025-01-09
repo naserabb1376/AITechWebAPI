@@ -90,7 +90,7 @@ namespace AITechDATA.DataLayer.Servisces
                 results.PageCount = DbTools.GetPageCount(results.TotalCount, pageSize);
                 results.Results = await query.OrderByDescending(x => x.CreateDate)
                     .ToPaging(pageIndex, pageSize)
-                    .Include(x => x.Roles)
+                    .Include(x => x.PermissionRoles)
                     .ToListAsync();
             }
             catch (Exception ex)
@@ -108,7 +108,7 @@ namespace AITechDATA.DataLayer.Servisces
             {
                 result.Result = await _context.Permissions
                     .AsNoTracking()
-                    .Include(x => x.Roles)
+                    .Include(x => x.PermissionRoles)
                     .SingleOrDefaultAsync(x => x.ID == permissionId);
             }
             catch (Exception ex)

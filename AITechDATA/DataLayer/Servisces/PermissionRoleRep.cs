@@ -11,24 +11,24 @@ using System.Threading.Tasks;
 
 namespace AITechDATA.DataLayer.Servisces
 {
-    public class RoleRep : IRoleRep
+    public class PermissionRoleRep : IPermissionRoleRep
     {
         private AiITechContext _context;
 
-        public RoleRep()
+        public PermissionRoleRep()
         {
             _context = DbTools.GetDbContext();
         }
 
-        public async Task<BitResultObject> AddRoleAsync(Role role)
+        public async Task<BitResultObject> AddPermissionRoleAsync(PermissionRole PermissionRole)
         {
             BitResultObject result = new BitResultObject();
             try
             {
-                await _context.Roles.AddAsync(role);
+                await _context.PermissionRoles.AddAsync(PermissionRole);
                 await _context.SaveChangesAsync();
-                result.ID = role.ID;
-                _context.Entry(role).State = EntityState.Detached;
+                result.ID = PermissionRole.ID;
+                _context.Entry(PermissionRole).State = EntityState.Detached;
             }
             catch (Exception ex)
             {
@@ -38,15 +38,15 @@ namespace AITechDATA.DataLayer.Servisces
             return result;
         }
 
-        public async Task<BitResultObject> EditRoleAsync(Role role)
+        public async Task<BitResultObject> EditPermissionRoleAsync(PermissionRole PermissionRole)
         {
             BitResultObject result = new BitResultObject();
             try
             {
-                _context.Roles.Update(role);
+                _context.PermissionRoles.Update(PermissionRole);
                 await _context.SaveChangesAsync();
-                result.ID = role.ID;
-                _context.Entry(role).State = EntityState.Detached;
+                result.ID = PermissionRole.ID;
+                _context.Entry(PermissionRole).State = EntityState.Detached;
             }
             catch (Exception ex)
             {
@@ -56,15 +56,15 @@ namespace AITechDATA.DataLayer.Servisces
             return result;
         }
 
-        public async Task<BitResultObject> ExistRoleAsync(long roleId)
+        public async Task<BitResultObject> ExistPermissionRoleAsync(long PermissionRoleId)
         {
             BitResultObject result = new BitResultObject();
             try
             {
-                result.Status = await _context.Roles
+                result.Status = await _context.PermissionRoles
                     .AsNoTracking()
-                    .AnyAsync(x => x.ID == roleId);
-                result.ID = roleId;
+                    .AnyAsync(x => x.ID == PermissionRoleId);
+                result.ID = PermissionRoleId;
             }
             catch (Exception ex)
             {
@@ -74,24 +74,24 @@ namespace AITechDATA.DataLayer.Servisces
             return result;
         }
 
-        public async Task<ListResultObject<Role>> GetAllRolesAsync(int pageIndex = 1, int pageSize = 20, string searchText = "")
+        public async Task<ListResultObject<PermissionRole>> GetAllPermissionRolesAsync(int pageIndex = 1, int pageSize = 20, string searchText = "")
         {
-            ListResultObject<Role> results = new ListResultObject<Role>();
+            ListResultObject<PermissionRole> results = new ListResultObject<PermissionRole>();
             try
             {
-                var query = _context.Roles
+                var query = _context.PermissionRoles
                     .AsNoTracking()
                     .Where(x =>
-                        (!string.IsNullOrEmpty(x.Name) && x.Name.Contains(searchText)) ||
-                        (!string.IsNullOrEmpty(x.Description) && x.Description.Contains(searchText))
+                        x.Permission.Name.ToString().Contains(searchText) ||
+                        x.Role.Name.ToString().Contains(searchText)
                     );
 
                 results.TotalCount = query.Count();
                 results.PageCount = DbTools.GetPageCount(results.TotalCount, pageSize);
-                results.Results = await query.OrderByDescending(x => x.CreateDate)
+                results.Results = await query.OrderByDescending(x => x.ID)
                     .ToPaging(pageIndex, pageSize)
-                    .Include(x => x.Users)
-                    .Include(x => x.PermissionRoles)
+                    .Include(x => x.Role)
+                    .Include(x => x.Permission)
                     .ToListAsync();
             }
             catch (Exception ex)
@@ -102,16 +102,16 @@ namespace AITechDATA.DataLayer.Servisces
             return results;
         }
 
-        public async Task<RowResultObject<Role>> GetRoleByIdAsync(long roleId)
+        public async Task<RowResultObject<PermissionRole>> GetPermissionRoleByIdAsync(long PermissionRoleId)
         {
-            RowResultObject<Role> result = new RowResultObject<Role>();
+            RowResultObject<PermissionRole> result = new RowResultObject<PermissionRole>();
             try
             {
-                result.Result = await _context.Roles
+                result.Result = await _context.PermissionRoles
                     .AsNoTracking()
-                    .Include(x => x.Users)
-                    .Include(x => x.PermissionRoles)
-                    .SingleOrDefaultAsync(x => x.ID == roleId);
+                    .Include(x => x.Permission)
+                    .Include(x => x.Role)
+                    .SingleOrDefaultAsync(x => x.ID == PermissionRoleId);
             }
             catch (Exception ex)
             {
@@ -121,15 +121,15 @@ namespace AITechDATA.DataLayer.Servisces
             return result;
         }
 
-        public async Task<BitResultObject> RemoveRoleAsync(Role role)
+        public async Task<BitResultObject> RemovePermissionRoleAsync(PermissionRole PermissionRole)
         {
             BitResultObject result = new BitResultObject();
             try
             {
-                _context.Roles.Remove(role);
+                _context.PermissionRoles.Remove(PermissionRole);
                 await _context.SaveChangesAsync();
-                result.ID = role.ID;
-                _context.Entry(role).State = EntityState.Detached;
+                result.ID = PermissionRole.ID;
+                _context.Entry(PermissionRole).State = EntityState.Detached;
             }
             catch (Exception ex)
             {
@@ -139,13 +139,13 @@ namespace AITechDATA.DataLayer.Servisces
             return result;
         }
 
-        public async Task<BitResultObject> RemoveRoleAsync(long roleId)
+        public async Task<BitResultObject> RemovePermissionRoleAsync(long PermissionRoleId)
         {
             BitResultObject result = new BitResultObject();
             try
             {
-                var role = await GetRoleByIdAsync(roleId);
-                result = await RemoveRoleAsync(role.Result);
+                var PermissionRole = await GetPermissionRoleByIdAsync(PermissionRoleId);
+                result = await RemovePermissionRoleAsync(PermissionRole.Result);
             }
             catch (Exception ex)
             {

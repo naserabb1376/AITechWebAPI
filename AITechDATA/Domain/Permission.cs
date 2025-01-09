@@ -10,6 +10,8 @@ namespace AITechDATA.Domain
     {
         public string Name { get; set; } // نام دسترسی (مثلاً Create, Edit, Delete)
         public string Description { get; set; } // توضیحات دسترسی
-        public ICollection<Role> Roles { get; set; } // نقش‌های مرتبط با دسترسی
+        public ICollection<PermissionRole> PermissionRoles { get; set; } // دسترسی‌های مرتبط با نقش
+
+        //public ICollection<Role> Roles { get; set; } // نقش‌های مرتبط با دسترسی
     }
 }

@@ -1,0 +1,27 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using AITechDATA.Domain;
+using AITechDATA.ResultObjects;
+
+namespace AITechDATA.DataLayer.Repositories
+{
+    public interface IPermissionRoleRep
+    {
+        Task<ListResultObject<PermissionRole>> GetAllPermissionRolesAsync(int pageIndex = 1, int pageSize = 20, string searchText = "");
+
+        Task<RowResultObject<PermissionRole>> GetPermissionRoleByIdAsync(long PermissionRoleId);
+
+        Task<BitResultObject> AddPermissionRoleAsync(PermissionRole PermissionRole);
+
+        Task<BitResultObject> EditPermissionRoleAsync(PermissionRole PermissionRole);
+
+        Task<BitResultObject> RemovePermissionRoleAsync(PermissionRole PermissionRole);
+
+        Task<BitResultObject> RemovePermissionRoleAsync(long PermissionRoleId);
+
+        Task<BitResultObject> ExistPermissionRoleAsync(long PermissionRoleId);
+    }
+}
