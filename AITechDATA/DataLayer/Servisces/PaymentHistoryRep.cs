@@ -1,0 +1,159 @@
+﻿using AiTech.Domains;
+using AITechDATA.DataLayer.Repositories;
+using AITechDATA.ResultObjects;
+using Microsoft.EntityFrameworkCore;
+using AITechDATA.Tools;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace AITechDATA.DataLayer.Servisces
+{
+    public class PaymentHistoryRep : IPaymentHistoryRep
+    {
+        private AiITechContext _context;
+
+        public PaymentHistoryRep()
+        {
+            _context = DbTools.GetDbContext();
+        }
+
+        public async Task<BitResultObject> AddPaymentHistoryAsync(PaymentHistory paymentHistory)
+        {
+            BitResultObject result = new BitResultObject();
+            try
+            {
+                await _context.PaymentHistories.AddAsync(paymentHistory);
+                await _context.SaveChangesAsync();
+                result.ID = paymentHistory.ID;
+                _context.Entry(paymentHistory).State = EntityState.Detached;
+            }
+            catch (Exception ex)
+            {
+                result.Status = false;
+                result.ErrorMessage = $"{ex.Message} - {ex.InnerException?.Message}";
+            }
+            return result;
+        }
+
+        public async Task<BitResultObject> EditPaymentHistoryAsync(PaymentHistory paymentHistory)
+        {
+            BitResultObject result = new BitResultObject();
+            try
+            {
+                _context.PaymentHistories.Update(paymentHistory);
+                await _context.SaveChangesAsync();
+                result.ID = paymentHistory.ID;
+                _context.Entry(paymentHistory).State = EntityState.Detached;
+            }
+            catch (Exception ex)
+            {
+                result.Status = false;
+                result.ErrorMessage = $"{ex.Message} - {ex.InnerException?.Message}";
+            }
+            return result;
+        }
+
+        public async Task<BitResultObject> ExistPaymentHistoryAsync(long paymentHistoryId)
+        {
+            BitResultObject result = new BitResultObject();
+            try
+            {
+                result.Status = await _context.PaymentHistories
+                    .AsNoTracking()
+                    .AnyAsync(x => x.ID == paymentHistoryId);
+                result.ID = paymentHistoryId;
+            }
+            catch (Exception ex)
+            {
+                result.Status = false;
+                result.ErrorMessage = $"{ex.Message} - {ex.InnerException?.Message}";
+            }
+            return result;
+        }
+
+        public async Task<ListResultObject<PaymentHistory>> GetAllPaymentHistoriesAsync(int pageIndex = 1, int pageSize = 20, string searchText = "")
+        {
+            ListResultObject<PaymentHistory> results = new ListResultObject<PaymentHistory>();
+            try
+            {
+                var query = _context.PaymentHistories
+                    .AsNoTracking()
+                    .Where(x =>
+                        (x.Amount.ToString().Contains(searchText)) ||
+                        (!string.IsNullOrEmpty(x.User.FullName) && x.User.FullName.Contains(searchText)) ||
+                        (!string.IsNullOrEmpty(x.Group.Name) && x.Group.Name.Contains(searchText))
+                    );
+
+                results.TotalCount = query.Count();
+                results.PageCount = DbTools.GetPageCount(results.TotalCount, pageSize);
+                results.Results = await query.OrderByDescending(x => x.PaymentDate)
+                    .ToPaging(pageIndex, pageSize)
+                    .Include(x => x.User)
+                    .Include(x => x.Group)
+                    .ToListAsync();
+            }
+            catch (Exception ex)
+            {
+                results.Status = false;
+                results.ErrorMessage = $"{ex.Message} - {ex.InnerException?.Message}";
+            }
+            return results;
+        }
+
+        public async Task<RowResultObject<PaymentHistory>> GetPaymentHistoryByIdAsync(long paymentHistoryId)
+        {
+            RowResultObject<PaymentHistory> result = new RowResultObject<PaymentHistory>();
+            try
+            {
+                result.Result = await _context.PaymentHistories
+                    .AsNoTracking()
+                    .Include(x => x.User)
+                    .Include(x => x.Group)
+                    .SingleOrDefaultAsync(x => x.ID == paymentHistoryId);
+            }
+            catch (Exception ex)
+            {
+                result.Status = false;
+                result.ErrorMessage = $"{ex.Message} - {ex.InnerException?.Message}";
+            }
+            return result;
+        }
+
+        public async Task<BitResultObject> RemovePaymentHistoryAsync(PaymentHistory paymentHistory)
+        {
+            BitResultObject result = new BitResultObject();
+            try
+            {
+                _context.PaymentHistories.Remove(paymentHistory);
+                await _context.SaveChangesAsync();
+                result.ID = paymentHistory.ID;
+                _context.Entry(paymentHistory).State = EntityState.Detached;
+            }
+            catch (Exception ex)
+            {
+                result.Status = false;
+                result.ErrorMessage = $"{ex.Message} - {ex.InnerException?.Message}";
+            }
+            return result;
+        }
+
+        public async Task<BitResultObject> RemovePaymentHistoryAsync(long paymentHistoryId)
+        {
+            BitResultObject result = new BitResultObject();
+            try
+            {
+                var paymentHistory = await GetPaymentHistoryByIdAsync(paymentHistoryId);
+                result = await RemovePaymentHistoryAsync(paymentHistory.Result);
+            }
+            catch (Exception ex)
+            {
+                result.Status = false;
+                result.ErrorMessage = $"{ex.Message} - {ex.InnerException?.Message}";
+            }
+            return result;
+        }
+    }
+}

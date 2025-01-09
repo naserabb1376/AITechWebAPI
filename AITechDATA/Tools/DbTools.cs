@@ -8,12 +8,11 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Linq.Dynamic.Core;
 
-namespace NobatPlusDATA.Tools
+namespace AITechDATA.Tools
 {
     public static class DbTools
     {
         private static AiITechContext _context;
-
 
         public static AiITechContext GetDbContext()
         {
@@ -34,8 +33,7 @@ namespace NobatPlusDATA.Tools
             return list;
         }
 
-
-           public static IQueryable<T> ToPaging<T>(this IQueryable<T>? list, int pageIndex = 1, int pageSize = 20)
+        public static IQueryable<T> ToPaging<T>(this IQueryable<T>? list, int pageIndex = 1, int pageSize = 20)
         {
             if (pageSize > 0)
             {
@@ -80,7 +78,6 @@ namespace NobatPlusDATA.Tools
             return query.OrderBy(sortingString.ToString());
         }
 
-
         public static string ToShamsi(this string value) // use this word for use the method for all DateTime variables in project
         {
             var date = value.Split(' ')[0].Split('/');
@@ -99,13 +96,13 @@ namespace NobatPlusDATA.Tools
             var time = strshamsi.Split(' ')[1].Split(':');
             DateTime shamsiDate = new DateTime(Convert.ToInt32(date[0]), Convert.ToInt32(date[1]), Convert.ToInt32(date[2]), Convert.ToInt32(time[0]), Convert.ToInt32(time[1]), Convert.ToInt32(time[2]));
             return shamsiDate;
-
         }
 
         public static string FixPrice(this decimal value)
         {
             return value.ToString("#,0");
         }
+
         public static string ToHash(this string value)
         {
             if (string.IsNullOrEmpty(value)) return "";
@@ -162,10 +159,9 @@ namespace NobatPlusDATA.Tools
             return persianStr;
         }
 
-
         public static int GetPageCount(int totalItemsCount, int pageItemsCount)
         {
-            if(totalItemsCount == 0 || pageItemsCount == 0) return 1;
+            if (totalItemsCount == 0 || pageItemsCount == 0) return 1;
             int pageCount = totalItemsCount / pageItemsCount;
             if (totalItemsCount % pageItemsCount != 0)
             {
@@ -184,7 +180,7 @@ namespace NobatPlusDATA.Tools
 
         public static DateTime? StringToDate(this string stringDate)
         {
-            if (string.IsNullOrEmpty(stringDate))return null;
+            if (string.IsNullOrEmpty(stringDate)) return null;
             var arr = stringDate.Split('/');
             var date = new DateTime(int.Parse(arr[0]), int.Parse(arr[1]), int.Parse(arr[2]));
             return date;

@@ -24,6 +24,7 @@ namespace AITechDATA.DataLayer
         public DbSet<Image> Images { get; set; }
         public DbSet<LoginMethod> LoginMethods { get; set; }
         public DbSet<News> NewsItems { get; set; }
+        public DbSet<News> News { get; set; }
         public DbSet<Notification> Notifications { get; set; }
         public DbSet<Parent> Parents { get; set; }
         public DbSet<PaymentHistory> PaymentHistories { get; set; }
