@@ -10,7 +10,7 @@ namespace AITechDATA.DataLayer.Repositories
 {
     public interface IStudentDetailsRep
     {
-        Task<ListResultObject<StudentDetails>> GetAllStudentDetailsAsync(int pageIndex = 1, int pageSize = 20, string searchText = "",string sortQuery ="");
+        Task<ListResultObject<StudentDetails>> GetAllStudentDetailsAsync(long UserId = 0, int pageIndex = 1, int pageSize = 20, string searchText = "", string sortQuery = "");
 
         Task<RowResultObject<StudentDetails>> GetStudentDetailsByIdAsync(long studentDetailsId);
 

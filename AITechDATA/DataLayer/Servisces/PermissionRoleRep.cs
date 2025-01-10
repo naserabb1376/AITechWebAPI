@@ -74,7 +74,7 @@ namespace AITechDATA.DataLayer.Servisces
             return result;
         }
 
-        public async Task<ListResultObject<PermissionRole>> GetAllPermissionRolesAsync(int pageIndex = 1, int pageSize = 20, string searchText = "",string sortQuery ="")
+        public async Task<ListResultObject<PermissionRole>> GetAllPermissionRolesAsync(long RoleId = 0, long PerrmissionId = 0, int pageIndex = 1, int pageSize = 20, string searchText = "", string sortQuery = "")
         {
             ListResultObject<PermissionRole> results = new ListResultObject<PermissionRole>();
             try
@@ -82,6 +82,8 @@ namespace AITechDATA.DataLayer.Servisces
                 var query = _context.PermissionRoles
                     .AsNoTracking()
                     .Where(x =>
+                        (RoleId > 0 && x.RoleId == RoleId) ||
+                        (PerrmissionId > 0 && x.PerrmissionId == PerrmissionId) ||
                         x.Permission.Name.ToString().Contains(searchText) ||
                         x.Role.Name.ToString().Contains(searchText)
                     );

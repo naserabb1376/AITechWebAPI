@@ -74,7 +74,7 @@ namespace AITechDATA.DataLayer.Servisces
             return result;
         }
 
-        public async Task<ListResultObject<StudentDetails>> GetAllStudentDetailsAsync(int pageIndex = 1, int pageSize = 20, string searchText = "",string sortQuery ="")
+        public async Task<ListResultObject<StudentDetails>> GetAllStudentDetailsAsync(long UserId = 0, int pageIndex = 1, int pageSize = 20, string searchText = "", string sortQuery = "")
         {
             ListResultObject<StudentDetails> results = new ListResultObject<StudentDetails>();
             try
@@ -82,6 +82,7 @@ namespace AITechDATA.DataLayer.Servisces
                 var query = _context.StudentDetails
                     .AsNoTracking()
                     .Where(x =>
+                        (UserId > 0 && x.UserId == UserId) ||
                         (!string.IsNullOrEmpty(x.User.FullName) && x.User.FullName.Contains(searchText))
                     );
 
@@ -89,7 +90,7 @@ namespace AITechDATA.DataLayer.Servisces
                 results.PageCount = DbTools.GetPageCount(results.TotalCount, pageSize);
                 results.Results = await query.OrderByDescending(x => x.CreateDate)
                      .SortBy(sortQuery).ToPaging(pageIndex, pageSize)
-                    .Include(x => x.User).ThenInclude(x=> x.Address)
+                    .Include(x => x.User).ThenInclude(x => x.Address)
                     .Include(x => x.Parents)
                     .ToListAsync();
             }
@@ -108,7 +109,7 @@ namespace AITechDATA.DataLayer.Servisces
             {
                 result.Result = await _context.StudentDetails
                     .AsNoTracking()
-                    .Include(x => x.User).ThenInclude(x=> x.Address)
+                    .Include(x => x.User).ThenInclude(x => x.Address)
                     .Include(x => x.Parents)
                     .SingleOrDefaultAsync(x => x.ID == studentDetailsId);
             }

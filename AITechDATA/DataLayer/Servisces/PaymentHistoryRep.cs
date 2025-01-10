@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using AITechDATA.Domain;
 
 namespace AITechDATA.DataLayer.Servisces
 {
@@ -74,15 +75,16 @@ namespace AITechDATA.DataLayer.Servisces
             return result;
         }
 
-        public async Task<ListResultObject<PaymentHistory>> GetAllPaymentHistoriesAsync(int pageIndex = 1, int pageSize = 20, string searchText = "",string sortQuery ="")
+        public async Task<ListResultObject<PaymentHistory>> GetAllPaymentHistoriesAsync(long GroupId = 0, long UserId = 0, int pageIndex = 1, int pageSize = 20, string searchText = "", string sortQuery = "")
         {
             ListResultObject<PaymentHistory> results = new ListResultObject<PaymentHistory>();
             try
             {
                 var query = _context.PaymentHistories
                     .AsNoTracking()
-                    .Where(x =>
-                        (x.Amount.ToString().Contains(searchText)) ||
+                .Where(x =>
+                (GroupId > 0 && x.GroupId == GroupId) || (UserId > 0 && x.UserId == UserId) ||
+                (x.Amount.ToString().Contains(searchText)) ||
                         (!string.IsNullOrEmpty(x.User.FullName) && x.User.FullName.Contains(searchText)) ||
                         (!string.IsNullOrEmpty(x.Group.Name) && x.Group.Name.Contains(searchText))
                     );

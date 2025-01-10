@@ -10,7 +10,7 @@ namespace AITechDATA.DataLayer.Repositories
 {
     public interface ITeacherResumeRep
     {
-        Task<ListResultObject<TeacherResume>> GetAllTeacherResumesAsync(int pageIndex = 1, int pageSize = 20, string searchText = "",string sortQuery ="");
+        Task<ListResultObject<TeacherResume>> GetAllTeacherResumesAsync(long UserId = 0, int pageIndex = 1, int pageSize = 20, string searchText = "", string sortQuery = "");
 
         Task<RowResultObject<TeacherResume>> GetTeacherResumeByIdAsync(long teacherResumeId);
 

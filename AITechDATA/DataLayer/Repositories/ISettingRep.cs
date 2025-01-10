@@ -10,7 +10,7 @@ namespace AITechDATA.DataLayer.Repositories
 {
     public interface ISettingRep
     {
-        Task<ListResultObject<Setting>> GetAllSettingsAsync(int pageIndex = 1, int pageSize = 20, string searchText = "",string sortQuery ="");
+        Task<ListResultObject<Setting>> GetAllSettingsAsync(long ParentId = 0, int pageIndex = 1, int pageSize = 20, string searchText = "", string sortQuery = "");
 
         Task<RowResultObject<Setting>> GetSettingByIdAsync(long settingId);
 

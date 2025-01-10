@@ -74,7 +74,7 @@ namespace AITechDATA.DataLayer.Servisces
             return result;
         }
 
-        public async Task<ListResultObject<TeacherResume>> GetAllTeacherResumesAsync(int pageIndex = 1, int pageSize = 20, string searchText = "",string sortQuery ="")
+        public async Task<ListResultObject<TeacherResume>> GetAllTeacherResumesAsync(long UserId = 0, int pageIndex = 1, int pageSize = 20, string searchText = "", string sortQuery = "")
         {
             ListResultObject<TeacherResume> results = new ListResultObject<TeacherResume>();
             try
@@ -82,6 +82,7 @@ namespace AITechDATA.DataLayer.Servisces
                 var query = _context.TeacherResumes
                     .AsNoTracking()
                     .Where(x =>
+                        (UserId > 0 && x.UserId == UserId) ||
                         (!string.IsNullOrEmpty(x.Title) && x.Title.Contains(searchText)) ||
                         (!string.IsNullOrEmpty(x.Description) && x.Description.Contains(searchText))
                     );

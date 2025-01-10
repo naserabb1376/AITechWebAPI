@@ -74,7 +74,7 @@ namespace AITechDATA.DataLayer.Servisces
             return result;
         }
 
-        public async Task<ListResultObject<Ticket>> GetAllTicketsAsync(int pageIndex = 1, int pageSize = 20, string searchText = "",string sortQuery ="")
+        public async Task<ListResultObject<Ticket>> GetAllTicketsAsync(long UserId = 0, int pageIndex = 1, int pageSize = 20, string searchText = "", string sortQuery = "")
         {
             ListResultObject<Ticket> results = new ListResultObject<Ticket>();
             try
@@ -82,6 +82,8 @@ namespace AITechDATA.DataLayer.Servisces
                 var query = _context.Tickets
                     .AsNoTracking()
                     .Where(x =>
+                        (UserId > 0 && x.UserId == UserId) ||
+
                         (!string.IsNullOrEmpty(x.Subject) && x.Subject.Contains(searchText)) ||
                         (!string.IsNullOrEmpty(x.Description) && x.Description.Contains(searchText))
                     );
