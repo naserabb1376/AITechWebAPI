@@ -84,7 +84,7 @@ namespace AITechDATA.DataLayer.Servisces
                     .Where(x =>
                         (AddressId > 0 && x.AddressId == AddressId) ||
                         (RoleId > 0 && x.RoleId == RoleId) ||
-                        (!string.IsNullOrEmpty(x.FullName) && x.FullName.Contains(searchText)) ||
+                        ((!string.IsNullOrEmpty(x.FullName) && x.FullName.Contains(searchText)) ||
                         (!string.IsNullOrEmpty(x.Email) && x.Email.Contains(searchText)) ||
                         (!string.IsNullOrEmpty(x.Username) && x.Username.Contains(searchText)))
                     );

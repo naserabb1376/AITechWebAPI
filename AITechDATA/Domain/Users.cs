@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿
+  using System.ComponentModel.DataAnnotations;
 using AiTech.Domains;
 using Microsoft.AspNetCore.Identity;
 

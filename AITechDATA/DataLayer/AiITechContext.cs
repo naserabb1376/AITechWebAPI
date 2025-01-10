@@ -27,6 +27,7 @@ namespace AITechDATA.DataLayer
         public DbSet<UserCourse> UserCourses { get; set; }
         public DbSet<UserGroup> UserGroups { get; set; }
         public DbSet<News> News { get; set; }
+        public DbSet<Log> Logs { get; set; }
         public DbSet<Notification> Notifications { get; set; }
         public DbSet<Parent> Parents { get; set; }
         public DbSet<PaymentHistory> PaymentHistories { get; set; }
