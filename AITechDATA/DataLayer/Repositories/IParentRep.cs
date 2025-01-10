@@ -10,7 +10,7 @@ namespace AITechDATA.DataLayer.Repositories
 {
     public interface IParentRep
     {
-        Task<ListResultObject<Parent>> GetAllParentsAsync(int pageIndex = 1, int pageSize = 20, string searchText = "",string sortQuery ="");
+        Task<ListResultObject<Parent>> GetAllParentsAsync(long StudentDetailsId = 0, int pageIndex = 1, int pageSize = 20, string searchText = "", string sortQuery = "");
 
         Task<RowResultObject<Parent>> GetParentByIdAsync(long parentId);
 

@@ -74,7 +74,7 @@ namespace AITechDATA.DataLayer.Servisces
             return result;
         }
 
-        public async Task<ListResultObject<User>> GetAllUsersAsync(int pageIndex = 1, int pageSize = 20, string searchText = "",string sortQuery ="")
+        public async Task<ListResultObject<User>> GetAllUsersAsync(long AddressId = 0, long RoleId = 0, int pageIndex = 1, int pageSize = 20, string searchText = "", string sortQuery = "")
         {
             ListResultObject<User> results = new ListResultObject<User>();
             try
@@ -82,6 +82,8 @@ namespace AITechDATA.DataLayer.Servisces
                 var query = _context.Users
                     .AsNoTracking()
                     .Where(x =>
+                        (AddressId > 0 && x.AddressId == AddressId) ||
+                        (RoleId > 0 && x.RoleId == RoleId) ||
                         (!string.IsNullOrEmpty(x.FullName) && x.FullName.Contains(searchText)) ||
                         (!string.IsNullOrEmpty(x.Email) && x.Email.Contains(searchText)) ||
                         (!string.IsNullOrEmpty(x.Username) && x.Username.Contains(searchText))
@@ -95,7 +97,7 @@ namespace AITechDATA.DataLayer.Servisces
                     .Include(x => x.TeacherResumes)
                     .Include(x => x.PaymentHistories)
                     .Include(x => x.UserCourses)
-                   // .Include(x => x.CoursesEnrolled)
+                    // .Include(x => x.CoursesEnrolled)
                     .Include(x => x.Assignments)
                     .Include(x => x.StudentDetails)
                     .ToListAsync();

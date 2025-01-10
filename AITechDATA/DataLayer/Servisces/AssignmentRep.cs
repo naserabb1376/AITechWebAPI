@@ -74,7 +74,7 @@ namespace AITechDATA.DataLayer.Servisces
             return result;
         }
 
-        public async Task<ListResultObject<Assignment>> GetAllAssignmentsAsync(long sessionAssignmentId=0, int pageIndex = 1, int pageSize = 20, string searchText = "",string sortQuery ="")
+        public async Task<ListResultObject<Assignment>> GetAllAssignmentsAsync(long sessionAssignmentId = 0, int pageIndex = 1, int pageSize = 20, string searchText = "", string sortQuery = "")
         {
             ListResultObject<Assignment> results = new ListResultObject<Assignment>();
             try
@@ -82,7 +82,7 @@ namespace AITechDATA.DataLayer.Servisces
                 var query = _context.Assignments
                     .AsNoTracking()
                     .Where(x =>
-                         (sessionAssignmentId > 0 && x.SessionAssignmentId == sessionAssignmentId\) 
+                         (sessionAssignmentId > 0 && x.SessionAssignmentId == sessionAssignmentId)
                        || ((!string.IsNullOrEmpty(x.Title) && x.Title.Contains(searchText)) ||
                         (!string.IsNullOrEmpty(x.Description) && x.Description.Contains(searchText)))
                     );
