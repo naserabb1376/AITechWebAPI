@@ -74,7 +74,7 @@ namespace AITechDATA.DataLayer.Servisces
             return result;
         }
 
-        public async Task<ListResultObject<Session>> GetAllSessionsAsync(int pageIndex = 1, int pageSize = 20, string searchText = "")
+        public async Task<ListResultObject<Session>> GetAllSessionsAsync(int pageIndex = 1, int pageSize = 20, string searchText = "",string sortQuery ="")
         {
             ListResultObject<Session> results = new ListResultObject<Session>();
             try
@@ -89,7 +89,7 @@ namespace AITechDATA.DataLayer.Servisces
                 results.TotalCount = query.Count();
                 results.PageCount = DbTools.GetPageCount(results.TotalCount, pageSize);
                 results.Results = await query.OrderByDescending(x => x.SessionDate)
-                    .ToPaging(pageIndex, pageSize)
+                     .SortBy(sortQuery).ToPaging(pageIndex, pageSize)
                     .Include(x => x.Group)
                     .Include(x => x.Attendances)
                     .Include(x => x.SessionAssignments)

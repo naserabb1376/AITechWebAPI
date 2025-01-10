@@ -10,7 +10,7 @@ namespace AITechDATA.DataLayer.Repositories
 {
     public interface IImageRep
     {
-        Task<ListResultObject<Image>> GetAllImagesAsync(int pageIndex = 1, int pageSize = 20, string searchText = "");
+        Task<ListResultObject<Image>> GetAllImagesAsync(int pageIndex = 1, int pageSize = 20, string searchText = "",string sortQuery ="");
 
         Task<RowResultObject<Image>> GetImageByIdAsync(long imageId);
 

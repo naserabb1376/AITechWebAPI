@@ -74,7 +74,7 @@ namespace AITechDATA.DataLayer.Servisces
             return result;
         }
 
-        public async Task<ListResultObject<PaymentHistory>> GetAllPaymentHistoriesAsync(int pageIndex = 1, int pageSize = 20, string searchText = "")
+        public async Task<ListResultObject<PaymentHistory>> GetAllPaymentHistoriesAsync(int pageIndex = 1, int pageSize = 20, string searchText = "",string sortQuery ="")
         {
             ListResultObject<PaymentHistory> results = new ListResultObject<PaymentHistory>();
             try
@@ -90,7 +90,7 @@ namespace AITechDATA.DataLayer.Servisces
                 results.TotalCount = query.Count();
                 results.PageCount = DbTools.GetPageCount(results.TotalCount, pageSize);
                 results.Results = await query.OrderByDescending(x => x.PaymentDate)
-                    .ToPaging(pageIndex, pageSize)
+                     .SortBy(sortQuery).ToPaging(pageIndex, pageSize)
                     .Include(x => x.User)
                     .Include(x => x.Group)
                     .ToListAsync();

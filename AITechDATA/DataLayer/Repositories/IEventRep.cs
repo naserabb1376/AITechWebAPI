@@ -10,7 +10,7 @@ namespace AITechDATA.DataLayer.Repositories
 {
     public interface IEventRep
     {
-        Task<ListResultObject<Event>> GetAllEventsAsync(int pageIndex = 1, int pageSize = 20, string searchText = "");
+        Task<ListResultObject<Event>> GetAllEventsAsync(long UserId = 0,int pageIndex = 1, int pageSize = 20, string searchText = "",string sortQuery ="");
 
         Task<RowResultObject<Event>> GetEventByIdAsync(long eventId);
 

@@ -74,7 +74,7 @@ namespace AITechDATA.DataLayer.Servisces
             return result;
         }
 
-        public async Task<ListResultObject<PreRegistration>> GetAllPreRegistrationsAsync(int pageIndex = 1, int pageSize = 20, string searchText = "")
+        public async Task<ListResultObject<PreRegistration>> GetAllPreRegistrationsAsync(int pageIndex = 1, int pageSize = 20, string searchText = "",string sortQuery ="")
         {
             ListResultObject<PreRegistration> results = new ListResultObject<PreRegistration>();
             try
@@ -90,7 +90,7 @@ namespace AITechDATA.DataLayer.Servisces
                 results.TotalCount = query.Count();
                 results.PageCount = DbTools.GetPageCount(results.TotalCount, pageSize);
                 results.Results = await query.OrderByDescending(x => x.RegistrationDate)
-                    .ToPaging(pageIndex, pageSize)
+                     .SortBy(sortQuery).ToPaging(pageIndex, pageSize)
                     .Include(x => x.Course)
                     .ToListAsync();
             }

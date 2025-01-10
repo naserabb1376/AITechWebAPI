@@ -14,5 +14,8 @@ namespace AITechDATA.Domain
         public string Source { get; set; } // منبع خبر
         public DateTime PublishDate { get; set; } // تاریخ انتشار خبر
         public string Keywords { get; set; } // کلمات کلیدی برای سئو
+
+        public long UserId { get; set; } // کلید خارجی به User
+        public User User { get; set; } // ارتباط با User
     }
 }

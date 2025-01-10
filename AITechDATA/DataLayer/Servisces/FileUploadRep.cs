@@ -74,23 +74,25 @@ namespace AITechDATA.DataLayer.Servisces
             return result;
         }
 
-        public async Task<ListResultObject<FileUpload>> GetAllFileUploadsAsync(int pageIndex = 1, int pageSize = 20, string searchText = "")
+        public async Task<ListResultObject<FileUpload>> GetAllFileUploadsAsync(long assignmentId = 0,int pageIndex = 1, int pageSize = 20, string searchText = "",string sortQuery ="")
         {
             ListResultObject<FileUpload> results = new ListResultObject<FileUpload>();
             try
             {
                 var query = _context.FileUploads
                     .AsNoTracking()
-                    .Where(x =>
-                        (!string.IsNullOrEmpty(x.FileName) && x.FileName.Contains(searchText)) ||
+                    .Where(x => 
+                            (assignmentId > 0 && x.AssignmentId == assignmentId)
+
+                       || ((!string.IsNullOrEmpty(x.FileName) && x.FileName.Contains(searchText)) ||
                         (!string.IsNullOrEmpty(x.FilePath) && x.FilePath.Contains(searchText)) ||
-                        (!string.IsNullOrEmpty(x.ContentType) && x.ContentType.Contains(searchText))
+                        (!string.IsNullOrEmpty(x.ContentType) && x.ContentType.Contains(searchText)))
                     );
 
                 results.TotalCount = query.Count();
                 results.PageCount = DbTools.GetPageCount(results.TotalCount, pageSize);
                 results.Results = await query.OrderByDescending(x => x.CreateDate)
-                    .ToPaging(pageIndex, pageSize)
+                     .SortBy(sortQuery).ToPaging(pageIndex, pageSize)
                     .Include(x => x.Assignment)
                     .ToListAsync();
             }

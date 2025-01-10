@@ -74,7 +74,7 @@ namespace AITechDATA.DataLayer.Servisces
             return result;
         }
 
-        public async Task<ListResultObject<Event>> GetAllEventsAsync(int pageIndex = 1, int pageSize = 20, string searchText = "")
+        public async Task<ListResultObject<Event>> GetAllEventsAsync(long userId = 0,int pageIndex = 1, int pageSize = 20, string searchText = "",string sortQuery ="")
         {
             ListResultObject<Event> results = new ListResultObject<Event>();
             try
@@ -82,15 +82,16 @@ namespace AITechDATA.DataLayer.Servisces
                 var query = _context.Events
                     .AsNoTracking()
                     .Where(x =>
-                        (!string.IsNullOrEmpty(x.Title) && x.Title.Contains(searchText)) ||
+                        (userId > 0 && x.UserId == userId)
+                        || ((!string.IsNullOrEmpty(x.Title) && x.Title.Contains(searchText)) ||
                         (!string.IsNullOrEmpty(x.Description) && x.Description.Contains(searchText)) ||
-                        (!string.IsNullOrEmpty(x.Keywords) && x.Keywords.Contains(searchText))
+                        (!string.IsNullOrEmpty(x.Keywords) && x.Keywords.Contains(searchText)))
                     );
 
                 results.TotalCount = query.Count();
                 results.PageCount = DbTools.GetPageCount(results.TotalCount, pageSize);
                 results.Results = await query.OrderByDescending(x => x.EventDate)
-                    .ToPaging(pageIndex, pageSize)
+                     .SortBy(sortQuery).ToPaging(pageIndex, pageSize)
                     .ToListAsync();
             }
             catch (Exception ex)

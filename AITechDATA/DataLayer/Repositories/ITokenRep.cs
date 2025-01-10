@@ -10,7 +10,7 @@ namespace Repositories
 {
     public interface ITokenRep
     {
-        public Task<ListResultObject<Token>> GetAllTokensAsync(int pageIndex = 1, int pageSize = 20, string searchText = "");
+        public Task<ListResultObject<Token>> GetAllTokensAsync(int pageIndex = 1, int pageSize = 20, string searchText = "",string sortQuery ="");
 
         public Task<RowResultObject<Token>> GetTokenByIdAsync(long TokenId);
 

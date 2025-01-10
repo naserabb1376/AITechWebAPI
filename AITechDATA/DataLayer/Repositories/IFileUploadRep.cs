@@ -10,7 +10,7 @@ namespace AITechDATA.DataLayer.Repositories
 {
     public interface IFileUploadRep
     {
-        Task<ListResultObject<FileUpload>> GetAllFileUploadsAsync(int pageIndex = 1, int pageSize = 20, string searchText = "");
+        Task<ListResultObject<FileUpload>> GetAllFileUploadsAsync(long assignmentId = 0,int pageIndex = 1, int pageSize = 20, string searchText = "",string sortQuery ="");
 
         Task<RowResultObject<FileUpload>> GetFileUploadByIdAsync(long fileUploadId);
 

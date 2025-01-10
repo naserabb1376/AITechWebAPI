@@ -10,7 +10,7 @@ namespace AITechDATA.DataLayer.Repositories
 {
     public interface ITicketRep
     {
-        Task<ListResultObject<Ticket>> GetAllTicketsAsync(int pageIndex = 1, int pageSize = 20, string searchText = "");
+        Task<ListResultObject<Ticket>> GetAllTicketsAsync(int pageIndex = 1, int pageSize = 20, string searchText = "",string sortQuery ="");
 
         Task<RowResultObject<Ticket>> GetTicketByIdAsync(long ticketId);
 

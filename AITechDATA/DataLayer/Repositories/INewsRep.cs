@@ -10,7 +10,7 @@ namespace AITechDATA.DataLayer.Repositories
 {
     public interface INewsRep
     {
-        Task<ListResultObject<News>> GetAllNewsAsync(int pageIndex = 1, int pageSize = 20, string searchText = "");
+        Task<ListResultObject<News>> GetAllNewsAsync(int pageIndex = 1, int pageSize = 20, string searchText = "",string sortQuery ="");
 
         Task<RowResultObject<News>> GetNewsByIdAsync(long newsId);
 

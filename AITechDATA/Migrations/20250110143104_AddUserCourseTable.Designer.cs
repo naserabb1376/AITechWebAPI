@@ -4,6 +4,7 @@ using AITechDATA.DataLayer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace AITechDATA.Migrations
 {
     [DbContext(typeof(AiITechContext))]
-    partial class AiITechContextModelSnapshot : ModelSnapshot
+    [Migration("20250110143104_AddUserCourseTable")]
+    partial class AddUserCourseTable
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -746,6 +749,9 @@ namespace AITechDATA.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("ID"));
 
+                    b.Property<long>("AddressId")
+                        .HasColumnType("bigint");
+
                     b.Property<DateTime?>("CreateDate")
                         .HasColumnType("datetime2");
 
@@ -756,6 +762,8 @@ namespace AITechDATA.Migrations
                         .HasColumnType("bigint");
 
                     b.HasKey("ID");
+
+                    b.HasIndex("AddressId");
 
                     b.HasIndex("UserId")
                         .IsUnique();
@@ -910,9 +918,6 @@ namespace AITechDATA.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("ID"));
 
-                    b.Property<long>("AddressId")
-                        .HasColumnType("bigint");
-
                     b.Property<DateTime?>("CreateDate")
                         .HasColumnType("datetime2");
 
@@ -926,6 +931,10 @@ namespace AITechDATA.Migrations
 
                     b.Property<long?>("GroupID")
                         .HasColumnType("bigint");
+
+                    b.Property<string>("ParentInfo")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("PasswordHash")
                         .IsRequired()
@@ -942,8 +951,6 @@ namespace AITechDATA.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("ID");
-
-                    b.HasIndex("AddressId");
 
                     b.HasIndex("GroupID");
 
@@ -1209,11 +1216,19 @@ namespace AITechDATA.Migrations
 
             modelBuilder.Entity("AITechDATA.Domain.StudentDetails", b =>
                 {
+                    b.HasOne("AITechDATA.Domain.Address", "Address")
+                        .WithMany()
+                        .HasForeignKey("AddressId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.HasOne("AITechDATA.Domain.User", "User")
                         .WithOne("StudentDetails")
                         .HasForeignKey("AITechDATA.Domain.StudentDetails", "UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("Address");
 
                     b.Navigation("User");
                 });
@@ -1259,12 +1274,6 @@ namespace AITechDATA.Migrations
 
             modelBuilder.Entity("AITechDATA.Domain.User", b =>
                 {
-                    b.HasOne("AITechDATA.Domain.Address", "Address")
-                        .WithMany()
-                        .HasForeignKey("AddressId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
                     b.HasOne("AITechDATA.Domain.Group", null)
                         .WithMany("Students")
                         .HasForeignKey("GroupID");
@@ -1274,8 +1283,6 @@ namespace AITechDATA.Migrations
                         .HasForeignKey("RoleId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.Navigation("Address");
 
                     b.Navigation("Role");
                 });

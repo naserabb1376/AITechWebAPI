@@ -11,24 +11,24 @@ using System.Threading.Tasks;
 
 namespace AITechDATA.DataLayer.Servisces
 {
-    public class RoleRep : IRoleRep
+    public class UserCourseRep : IUserCourseRep
     {
         private AiITechContext _context;
 
-        public RoleRep()
+        public UserCourseRep()
         {
             _context = DbTools.GetDbContext();
         }
 
-        public async Task<BitResultObject> AddRoleAsync(Role role)
+        public async Task<BitResultObject> AddUserCourseAsync(UserCourse UserCourse)
         {
             BitResultObject result = new BitResultObject();
             try
             {
-                await _context.Roles.AddAsync(role);
+                await _context.UserCourses.AddAsync(UserCourse);
                 await _context.SaveChangesAsync();
-                result.ID = role.ID;
-                _context.Entry(role).State = EntityState.Detached;
+                result.ID = UserCourse.ID;
+                _context.Entry(UserCourse).State = EntityState.Detached;
             }
             catch (Exception ex)
             {
@@ -38,15 +38,15 @@ namespace AITechDATA.DataLayer.Servisces
             return result;
         }
 
-        public async Task<BitResultObject> EditRoleAsync(Role role)
+        public async Task<BitResultObject> EditUserCourseAsync(UserCourse UserCourse)
         {
             BitResultObject result = new BitResultObject();
             try
             {
-                _context.Roles.Update(role);
+                _context.UserCourses.Update(UserCourse);
                 await _context.SaveChangesAsync();
-                result.ID = role.ID;
-                _context.Entry(role).State = EntityState.Detached;
+                result.ID = UserCourse.ID;
+                _context.Entry(UserCourse).State = EntityState.Detached;
             }
             catch (Exception ex)
             {
@@ -56,15 +56,15 @@ namespace AITechDATA.DataLayer.Servisces
             return result;
         }
 
-        public async Task<BitResultObject> ExistRoleAsync(long roleId)
+        public async Task<BitResultObject> ExistUserCourseAsync(long UserCourseId)
         {
             BitResultObject result = new BitResultObject();
             try
             {
-                result.Status = await _context.Roles
+                result.Status = await _context.UserCourses
                     .AsNoTracking()
-                    .AnyAsync(x => x.ID == roleId);
-                result.ID = roleId;
+                    .AnyAsync(x => x.ID == UserCourseId);
+                result.ID = UserCourseId;
             }
             catch (Exception ex)
             {
@@ -74,24 +74,24 @@ namespace AITechDATA.DataLayer.Servisces
             return result;
         }
 
-        public async Task<ListResultObject<Role>> GetAllRolesAsync(int pageIndex = 1, int pageSize = 20, string searchText = "",string sortQuery ="")
+        public async Task<ListResultObject<UserCourse>> GetAllUserCoursesAsync(int pageIndex = 1, int pageSize = 20, string searchText = "",string sortQuery ="")
         {
-            ListResultObject<Role> results = new ListResultObject<Role>();
+            ListResultObject<UserCourse> results = new ListResultObject<UserCourse>();
             try
             {
-                var query = _context.Roles
+                var query = _context.UserCourses
                     .AsNoTracking()
                     .Where(x =>
-                        (!string.IsNullOrEmpty(x.Name) && x.Name.Contains(searchText)) ||
-                        (!string.IsNullOrEmpty(x.Description) && x.Description.Contains(searchText))
+                        x.User.FullName.ToString().Contains(searchText) ||
+                        x.Course.Title.ToString().Contains(searchText)
                     );
 
                 results.TotalCount = query.Count();
                 results.PageCount = DbTools.GetPageCount(results.TotalCount, pageSize);
-                results.Results = await query.OrderByDescending(x => x.CreateDate)
-                     .SortBy(sortQuery).ToPaging(pageIndex, pageSize)
-                    .Include(x => x.Users)
-                    .Include(x => x.PermissionRoles)
+                results.Results = await query.OrderByDescending(x => x.ID)
+                    .SortBy(sortQuery).ToPaging(pageIndex, pageSize)
+                    .Include(x => x.User)
+                    .Include(x => x.Course)
                     .ToListAsync();
             }
             catch (Exception ex)
@@ -102,16 +102,16 @@ namespace AITechDATA.DataLayer.Servisces
             return results;
         }
 
-        public async Task<RowResultObject<Role>> GetRoleByIdAsync(long roleId)
+        public async Task<RowResultObject<UserCourse>> GetUserCourseByIdAsync(long UserCourseId)
         {
-            RowResultObject<Role> result = new RowResultObject<Role>();
+            RowResultObject<UserCourse> result = new RowResultObject<UserCourse>();
             try
             {
-                result.Result = await _context.Roles
+                result.Result = await _context.UserCourses
                     .AsNoTracking()
-                    .Include(x => x.Users)
-                    .Include(x => x.PermissionRoles)
-                    .SingleOrDefaultAsync(x => x.ID == roleId);
+                    .Include(x => x.User)
+                    .Include(x => x.Course)
+                    .SingleOrDefaultAsync(x => x.ID == UserCourseId);
             }
             catch (Exception ex)
             {
@@ -121,15 +121,15 @@ namespace AITechDATA.DataLayer.Servisces
             return result;
         }
 
-        public async Task<BitResultObject> RemoveRoleAsync(Role role)
+        public async Task<BitResultObject> RemoveUserCourseAsync(UserCourse UserCourse)
         {
             BitResultObject result = new BitResultObject();
             try
             {
-                _context.Roles.Remove(role);
+                _context.UserCourses.Remove(UserCourse);
                 await _context.SaveChangesAsync();
-                result.ID = role.ID;
-                _context.Entry(role).State = EntityState.Detached;
+                result.ID = UserCourse.ID;
+                _context.Entry(UserCourse).State = EntityState.Detached;
             }
             catch (Exception ex)
             {
@@ -139,13 +139,13 @@ namespace AITechDATA.DataLayer.Servisces
             return result;
         }
 
-        public async Task<BitResultObject> RemoveRoleAsync(long roleId)
+        public async Task<BitResultObject> RemoveUserCourseAsync(long UserCourseId)
         {
             BitResultObject result = new BitResultObject();
             try
             {
-                var role = await GetRoleByIdAsync(roleId);
-                result = await RemoveRoleAsync(role.Result);
+                var UserCourse = await GetUserCourseByIdAsync(UserCourseId);
+                result = await RemoveUserCourseAsync(UserCourse.Result);
             }
             catch (Exception ex)
             {

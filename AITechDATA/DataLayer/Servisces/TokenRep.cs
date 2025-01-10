@@ -106,7 +106,7 @@ namespace Services
             return result;
         }
 
-        public async Task<ListResultObject<Token>> GetAllTokensAsync(int pageIndex = 1, int pageSize = 20, string searchText = "")
+        public async Task<ListResultObject<Token>> GetAllTokensAsync(int pageIndex = 1, int pageSize = 20, string searchText = "",string sortQuery ="")
         {
             ListResultObject<Token> results = new ListResultObject<Token>();
             try
@@ -125,7 +125,7 @@ namespace Services
                 results.TotalCount = query.Count();
                 results.PageCount = DbTools.GetPageCount(results.TotalCount, pageSize);
                 results.Results = await query.OrderByDescending(x => x.CreatedDate)
-                .ToPaging(pageIndex, pageSize)
+                 .SortBy(sortQuery).ToPaging(pageIndex, pageSize)
                 .ToListAsync();
             }
             catch (Exception ex)

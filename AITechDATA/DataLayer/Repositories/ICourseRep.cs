@@ -10,7 +10,7 @@ namespace AITechDATA.DataLayer.Repositories
 {
     public interface ICourseRep
     {
-        Task<ListResultObject<Course>> GetAllCoursesAsync(int pageIndex = 1, int pageSize = 20, string searchText = "");
+        Task<ListResultObject<Course>> GetAllCoursesAsync(long categoryId = 0,int pageIndex = 1, int pageSize = 20, string searchText = "",string sortQuery ="");
 
         Task<RowResultObject<Course>> GetCourseByIdAsync(long courseId);
 

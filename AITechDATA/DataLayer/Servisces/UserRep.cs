@@ -74,7 +74,7 @@ namespace AITechDATA.DataLayer.Servisces
             return result;
         }
 
-        public async Task<ListResultObject<User>> GetAllUsersAsync(int pageIndex = 1, int pageSize = 20, string searchText = "")
+        public async Task<ListResultObject<User>> GetAllUsersAsync(int pageIndex = 1, int pageSize = 20, string searchText = "",string sortQuery ="")
         {
             ListResultObject<User> results = new ListResultObject<User>();
             try
@@ -90,12 +90,12 @@ namespace AITechDATA.DataLayer.Servisces
                 results.TotalCount = query.Count();
                 results.PageCount = DbTools.GetPageCount(results.TotalCount, pageSize);
                 results.Results = await query.OrderByDescending(x => x.CreateDate)
-                    .ToPaging(pageIndex, pageSize)
+                     .SortBy(sortQuery).ToPaging(pageIndex, pageSize)
                     .Include(x => x.Role)
                     .Include(x => x.TeacherResumes)
                     .Include(x => x.PaymentHistories)
-                    .Include(x => x.CoursesTaught)
-                    .Include(x => x.CoursesEnrolled)
+                    .Include(x => x.UserCourses)
+                   // .Include(x => x.CoursesEnrolled)
                     .Include(x => x.Assignments)
                     .Include(x => x.StudentDetails)
                     .ToListAsync();
@@ -118,8 +118,8 @@ namespace AITechDATA.DataLayer.Servisces
                     .Include(x => x.Role)
                     .Include(x => x.TeacherResumes)
                     .Include(x => x.PaymentHistories)
-                    .Include(x => x.CoursesTaught)
-                    .Include(x => x.CoursesEnrolled)
+                    .Include(x => x.UserCourses)
+                    //.Include(x => x.CoursesEnrolled)
                     .Include(x => x.Assignments)
                     .Include(x => x.StudentDetails)
                     .SingleOrDefaultAsync(x => x.ID == userId);

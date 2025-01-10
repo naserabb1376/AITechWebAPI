@@ -74,7 +74,7 @@ namespace AITechDATA.DataLayer.Servisces
             return result;
         }
 
-        public async Task<ListResultObject<Group>> GetAllGroupsAsync(int pageIndex = 1, int pageSize = 20, string searchText = "")
+        public async Task<ListResultObject<Group>> GetAllGroupsAsync(long courseId=0,int pageIndex = 1, int pageSize = 20, string searchText = "",string sortQuery ="")
         {
             ListResultObject<Group> results = new ListResultObject<Group>();
             try
@@ -82,14 +82,15 @@ namespace AITechDATA.DataLayer.Servisces
                 var query = _context.Groups
                     .AsNoTracking()
                     .Where(x =>
-                        (!string.IsNullOrEmpty(x.Name) && x.Name.Contains(searchText)) ||
-                        (x.Teacher.FullName.Contains(searchText))
+                        (courseId > 0 && x.CourseId == courseId)
+                        || ((!string.IsNullOrEmpty(x.Name) && x.Name.Contains(searchText)) ||
+                        (x.Teacher.FullName.Contains(searchText)))
                     );
 
                 results.TotalCount = query.Count();
                 results.PageCount = DbTools.GetPageCount(results.TotalCount, pageSize);
                 results.Results = await query.OrderByDescending(x => x.CreateDate)
-                    .ToPaging(pageIndex, pageSize)
+                     .SortBy(sortQuery).ToPaging(pageIndex, pageSize)
                     .Include(x => x.Course)
                     .Include(x => x.Teacher)
                     .Include(x => x.Sessions)

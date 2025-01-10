@@ -10,7 +10,7 @@ namespace AITechDATA.DataLayer.Repositories
 {
     public interface IAddressRep
     {
-        Task<ListResultObject<Address>> GetAllAddressesAsync(int pageIndex = 1, int pageSize = 20, string searchText = "");
+        Task<ListResultObject<Address>> GetAllAddressesAsync(int pageIndex = 1, int pageSize = 20, string searchText = "",string sortQuery ="");
 
         Task<RowResultObject<Address>> GetAddressByIdAsync(long addressId);
 

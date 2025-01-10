@@ -74,7 +74,7 @@ namespace AITechDATA.DataLayer.Servisces
             return result;
         }
 
-        public async Task<ListResultObject<StudentDetails>> GetAllStudentDetailsAsync(int pageIndex = 1, int pageSize = 20, string searchText = "")
+        public async Task<ListResultObject<StudentDetails>> GetAllStudentDetailsAsync(int pageIndex = 1, int pageSize = 20, string searchText = "",string sortQuery ="")
         {
             ListResultObject<StudentDetails> results = new ListResultObject<StudentDetails>();
             try
@@ -88,9 +88,8 @@ namespace AITechDATA.DataLayer.Servisces
                 results.TotalCount = query.Count();
                 results.PageCount = DbTools.GetPageCount(results.TotalCount, pageSize);
                 results.Results = await query.OrderByDescending(x => x.CreateDate)
-                    .ToPaging(pageIndex, pageSize)
-                    .Include(x => x.User)
-                    .Include(x => x.Address)
+                     .SortBy(sortQuery).ToPaging(pageIndex, pageSize)
+                    .Include(x => x.User).ThenInclude(x=> x.Address)
                     .Include(x => x.Parents)
                     .ToListAsync();
             }
@@ -109,8 +108,7 @@ namespace AITechDATA.DataLayer.Servisces
             {
                 result.Result = await _context.StudentDetails
                     .AsNoTracking()
-                    .Include(x => x.User)
-                    .Include(x => x.Address)
+                    .Include(x => x.User).ThenInclude(x=> x.Address)
                     .Include(x => x.Parents)
                     .SingleOrDefaultAsync(x => x.ID == studentDetailsId);
             }

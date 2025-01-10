@@ -74,7 +74,7 @@ namespace AITechDATA.DataLayer.Servisces
             return result;
         }
 
-        public async Task<ListResultObject<Assignment>> GetAllAssignmentsAsync(int pageIndex = 1, int pageSize = 20, string searchText = "")
+        public async Task<ListResultObject<Assignment>> GetAllAssignmentsAsync(long sessionAssignmentId=0, int pageIndex = 1, int pageSize = 20, string searchText = "",string sortQuery ="")
         {
             ListResultObject<Assignment> results = new ListResultObject<Assignment>();
             try
@@ -82,14 +82,15 @@ namespace AITechDATA.DataLayer.Servisces
                 var query = _context.Assignments
                     .AsNoTracking()
                     .Where(x =>
-                        (!string.IsNullOrEmpty(x.Title) && x.Title.Contains(searchText)) ||
-                        (!string.IsNullOrEmpty(x.Description) && x.Description.Contains(searchText))
+                         (sessionAssignmentId > 0 && x.SessionAssignmentId == sessionAssignmentId\) 
+                       || ((!string.IsNullOrEmpty(x.Title) && x.Title.Contains(searchText)) ||
+                        (!string.IsNullOrEmpty(x.Description) && x.Description.Contains(searchText)))
                     );
 
                 results.TotalCount = query.Count();
                 results.PageCount = DbTools.GetPageCount(results.TotalCount, pageSize);
                 results.Results = await query.OrderByDescending(x => x.SubmissionDate)
-                    .ToPaging(pageIndex, pageSize)
+                     .SortBy(sortQuery).ToPaging(pageIndex, pageSize)
                     .ToListAsync();
             }
             catch (Exception ex)

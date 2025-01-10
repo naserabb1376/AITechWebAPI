@@ -10,7 +10,7 @@ namespace AITechDATA.DataLayer.Repositories
 {
     public interface IAdminReportRep
     {
-        Task<ListResultObject<AdminReport>> GetAllAdminReportsAsync(int pageIndex = 1, int pageSize = 20, string searchText = "");
+        Task<ListResultObject<AdminReport>> GetAllAdminReportsAsync(int pageIndex = 1, int pageSize = 20, string searchText = "",string sortQuery ="");
 
         Task<RowResultObject<AdminReport>> GetAdminReportByIdAsync(long adminReportId);
 

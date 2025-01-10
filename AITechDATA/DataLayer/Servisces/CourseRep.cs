@@ -74,7 +74,7 @@ namespace AITechDATA.DataLayer.Servisces
             return result;
         }
 
-        public async Task<ListResultObject<Course>> GetAllCoursesAsync(int pageIndex = 1, int pageSize = 20, string searchText = "")
+        public async Task<ListResultObject<Course>> GetAllCoursesAsync(long categoryId = 0, int pageIndex = 1, int pageSize = 20, string searchText = "",string sortQuery ="")
         {
             ListResultObject<Course> results = new ListResultObject<Course>();
             try
@@ -82,14 +82,15 @@ namespace AITechDATA.DataLayer.Servisces
                 var query = _context.Courses
                     .AsNoTracking()
                     .Where(x =>
-                        (!string.IsNullOrEmpty(x.Title) && x.Title.Contains(searchText)) ||
-                        (!string.IsNullOrEmpty(x.Description) && x.Description.Contains(searchText))
+                        (categoryId > 0 && x.CategoryId == categoryId)
+                        ||((!string.IsNullOrEmpty(x.Title) && x.Title.Contains(searchText)) ||
+                        (!string.IsNullOrEmpty(x.Description) && x.Description.Contains(searchText)))
                     );
 
                 results.TotalCount = query.Count();
                 results.PageCount = DbTools.GetPageCount(results.TotalCount, pageSize);
                 results.Results = await query.OrderByDescending(x => x.CreateDate)
-                    .ToPaging(pageIndex, pageSize)
+                     .SortBy(sortQuery).ToPaging(pageIndex, pageSize)
                     .Include(x => x.Category)
                     .Include(x => x.Groups)
                     .ToListAsync();
