@@ -1,5 +1,5 @@
 ﻿using AITechDATA.DataLayer.Repositories;
-
+using AITechDATA.Domain;
 using AITechDATA.ResultObjects;
 using Microsoft.EntityFrameworkCore;
 using AITechDATA.Tools;
@@ -8,28 +8,27 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using AITechDATA.Domain;
 
 namespace AITechDATA.DataLayer.Servisces
 {
-    public class NewsRep : INewsRep
+    public class UserGroupRep : IUserGroupRep
     {
         private AiITechContext _context;
 
-        public NewsRep()
+        public UserGroupRep()
         {
             _context = DbTools.GetDbContext();
         }
 
-        public async Task<BitResultObject> AddNewsAsync(News news)
+        public async Task<BitResultObject> AddUserGroupAsync(UserGroup UserGroup)
         {
             BitResultObject result = new BitResultObject();
             try
             {
-                await _context.News.AddAsync(news);
+                await _context.UserGroups.AddAsync(UserGroup);
                 await _context.SaveChangesAsync();
-                result.ID = news.ID;
-                _context.Entry(news).State = EntityState.Detached;
+                result.ID = UserGroup.ID;
+                _context.Entry(UserGroup).State = EntityState.Detached;
             }
             catch (Exception ex)
             {
@@ -39,15 +38,15 @@ namespace AITechDATA.DataLayer.Servisces
             return result;
         }
 
-        public async Task<BitResultObject> EditNewsAsync(News news)
+        public async Task<BitResultObject> EditUserGroupAsync(UserGroup UserGroup)
         {
             BitResultObject result = new BitResultObject();
             try
             {
-                _context.News.Update(news);
+                _context.UserGroups.Update(UserGroup);
                 await _context.SaveChangesAsync();
-                result.ID = news.ID;
-                _context.Entry(news).State = EntityState.Detached;
+                result.ID = UserGroup.ID;
+                _context.Entry(UserGroup).State = EntityState.Detached;
             }
             catch (Exception ex)
             {
@@ -57,15 +56,15 @@ namespace AITechDATA.DataLayer.Servisces
             return result;
         }
 
-        public async Task<BitResultObject> ExistNewsAsync(long newsId)
+        public async Task<BitResultObject> ExistUserGroupAsync(long UserGroupId)
         {
             BitResultObject result = new BitResultObject();
             try
             {
-                result.Status = await _context.News
+                result.Status = await _context.UserGroups
                     .AsNoTracking()
-                    .AnyAsync(x => x.ID == newsId);
-                result.ID = newsId;
+                    .AnyAsync(x => x.ID == UserGroupId);
+                result.ID = UserGroupId;
             }
             catch (Exception ex)
             {
@@ -75,25 +74,24 @@ namespace AITechDATA.DataLayer.Servisces
             return result;
         }
 
-        public async Task<ListResultObject<News>> GetAllNewsAsync(long userId = 0, int pageIndex = 1, int pageSize = 20, string searchText = "",string sortQuery ="")
+        public async Task<ListResultObject<UserGroup>> GetAllUserGroupsAsync(int pageIndex = 1, int pageSize = 20, string searchText = "",string sortQuery ="")
         {
-            ListResultObject<News> results = new ListResultObject<News>();
+            ListResultObject<UserGroup> results = new ListResultObject<UserGroup>();
             try
             {
-                var query = _context.News
+                var query = _context.UserGroups
                     .AsNoTracking()
                     .Where(x =>
-                        (userId > 0 && x.UserId == userId) || 
-                        ((!string.IsNullOrEmpty(x.Title) && x.Title.Contains(searchText)) ||
-                        (!string.IsNullOrEmpty(x.Content) && x.Content.Contains(searchText)) ||
-                        (!string.IsNullOrEmpty(x.Source) && x.Source.Contains(searchText)) ||
-                        (!string.IsNullOrEmpty(x.Keywords) && x.Keywords.Contains(searchText)))
+                        x.User.FullName.ToString().Contains(searchText) ||
+                        x.Group.Name.ToString().Contains(searchText)
                     );
 
                 results.TotalCount = query.Count();
                 results.PageCount = DbTools.GetPageCount(results.TotalCount, pageSize);
-                results.Results = await query.OrderByDescending(x => x.PublishDate)
-                     .SortBy(sortQuery).ToPaging(pageIndex, pageSize)
+                results.Results = await query.OrderByDescending(x => x.ID)
+                    .SortBy(sortQuery).ToPaging(pageIndex, pageSize)
+                    .Include(x => x.User)
+                    .Include(x => x.Group)
                     .ToListAsync();
             }
             catch (Exception ex)
@@ -104,14 +102,16 @@ namespace AITechDATA.DataLayer.Servisces
             return results;
         }
 
-        public async Task<RowResultObject<News>> GetNewsByIdAsync(long newsId)
+        public async Task<RowResultObject<UserGroup>> GetUserGroupByIdAsync(long UserGroupId)
         {
-            RowResultObject<News> result = new RowResultObject<News>();
+            RowResultObject<UserGroup> result = new RowResultObject<UserGroup>();
             try
             {
-                result.Result = await _context.News
+                result.Result = await _context.UserGroups
                     .AsNoTracking()
-                    .SingleOrDefaultAsync(x => x.ID == newsId);
+                    .Include(x => x.User)
+                    .Include(x => x.Group)
+                    .SingleOrDefaultAsync(x => x.ID == UserGroupId);
             }
             catch (Exception ex)
             {
@@ -121,15 +121,15 @@ namespace AITechDATA.DataLayer.Servisces
             return result;
         }
 
-        public async Task<BitResultObject> RemoveNewsAsync(News news)
+        public async Task<BitResultObject> RemoveUserGroupAsync(UserGroup UserGroup)
         {
             BitResultObject result = new BitResultObject();
             try
             {
-                _context.News.Remove(news);
+                _context.UserGroups.Remove(UserGroup);
                 await _context.SaveChangesAsync();
-                result.ID = news.ID;
-                _context.Entry(news).State = EntityState.Detached;
+                result.ID = UserGroup.ID;
+                _context.Entry(UserGroup).State = EntityState.Detached;
             }
             catch (Exception ex)
             {
@@ -139,13 +139,13 @@ namespace AITechDATA.DataLayer.Servisces
             return result;
         }
 
-        public async Task<BitResultObject> RemoveNewsAsync(long newsId)
+        public async Task<BitResultObject> RemoveUserGroupAsync(long UserGroupId)
         {
             BitResultObject result = new BitResultObject();
             try
             {
-                var news = await GetNewsByIdAsync(newsId);
-                result = await RemoveNewsAsync(news.Result);
+                var UserGroup = await GetUserGroupByIdAsync(UserGroupId);
+                result = await RemoveUserGroupAsync(UserGroup.Result);
             }
             catch (Exception ex)
             {

@@ -10,7 +10,7 @@ namespace AITechDATA.DataLayer.Repositories
 {
     public interface IAttendanceRep
     {
-        Task<ListResultObject<Attendance>> GetAllAttendancesAsync(int pageIndex = 1, int pageSize = 20, string searchText = "",string sortQuery ="");
+        Task<ListResultObject<Attendance>> GetAllAttendancesAsync(long userId = 0, long sessionId=0,int pageIndex = 1, int pageSize = 20, string searchText = "",string sortQuery ="");
 
         Task<RowResultObject<Attendance>> GetAttendanceByIdAsync(long attendanceId);
 
