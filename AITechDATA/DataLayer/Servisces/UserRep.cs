@@ -82,9 +82,9 @@ namespace AITechDATA.DataLayer.Servisces
                 var query = _context.Users
                     .AsNoTracking()
                     .Where(x =>
-                        (!string.IsNullOrEmpty(x.FullName) && x.FullName.Contains(searchText)) ||
+                        ((!string.IsNullOrEmpty(x.FullName) && x.FullName.Contains(searchText)) ||
                         (!string.IsNullOrEmpty(x.Email) && x.Email.Contains(searchText)) ||
-                        (!string.IsNullOrEmpty(x.Username) && x.Username.Contains(searchText))
+                        (!string.IsNullOrEmpty(x.Username) && x.Username.Contains(searchText)))
                     );
 
                 results.TotalCount = query.Count();

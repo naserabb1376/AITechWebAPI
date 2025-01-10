@@ -74,7 +74,7 @@ namespace AITechDATA.DataLayer.Servisces
             return result;
         }
 
-        public async Task<ListResultObject<Notification>> GetAllNotificationsAsync(int pageIndex = 1, int pageSize = 20, string searchText = "",string sortQuery ="")
+        public async Task<ListResultObject<Notification>> GetAllNotificationsAsync(long userId = 0, int pageIndex = 1, int pageSize = 20, string searchText = "",string sortQuery ="")
         {
             ListResultObject<Notification> results = new ListResultObject<Notification>();
             try
@@ -82,8 +82,9 @@ namespace AITechDATA.DataLayer.Servisces
                 var query = _context.Notifications
                     .AsNoTracking()
                     .Where(x =>
-                        (!string.IsNullOrEmpty(x.Message) && x.Message.Contains(searchText))
-                    );
+                    (userId > 0 && x.UserId == userId) ||
+                        ((!string.IsNullOrEmpty(x.Message) && x.Message.Contains(searchText))
+                        ));
 
                 results.TotalCount = query.Count();
                 results.PageCount = DbTools.GetPageCount(results.TotalCount, pageSize);

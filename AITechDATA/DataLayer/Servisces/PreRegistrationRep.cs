@@ -74,7 +74,7 @@ namespace AITechDATA.DataLayer.Servisces
             return result;
         }
 
-        public async Task<ListResultObject<PreRegistration>> GetAllPreRegistrationsAsync(int pageIndex = 1, int pageSize = 20, string searchText = "",string sortQuery ="")
+        public async Task<ListResultObject<PreRegistration>> GetAllPreRegistrationsAsync(long groupId = 0, int pageIndex = 1, int pageSize = 20, string searchText = "",string sortQuery ="")
         {
             ListResultObject<PreRegistration> results = new ListResultObject<PreRegistration>();
             try
@@ -82,16 +82,17 @@ namespace AITechDATA.DataLayer.Servisces
                 var query = _context.PreRegistrations
                     .AsNoTracking()
                     .Where(x =>
-                        (!string.IsNullOrEmpty(x.FullName) && x.FullName.Contains(searchText)) ||
+                        (groupId > 0 && x.GroupId == groupId)
+                     || ((!string.IsNullOrEmpty(x.FullName) && x.FullName.Contains(searchText)) ||
                         (!string.IsNullOrEmpty(x.Email) && x.Email.Contains(searchText)) ||
-                        (!string.IsNullOrEmpty(x.PhoneNumber) && x.PhoneNumber.Contains(searchText))
+                        (!string.IsNullOrEmpty(x.PhoneNumber) && x.PhoneNumber.Contains(searchText)))
                     );
 
                 results.TotalCount = query.Count();
                 results.PageCount = DbTools.GetPageCount(results.TotalCount, pageSize);
                 results.Results = await query.OrderByDescending(x => x.RegistrationDate)
                      .SortBy(sortQuery).ToPaging(pageIndex, pageSize)
-                    .Include(x => x.Course)
+                    .Include(x => x.Group)
                     .ToListAsync();
             }
             catch (Exception ex)
@@ -109,7 +110,7 @@ namespace AITechDATA.DataLayer.Servisces
             {
                 result.Result = await _context.PreRegistrations
                     .AsNoTracking()
-                    .Include(x => x.Course)
+                    .Include(x => x.Group)
                     .SingleOrDefaultAsync(x => x.ID == preRegistrationId);
             }
             catch (Exception ex)

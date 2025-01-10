@@ -25,6 +25,7 @@ namespace AITechDATA.DataLayer
         public DbSet<LoginMethod> LoginMethods { get; set; }
         public DbSet<PermissionRole> PermissionRoles { get; set; }
         public DbSet<UserCourse> UserCourses { get; set; }
+        public DbSet<UserGroup> UserGroups { get; set; }
         public DbSet<News> News { get; set; }
         public DbSet<Notification> Notifications { get; set; }
         public DbSet<Parent> Parents { get; set; }

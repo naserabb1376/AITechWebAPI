@@ -10,7 +10,7 @@ namespace AITechDATA.DataLayer.Repositories
 {
     public interface INotificationRep
     {
-        Task<ListResultObject<Notification>> GetAllNotificationsAsync(int pageIndex = 1, int pageSize = 20, string searchText = "",string sortQuery ="");
+        Task<ListResultObject<Notification>> GetAllNotificationsAsync(long userId = 0, int pageIndex = 1, int pageSize = 20, string searchText = "",string sortQuery ="");
 
         Task<RowResultObject<Notification>> GetNotificationByIdAsync(long notificationId);
 

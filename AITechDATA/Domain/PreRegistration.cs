@@ -8,8 +8,9 @@ namespace AITechDATA.Domain
 {
     public class PreRegistration : BaseEntity
     {
-        public long CourseId { get; set; } // کلید خارجی به Course
-        public Course Course { get; set; } // ارتباط با Course
+        public long GroupId { get; set; } // کلید خارجی به Group
+        public Group Group { get; set; } // ارتباط با Group
+
         public string FullName { get; set; } // نام کامل دانشجو
         public string Email { get; set; } // ایمیل
         public string PhoneNumber { get; set; } // شماره تماس

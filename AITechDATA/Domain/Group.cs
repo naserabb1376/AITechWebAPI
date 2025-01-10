@@ -21,7 +21,8 @@ namespace AITechDATA.Domain
         public ICollection<PreRegistration> PreRegistrations { get; set; } // پیش‌ثبت‌نام‌های مرتبط با گروه
         public long TeacherId { get; set; } // کلید خارجی به استاد
         public User Teacher { get; set; } // ارتباط با استاد
-        public ICollection<User> Students { get; set; } // دانش‌آموزان ثبت‌نام‌شده در گروه
+        public ICollection<UserGroup> Students { get; set; } // دانش‌آموزان ثبت‌نام‌شده در گروه
+        //public ICollection<User> Students { get; set; } // دانش‌آموزان ثبت‌نام‌شده در گروه
     }
 
     // تعریف وضعیت گروه به عنوان یک enum
