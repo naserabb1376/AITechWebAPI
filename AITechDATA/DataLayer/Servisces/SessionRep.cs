@@ -74,7 +74,7 @@ namespace AITechDATA.DataLayer.Servisces
             return result;
         }
 
-        public async Task<ListResultObject<Session>> GetAllSessionsAsync(long groupId = 0, int pageIndex = 1, int pageSize = 20, string searchText = "",string sortQuery ="")
+        public async Task<ListResultObject<Session>> GetAllSessionsAsync(long GroupId = 0, int pageIndex = 1, int pageSize = 20, string searchText = "", string sortQuery = "")
         {
             ListResultObject<Session> results = new ListResultObject<Session>();
             try
@@ -82,9 +82,9 @@ namespace AITechDATA.DataLayer.Servisces
                 var query = _context.Sessions
                     .AsNoTracking()
                     .Where(x =>
-                           (groupId > 0 && x.GroupId == groupId)
-                        || (x.Group.Name.Contains(searchText) ||
-                        x.SessionDate.ToString().Contains(searchText))
+                        (GroupId > 0 && x.GroupId == GroupId) ||
+                        x.Group.Name.Contains(searchText) ||
+                        x.SessionDate.ToString().Contains(searchText)
                     );
 
                 results.TotalCount = query.Count();

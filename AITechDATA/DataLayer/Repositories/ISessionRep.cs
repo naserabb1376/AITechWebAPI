@@ -10,7 +10,7 @@ namespace AITechDATA.DataLayer.Repositories
 {
     public interface ISessionRep
     {
-        Task<ListResultObject<Session>> GetAllSessionsAsync(long groupId= 0,int pageIndex = 1, int pageSize = 20, string searchText = "",string sortQuery ="");
+        Task<ListResultObject<Session>> GetAllSessionsAsync(long GroupId = 0, int pageIndex = 1, int pageSize = 20, string searchText = "", string sortQuery = "");
 
         Task<RowResultObject<Session>> GetSessionByIdAsync(long sessionId);
 

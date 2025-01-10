@@ -74,7 +74,7 @@ namespace AITechDATA.DataLayer.Servisces
             return result;
         }
 
-        public async Task<ListResultObject<UserCourse>> GetAllUserCoursesAsync(int pageIndex = 1, int pageSize = 20, string searchText = "",string sortQuery ="")
+        public async Task<ListResultObject<UserCourse>> GetAllUserCoursesAsync(long UserId = 0, long CourseId = 0, int pageIndex = 1, int pageSize = 20, string searchText = "", string sortQuery = "")
         {
             ListResultObject<UserCourse> results = new ListResultObject<UserCourse>();
             try
@@ -82,6 +82,8 @@ namespace AITechDATA.DataLayer.Servisces
                 var query = _context.UserCourses
                     .AsNoTracking()
                     .Where(x =>
+                        (CourseId > 0 && x.CourseId == CourseId) ||
+                        (UserId > 0 && x.UserId == UserId) ||
                         x.User.FullName.ToString().Contains(searchText) ||
                         x.Course.Title.ToString().Contains(searchText)
                     );

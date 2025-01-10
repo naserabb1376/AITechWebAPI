@@ -11,6 +11,7 @@ using AITechDATA.DataLayer;
 using AITechDATA.ResultObjects;
 using Azure.Core;
 using AITechDATA.Tools;
+
 using AITechDATA.Tools;
 
 namespace Services
@@ -78,11 +79,10 @@ namespace Services
             return result;
         }
 
-        public async Task<RowResultObject<Token>> FindTokenAsync(string Token, string type,bool status = true)
+        public async Task<RowResultObject<Token>> FindTokenAsync(string Token, string type, bool status = true)
         {
             RowResultObject<Token> result = new RowResultObject<Token>();
             var nowDate = DateTime.Now.ToShamsi();
-
 
             try
             {
@@ -90,13 +90,12 @@ namespace Services
                 .AsNoTracking()
                 .SingleOrDefaultAsync(x => x.TokenValue == Token && x.Type.ToLower() == type.ToLower() && x.Status == status);
 
-                var timeDiddrence =  tokenrow.ExpiryDate - nowDate;
+                var timeDiddrence = tokenrow.ExpiryDate - nowDate;
 
                 if (timeDiddrence.TotalMinutes > 0)
                 {
                     result.Result = tokenrow;
                 }
-
             }
             catch (Exception ex)
             {
@@ -106,7 +105,7 @@ namespace Services
             return result;
         }
 
-        public async Task<ListResultObject<Token>> GetAllTokensAsync(int pageIndex = 1, int pageSize = 20, string searchText = "",string sortQuery ="")
+        public async Task<ListResultObject<Token>> GetAllTokensAsync(long UserId = 0, int pageIndex = 1, int pageSize = 20, string searchText = "", string sortQuery = "")
         {
             ListResultObject<Token> results = new ListResultObject<Token>();
             try
@@ -114,6 +113,7 @@ namespace Services
                 var query = _context.Tokens
                 .AsNoTracking()
                 .Where(x =>
+                    (UserId > 0 && x.UserId == UserId) ||
                     (!string.IsNullOrEmpty(x.TokenValue.ToString()) && x.TokenValue.ToString().Contains(searchText)) ||
                     (!string.IsNullOrEmpty(x.Type.ToString()) && x.Type.ToString().Contains(searchText)) ||
 

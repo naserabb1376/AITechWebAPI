@@ -74,7 +74,7 @@ namespace AITechDATA.DataLayer.Servisces
             return result;
         }
 
-        public async Task<ListResultObject<Parent>> GetAllParentsAsync(int pageIndex = 1, int pageSize = 20, string searchText = "",string sortQuery ="")
+        public async Task<ListResultObject<Parent>> GetAllParentsAsync(long StudentDetailsId = 0, int pageIndex = 1, int pageSize = 20, string searchText = "", string sortQuery = "")
         {
             ListResultObject<Parent> results = new ListResultObject<Parent>();
             try
@@ -82,6 +82,7 @@ namespace AITechDATA.DataLayer.Servisces
                 var query = _context.Parents
                     .AsNoTracking()
                     .Where(x =>
+                        (StudentDetailsId > 0 && x.StudentDetailsId == StudentDetailsId) ||
                         (!string.IsNullOrEmpty(x.Name) && x.Name.Contains(searchText)) ||
                         (!string.IsNullOrEmpty(x.Job) && x.Job.Contains(searchText)) ||
                         (!string.IsNullOrEmpty(x.ContactNumber) && x.ContactNumber.Contains(searchText))
