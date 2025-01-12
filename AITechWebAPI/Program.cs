@@ -1,4 +1,6 @@
 
+using AITechDATA.DataLayer.Repositories;
+using AITechDATA.DataLayer.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
@@ -111,7 +113,40 @@ namespace AITechWebAPI
 
             #region ImportDbServices
 
+            builder.Services.AddScoped<IAddressRep, AddressRep>();
+            builder.Services.AddScoped<IAdminReportRep, AdminReportRep>();
+            builder.Services.AddScoped<IAssignmentRep, AssignmentRep>();
+            builder.Services.AddScoped<IAttendanceRep, AttendanceRep>();
+            builder.Services.AddScoped<ICategoryRep, CategoryRep>();
+            builder.Services.AddScoped<ICityRep, CityRep>();
+            builder.Services.AddScoped<ICourseRep, CourseRep>();
+            builder.Services.AddScoped<IEventRep, EventRep>();
             builder.Services.AddScoped<ITokenRep, TokenRep>();
+            builder.Services.AddScoped<IFileUploadRep, FileUploadRep>();
+            builder.Services.AddScoped<IGroupRep, GroupRep>();
+            builder.Services.AddScoped<IImageRep, ImageRep>();
+            builder.Services.AddScoped<ILoginMethodRep, LoginMethodRep>();
+            builder.Services.AddScoped<ILogRep, LogRep>();
+            builder.Services.AddScoped<INewsRep, NewsRep>();
+            builder.Services.AddScoped<INotificationRep, NotificationRep>();
+            builder.Services.AddScoped<IParentRep, ParentRep>();
+            builder.Services.AddScoped<IPaymentHistoryRep, PaymentHistoryRep>();
+            builder.Services.AddScoped<IPermissionRep, PermissionRep>();
+            builder.Services.AddScoped<IPermissionRoleRep, PermissionRoleRep>();
+            builder.Services.AddScoped<IPreRegistrationRep, PreRegistrationRep>();
+            builder.Services.AddScoped<IRoleRep, RoleRep>();
+            builder.Services.AddScoped<ISessionAssignmentRep, SessionAssignmentRep>();
+            builder.Services.AddScoped<ISessionRep, SessionRep>();
+            builder.Services.AddScoped<ISettingRep, SettingRep>();
+            builder.Services.AddScoped<IStudentDetailsRep, StudentDetailsRep>();
+            builder.Services.AddScoped<ITeacherResumeRep, TeacherResumeRep>();
+            builder.Services.AddScoped<ITicketMessageRep, TicketMessageRep>();
+            builder.Services.AddScoped<ITicketRep, TicketRep>();
+            builder.Services.AddScoped<ITokenRep, TokenRep>();
+            builder.Services.AddScoped<IUserCourseRep, UserCourseRep>();
+            builder.Services.AddScoped<IUserGroupRep, UserGroupRep>();
+            builder.Services.AddScoped<IUserRep, UserRep>();
+
 
             #endregion ImportDbServices
 

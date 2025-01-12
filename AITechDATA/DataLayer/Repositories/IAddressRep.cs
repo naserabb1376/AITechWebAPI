@@ -1,27 +1,22 @@
-﻿using System;
+﻿using AITechDATA.Domain;
+using AITechDATA.ResultObjects;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using AITechDATA.Domain;
-using AITechDATA.ResultObjects;
 
 namespace AITechDATA.DataLayer.Repositories
 {
     public interface IAddressRep
     {
-        Task<ListResultObject<Address>> GetAllAddressesAsync(int pageIndex = 1, int pageSize = 20, string searchText = "",string sortQuery ="");
-
-        Task<RowResultObject<Address>> GetAddressByIdAsync(long addressId);
-
-        Task<BitResultObject> AddAddressAsync(Address address);
-
-        Task<BitResultObject> EditAddressAsync(Address address);
-
-        Task<BitResultObject> RemoveAddressAsync(Address address);
-
-        Task<BitResultObject> RemoveAddressAsync(long addressId);
-
-        Task<BitResultObject> ExistAddressAsync(long addressId);
+        public Task<ListResultObject<Address>> GetAllAddressesAsync(long CityId = 0,int pageIndex = 1, int pageSize = 20, string searchText = "",string sortQuery ="");
+        public Task<RowResultObject<Address>> GetAddressByIdAsync(long addressId);
+        public Task<RowResultObject<Address>> GetAddressByPersonIdAsync(long personId);
+        public Task<BitResultObject> AddAddressAsync(Address address);
+        public Task<BitResultObject> EditAddressAsync(Address address);
+        public Task<BitResultObject> RemoveAddressAsync(Address address);
+        public Task<BitResultObject> RemoveAddressAsync(long addressId);
+        public Task<BitResultObject> ExistAddressAsync(long addressId);
     }
 }
