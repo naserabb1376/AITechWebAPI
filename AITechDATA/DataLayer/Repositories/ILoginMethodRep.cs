@@ -10,7 +10,7 @@ namespace AITechDATA.DataLayer.Repositories
 {
     public interface ILoginMethodRep
     {
-        Task<ListResultObject<LoginMethod>> GetAllLoginMethodsAsync(int pageIndex = 1, int pageSize = 20, string searchText = "",string sortQuery ="");
+        Task<ListResultObject<LoginMethod>> GetAllLoginMethodsAsync(long userId=0,int pageIndex = 1, int pageSize = 20, string searchText = "",string sortQuery ="");
 
         Task<RowResultObject<LoginMethod>> GetLoginMethodByIdAsync(long loginMethodId);
 

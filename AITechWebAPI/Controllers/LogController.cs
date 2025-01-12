@@ -1,29 +1,25 @@
-﻿using Domain;
-using Domains;
-using Microsoft.AspNetCore.Authentication;
+﻿using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
-using NobatPlusAPI.Models;
-using NobatPlusAPI.Models.Authenticate;
-using NobatPlusAPI.Models.JobType;
-using NobatPlusAPI.Models.Log;
-using NobatPlusAPI.Models.Public;
-using NobatPlusDATA.DataLayer.Repositories;
-using NobatPlusDATA.DataLayer.Services;
-using NobatPlusDATA.Domain;
-using NobatPlusDATA.ResultObjects;
-using NobatPlusDATA.Tools;
+using AITechWebAPI.Models;
+using AITechWebAPI.Models.Log;
+using AITechWebAPI.Models.Public;
+using AITechDATA.DataLayer.Repositories;
+using AITechDATA.DataLayer.Services;
+using AITechDATA.Domain;
+using AITechDATA.ResultObjects;
+using AITechDATA.Tools;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 
-namespace NobatPlusAPI.Controllers
+namespace AITechWebAPI.Controllers
 {
     [Route("Log")]
     [ApiController]
-    [Authorize]
+    //[Authorize]
     [Produces("application/json")]
 
     public class LogController : ControllerBase
@@ -93,7 +89,7 @@ namespace NobatPlusAPI.Controllers
                 UpdateDate = DateTime.Now.ToShamsi(),
                 ActionName = requestBody.ActionName,
                 LogTime= requestBody.LogTime,
-                Description = requestBody.Description,
+                //Description = requestBody.Description,
             };
             var result = await _LogRep.AddLogAsync(Log);
             if (result.Status)
@@ -125,7 +121,7 @@ namespace NobatPlusAPI.Controllers
                 UpdateDate = DateTime.Now.ToShamsi(),
                 ActionName = requestBody.ActionName,
                 LogTime = requestBody.LogTime,
-                Description = requestBody.Description,
+                //Description = requestBody.Description,
 
             };
             result = await _LogRep.EditLogAsync(Log);

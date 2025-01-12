@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
 using AITechWebAPI.Models;
-using AITechWebAPI.Models.PaymentHistory;
+using AITechWebAPI.Models.Address;
 using AITechWebAPI.Models.Public;
 using AITechDATA.DataLayer.Repositories;
 using AITechDATA.DataLayer.Services;
@@ -14,34 +14,33 @@ using AITechDATA.Tools;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
-using AiTech.Domains;
 
 namespace AITechWebAPI.Controllers
 {
-    [Route("PaymentHistory")]
+    [Route("Address")]
     [ApiController]
     //[Authorize]
     [Produces("application/json")]
 
-    public class PaymentHistoryController : ControllerBase
+    public class AddressController : ControllerBase
     {
-        IPaymentHistoryRep _PaymentHistoryRep;
+        IAddressRep _AddressRep;
         ILogRep _logRep;
 
-        public PaymentHistoryController(IPaymentHistoryRep PaymentHistoryRep,ILogRep logRep)
+        public AddressController(IAddressRep AddressRep,ILogRep logRep)
         {
-           _PaymentHistoryRep = PaymentHistoryRep;
-           _logRep = logRep;
+           _AddressRep = AddressRep;
+            _logRep = logRep;
         }
 
-        [HttpPost("GetAllPaymentHistories_Base")]
-        public async Task<ActionResult<ListResultObject<PaymentHistory>>> GetAllPaymentHistories_Base(GetPaymentHistoryListRequestBody requestBody)
+        [HttpPost("GetAllAddresses_Base")]
+        public async Task<ActionResult<ListResultObject<Address>>> GetAllAddresses_Base(GetAddressListRequestBody requestBody)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(requestBody);
             }
-            var result = await _PaymentHistoryRep.GetAllPaymentHistoriesAsync(requestBody.GroupId,requestBody.UserId,requestBody.PageIndex,requestBody.PageSize,requestBody.SearchText,requestBody.SortQuery);
+            var result = await _AddressRep.GetAllAddressesAsync(requestBody.CityId,requestBody.PageIndex,requestBody.PageSize,requestBody.SearchText,requestBody.SortQuery);
             if (result.Status)
             {
                 return Ok(result);
@@ -49,14 +48,14 @@ namespace AITechWebAPI.Controllers
             return BadRequest(result);
         }
 
-        [HttpPost("GetPaymentHistoryById_Base")]
-        public async Task<ActionResult<RowResultObject<PaymentHistory>>> GetPaymentHistoryById_Base(GetRowRequestBody requestBody)
+        [HttpPost("GetAddressById_Base")]
+        public async Task<ActionResult<RowResultObject<Address>>> GetAddressById_Base(GetRowRequestBody requestBody)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(requestBody);
             }
-            var result = await _PaymentHistoryRep.GetPaymentHistoryByIdAsync(requestBody.ID);
+            var result = await _AddressRep.GetAddressByIdAsync(requestBody.ID);
             if (result.Status)
             {
                 return Ok(result);
@@ -64,14 +63,14 @@ namespace AITechWebAPI.Controllers
             return BadRequest(result);
         }
 
-        [HttpPost("ExistPaymentHistory_Base")]
-        public async Task<ActionResult<BitResultObject>> ExistPaymentHistory_Base(GetRowRequestBody requestBody)
+        [HttpPost("ExistAddress_Base")]
+        public async Task<ActionResult<BitResultObject>> ExistAddress_Base(GetRowRequestBody requestBody)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(requestBody);
             }
-            var result = await _PaymentHistoryRep.ExistPaymentHistoryAsync(requestBody.ID);
+            var result = await _AddressRep.ExistAddressAsync(requestBody.ID);
             if (string.IsNullOrEmpty(result.ErrorMessage))
             {
                 return Ok(result);
@@ -79,24 +78,25 @@ namespace AITechWebAPI.Controllers
             return BadRequest(result);
         }
 
-        [HttpPost("AddPaymentHistory_Base")]
-        public async Task<ActionResult<BitResultObject>> AddPaymentHistory_Base(AddEditPaymentHistoryRequestBody requestBody)
+        [HttpPost("AddAddress_Base")]
+        public async Task<ActionResult<BitResultObject>> AddAddress_Base(AddEditAddressRequestBody requestBody)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(requestBody);
             }
-            PaymentHistory PaymentHistory = new PaymentHistory()
+            Address Address = new Address()
             {
                 CreateDate = DateTime.Now.ToShamsi(),
                 UpdateDate = DateTime.Now.ToShamsi(),
-                GroupId = requestBody.GroupID,
-                Amount = requestBody.Amount,
-                UserId = requestBody.UserID,
-                PaymentDate = requestBody.PaymentDate ?? DateTime.Now.ToShamsi(),
-              //  Description = requestBody.Description,
+                CityID = requestBody.CityID,
+                AddressLocationHorizentalPoint = requestBody.AddressLocationHorizentalPoint,
+                AddressLocationVerticalPoint = requestBody.AddressLocationVerticalPoint,
+                AddressPostalCode = requestBody.AddressPostalCode,
+                AddressStreet = requestBody.AddressStreet,
+                //Description = requestBody.AddressDescription,
             };
-            var result = await _PaymentHistoryRep.AddPaymentHistoryAsync(PaymentHistory);
+            var result = await _AddressRep.AddAddressAsync(Address);
             if (result.Status)
             {
                 #region AddLog
@@ -110,7 +110,6 @@ namespace AITechWebAPI.Controllers
 
                 };
                 await _logRep.AddLogAsync(log);
-
                 #endregion
 
 
@@ -119,33 +118,36 @@ namespace AITechWebAPI.Controllers
             return BadRequest(result);
         }
 
-        [HttpPut("EditPaymentHistory_Base")]
-        public async Task<ActionResult<BitResultObject>> EditPaymentHistory_Base(AddEditPaymentHistoryRequestBody requestBody)
+        [HttpPut("EditAddress_Base")]
+        public async Task<ActionResult<BitResultObject>> EditAddress_Base(AddEditAddressRequestBody requestBody)
         {
             var result = new BitResultObject();
             if (!ModelState.IsValid)
             {
                 return BadRequest(requestBody);
             }
-            var theRow = await _PaymentHistoryRep.GetPaymentHistoryByIdAsync(requestBody.ID);
+
+            var theRow = await _AddressRep.GetAddressByIdAsync(requestBody.ID);
+
             if (!theRow.Status)
             {
                 result.Status = theRow.Status;
                 result.ErrorMessage = theRow.ErrorMessage;
             }
 
-            PaymentHistory PaymentHistory = new PaymentHistory()
+            Address Address = new Address()
             {
-                CreateDate = theRow.Result.CreateDate,
                 UpdateDate = DateTime.Now.ToShamsi(),
-                ID = requestBody.ID,
-                GroupId = requestBody.GroupID,
-                Amount = requestBody.Amount,
-                UserId = requestBody.UserID,
-                PaymentDate = requestBody.PaymentDate ?? DateTime.Now.ToShamsi(),
-               // Description = requestBody.Description,
+                 ID = requestBody.ID,
+                 CreateDate = theRow.Result.CreateDate,
+                CityID = requestBody.CityID,
+                AddressLocationHorizentalPoint = requestBody.AddressLocationHorizentalPoint,
+                AddressLocationVerticalPoint = requestBody.AddressLocationVerticalPoint,
+                AddressPostalCode = requestBody.AddressPostalCode,
+                AddressStreet = requestBody.AddressStreet,
+                //Description = requestBody.AddressDescription,
             };
-            result = await _PaymentHistoryRep.EditPaymentHistoryAsync(PaymentHistory);
+             result = await _AddressRep.EditAddressAsync(Address);
             if (result.Status)
             {
 
@@ -168,14 +170,14 @@ namespace AITechWebAPI.Controllers
             return BadRequest(result);
         }
 
-        [HttpDelete("DeletePaymentHistory_Base")]
-        public async Task<ActionResult<BitResultObject>> DeletePaymentHistory_Base(GetRowRequestBody requestBody)
+        [HttpDelete("DeleteAddress_Base")]
+        public async Task<ActionResult<BitResultObject>> DeleteAddress_Base(GetRowRequestBody requestBody)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(requestBody);
             }
-            var result = await _PaymentHistoryRep.RemovePaymentHistoryAsync(requestBody.ID);
+            var result = await _AddressRep.RemoveAddressAsync(requestBody.ID);
             if (result.Status)
             {
 

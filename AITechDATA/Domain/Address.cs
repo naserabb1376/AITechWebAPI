@@ -1,16 +1,28 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.ComponentModel.DataAnnotations;
 
 namespace AITechDATA.Domain
-{    // Address: جدول آدرس‌ها
+{
     public class Address : BaseEntity
     {
-        public string Street { get; set; } // خیابان
-        public string City { get; set; } // شهر
-        public string State { get; set; } // استان
-        public string PostalCode { get; set; } // کد پستی
+        [Display(Name = "خیابان")]
+        [Required(ErrorMessage = "لطفا {0} را وارد کنید")]
+        [MinLength(100)]
+        public string AddressStreet { get; set; }
+
+        [Display(Name = "کد پستی")]
+        [Required(ErrorMessage = "لطفا {0} را وارد کنید")]
+        [MinLength(10)]
+        public string AddressPostalCode { get; set; }
+
+        [Display(Name = "مختصات افقی")]
+        [MinLength(500)]
+        public string? AddressLocationHorizentalPoint { get; set; }
+
+        [Display(Name = "مختصات عمودی")]
+        [MinLength(500)]
+        public string? AddressLocationVerticalPoint { get; set; }
+
+        public City City { get; set; }
+        public long CityID { get; set; }
     }
 }

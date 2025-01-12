@@ -23,6 +23,7 @@ namespace AITechDATA.Domain
         //public ICollection<Course> CoursesEnrolled { get; set; } // دوره‌هایی که شرکت کرده است
         public ICollection<UserCourse> UserCourses { get; set; } // دوره‌هایی که شرکت یا تدریس کرده است
         public ICollection<UserGroup> UserGroups { get; set; } 
+        public ICollection<LoginMethod> LoginMethods { get; set; } 
         public ICollection<Assignment> Assignments { get; set; } // تمرین‌های ارسال شده توسط کاربر
         public ICollection<Notification> Notifications { get; set; } // اعلان ‌های ارسال شده توسط کاربر
         public ICollection<Event> Events { get; set; } // رویداد‌های ثبت شده توسط کاربر

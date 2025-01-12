@@ -1,28 +1,25 @@
-﻿using Domain;
-using Domains;
-using Microsoft.AspNetCore.Authentication;
+﻿using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
-using NobatPlusAPI.Models;
-using NobatPlusAPI.Models.Authenticate;
-using NobatPlusAPI.Models.Notification;
-using NobatPlusAPI.Models.Public;
-using NobatPlusDATA.DataLayer.Repositories;
-using NobatPlusDATA.DataLayer.Services;
-using NobatPlusDATA.Domain;
-using NobatPlusDATA.ResultObjects;
-using NobatPlusDATA.Tools;
+using AITechWebAPI.Models;
+using AITechWebAPI.Models.Notification;
+using AITechWebAPI.Models.Public;
+using AITechDATA.DataLayer.Repositories;
+using AITechDATA.DataLayer.Services;
+using AITechDATA.Domain;
+using AITechDATA.ResultObjects;
+using AITechDATA.Tools;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 
-namespace NobatPlusAPI.Controllers
+namespace AITechWebAPI.Controllers
 {
     [Route("Notification")]
     [ApiController]
-    [Authorize]
+    //[Authorize]
     [Produces("application/json")]
 
     public class NotificationController : ControllerBase
@@ -43,7 +40,7 @@ namespace NobatPlusAPI.Controllers
             {
                 return BadRequest(requestBody);
             }
-            var result = await _NotificationRep.GetAllNotificationsAsync(requestBody.PersonId,requestBody.PageIndex,requestBody.PageSize,requestBody.SearchText,requestBody.SortQuery);
+            var result = await _NotificationRep.GetAllNotificationsAsync(requestBody.UserId,requestBody.PageIndex,requestBody.PageSize,requestBody.SearchText,requestBody.SortQuery);
             if (result.Status)
             {
                 return Ok(result);
@@ -92,10 +89,11 @@ namespace NobatPlusAPI.Controllers
             {
                 CreateDate = DateTime.Now.ToShamsi(),
                 UpdateDate = DateTime.Now.ToShamsi(),
-                PersonID = requestBody.PersonID,
+                UserId = requestBody.UserID,
                 Message = requestBody.Message,
-                SentDate = requestBody.SentDate ?? DateTime.Now.ToShamsi(),
-                Description = requestBody.Description,
+                IsRead = requestBody.NotificationSeenStatus,
+                //IsRead = requestBody.SentDate ?? DateTime.Now.ToShamsi(),
+               // Description = requestBody.Description,
             };
             var result = await _NotificationRep.AddNotificationAsync(Notification);
             if (result.Status)
@@ -140,10 +138,11 @@ namespace NobatPlusAPI.Controllers
                 CreateDate = theRow.Result.CreateDate,
                 UpdateDate = DateTime.Now.ToShamsi(),
                 ID = requestBody.ID,
-                PersonID = requestBody.PersonID,
+                UserId = requestBody.UserID,
                 Message = requestBody.Message,
-                SentDate = requestBody.SentDate ?? DateTime.Now.ToShamsi(),
-                Description = requestBody.Description,
+                IsRead = requestBody.NotificationSeenStatus,
+                //SentDate = requestBody.SentDate ?? DateTime.Now.ToShamsi(),
+                //Description = requestBody.Description,
             };
             result = await _NotificationRep.EditNotificationAsync(Notification);
             if (result.Status)

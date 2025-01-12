@@ -11,7 +11,7 @@ namespace AITechDATA.Domain
     public class Role : BaseEntity
     {
         public string Name { get; set; } // نام نقش (مثلاً Student, Teacher, Admin)
-        public string Description { get; set; } // توضیحات نقش
+        public string? Description { get; set; } // توضیحات نقش
         public ICollection<User> Users { get; set; } // کاربران مرتبط با نقش
         public ICollection<PermissionRole> PermissionRoles { get; set; } // دسترسی‌های مرتبط با نقش
      

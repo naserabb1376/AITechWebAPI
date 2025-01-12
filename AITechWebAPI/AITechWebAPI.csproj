@@ -8,6 +8,13 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Models\ServiceDiscount\**" />
+    <Content Remove="Models\ServiceDiscount\**" />
+    <EmbeddedResource Remove="Models\ServiceDiscount\**" />
+    <None Remove="Models\ServiceDiscount\**" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Content Remove="DataSetting.json" />
   </ItemGroup>
 

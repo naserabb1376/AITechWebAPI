@@ -17,6 +17,7 @@ namespace AITechDATA.DataLayer
         public DbSet<Assignment> Assignments { get; set; }
         public DbSet<Attendance> Attendances { get; set; }
         public DbSet<Category> Categories { get; set; }
+        public DbSet<City> Cities { get; set; }
         public DbSet<Course> Courses { get; set; }
         public DbSet<Event> Events { get; set; }
         public DbSet<FileUpload> FileUploads { get; set; }
