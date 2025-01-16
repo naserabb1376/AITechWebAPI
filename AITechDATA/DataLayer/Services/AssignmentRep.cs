@@ -20,15 +20,18 @@ namespace AITechDATA.DataLayer.Services
             _context = DbTools.GetDbContext();
         }
 
-        public async Task<BitResultObject> AddAssignmentAsync(Assignment assignment)
+        public async Task<BitResultObject> AddAssignmentsAsync(List<Assignment> assignments)
         {
             BitResultObject result = new BitResultObject();
             try
             {
-                await _context.Assignments.AddAsync(assignment);
+                await _context.Assignments.AddRangeAsync(assignments);
                 await _context.SaveChangesAsync();
-                result.ID = assignment.ID;
-                _context.Entry(assignment).State = EntityState.Detached;
+                result.ID = assignments.FirstOrDefault().ID;
+                foreach (var assignment in assignments)
+                {
+                    _context.Entry(assignment).State = EntityState.Detached;
+                }
             }
             catch (Exception ex)
             {
@@ -38,15 +41,18 @@ namespace AITechDATA.DataLayer.Services
             return result;
         }
 
-        public async Task<BitResultObject> EditAssignmentAsync(Assignment assignment)
+        public async Task<BitResultObject> EditAssignmentsAsync(List<Assignment> assignments)
         {
             BitResultObject result = new BitResultObject();
             try
             {
-                _context.Assignments.Update(assignment);
+                 _context.Assignments.UpdateRange(assignments);
                 await _context.SaveChangesAsync();
-                result.ID = assignment.ID;
-                _context.Entry(assignment).State = EntityState.Detached;
+                result.ID = assignments.FirstOrDefault().ID;
+                foreach (var assignment in assignments)
+                {
+                    _context.Entry(assignment).State = EntityState.Detached;
+                }
             }
             catch (Exception ex)
             {
@@ -74,7 +80,7 @@ namespace AITechDATA.DataLayer.Services
             return result;
         }
 
-        public async Task<ListResultObject<Assignment>> GetAllAssignmentsAsync(long sessionAssignmentId = 0, int pageIndex = 1, int pageSize = 20, string searchText = "", string sortQuery = "")
+        public async Task<ListResultObject<Assignment>> GetAllAssignmentsAsync(long UserId = 0,long sessionAssignmentId = 0, int pageIndex = 1, int pageSize = 20, string searchText = "", string sortQuery = "")
         {
             ListResultObject<Assignment> results = new ListResultObject<Assignment>();
             try
@@ -83,6 +89,7 @@ namespace AITechDATA.DataLayer.Services
                     .AsNoTracking()
                     .Where(x =>
                          (sessionAssignmentId > 0 && x.SessionAssignmentId == sessionAssignmentId) 
+                         || (UserId > 0 && x.UserId == UserId)
                        || ((!string.IsNullOrEmpty(x.Title) && x.Title.Contains(searchText)) ||
                         (!string.IsNullOrEmpty(x.Description) && x.Description.Contains(searchText)))
                     );
@@ -121,15 +128,18 @@ namespace AITechDATA.DataLayer.Services
             return result;
         }
 
-        public async Task<BitResultObject> RemoveAssignmentAsync(Assignment assignment)
+        public async Task<BitResultObject> RemoveAssignmentsAsync(List<Assignment> assignments)
         {
             BitResultObject result = new BitResultObject();
             try
             {
-                _context.Assignments.Remove(assignment);
+                _context.Assignments.RemoveRange(assignments);
                 await _context.SaveChangesAsync();
-                result.ID = assignment.ID;
-                _context.Entry(assignment).State = EntityState.Detached;
+                result.ID = assignments.FirstOrDefault().ID;
+                foreach (var assignment in assignments)
+                {
+                    _context.Entry(assignment).State = EntityState.Detached;
+                }
             }
             catch (Exception ex)
             {
@@ -139,13 +149,31 @@ namespace AITechDATA.DataLayer.Services
             return result;
         }
 
-        public async Task<BitResultObject> RemoveAssignmentAsync(long assignmentId)
+        public async Task<BitResultObject> RemoveAssignmentsAsync(List<long> assignmentIds)
         {
             BitResultObject result = new BitResultObject();
             try
             {
-                var assignment = await GetAssignmentByIdAsync(assignmentId);
-                result = await RemoveAssignmentAsync(assignment.Result);
+                var assignmentsToRemove = new List<Assignment>();
+
+                foreach (var assignmentId in assignmentIds)
+                {
+                    var assignment = await GetAssignmentByIdAsync(assignmentId);
+                    if (assignment.Result != null)
+                    {
+                        assignmentsToRemove.Add(assignment.Result);
+                    }
+                }
+
+                if (assignmentsToRemove.Any())
+                {
+                    result = await RemoveAssignmentsAsync(assignmentsToRemove);
+                }
+                else
+                {
+                    result.Status = false;
+                    result.ErrorMessage = "No matching assignments found to remove.";
+                }
             }
             catch (Exception ex)
             {

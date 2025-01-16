@@ -10,17 +10,17 @@ namespace AITechDATA.DataLayer.Repositories
 {
     public interface IAssignmentRep
     {
-        Task<ListResultObject<Assignment>> GetAllAssignmentsAsync(long sessionAssignmentId = 0, int pageIndex = 1, int pageSize = 20, string searchText = "",string sortQuery ="");
+        Task<ListResultObject<Assignment>> GetAllAssignmentsAsync(long userId=0,long sessionAssignmentId = 0, int pageIndex = 1, int pageSize = 20, string searchText = "",string sortQuery ="");
 
         Task<RowResultObject<Assignment>> GetAssignmentByIdAsync(long assignmentId);
 
-        Task<BitResultObject> AddAssignmentAsync(Assignment assignment);
+        Task<BitResultObject> AddAssignmentsAsync(List<Assignment> assignments);
 
-        Task<BitResultObject> EditAssignmentAsync(Assignment assignment);
+        Task<BitResultObject> EditAssignmentsAsync(List<Assignment> assignments);
 
-        Task<BitResultObject> RemoveAssignmentAsync(Assignment assignment);
+        Task<BitResultObject> RemoveAssignmentsAsync(List<Assignment> assignments);
 
-        Task<BitResultObject> RemoveAssignmentAsync(long assignmentId);
+        Task<BitResultObject> RemoveAssignmentsAsync(List<long> assignmentIds);
 
         Task<BitResultObject> ExistAssignmentAsync(long assignmentId);
     }

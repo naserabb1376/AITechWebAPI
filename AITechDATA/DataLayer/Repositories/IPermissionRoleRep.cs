@@ -14,13 +14,13 @@ namespace AITechDATA.DataLayer.Repositories
 
         Task<RowResultObject<PermissionRole>> GetPermissionRoleByIdAsync(long PermissionRoleId);
 
-        Task<BitResultObject> AddPermissionRoleAsync(PermissionRole PermissionRole);
+        Task<BitResultObject> AddPermissionRolesAsync(List<PermissionRole> PermissionRoles);
 
-        Task<BitResultObject> EditPermissionRoleAsync(PermissionRole PermissionRole);
+        Task<BitResultObject> EditPermissionRolesAsync(List<PermissionRole> PermissionRoles);
 
-        Task<BitResultObject> RemovePermissionRoleAsync(PermissionRole PermissionRole);
+        Task<BitResultObject> RemovePermissionRolesAsync(List<PermissionRole> PermissionRoles);
 
-        Task<BitResultObject> RemovePermissionRoleAsync(long PermissionRoleId);
+        Task<BitResultObject> RemovePermissionRolesAsync(List<long> PermissionRoleIds);
 
         Task<BitResultObject> ExistPermissionRoleAsync(long PermissionRoleId);
     }
