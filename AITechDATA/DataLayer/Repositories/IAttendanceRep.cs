@@ -14,13 +14,13 @@ namespace AITechDATA.DataLayer.Repositories
 
         Task<RowResultObject<Attendance>> GetAttendanceByIdAsync(long attendanceId);
 
-        Task<BitResultObject> AddAttendanceAsync(Attendance attendance);
+        Task<BitResultObject> AddAttendancesAsync(List<Attendance> attendances);
 
-        Task<BitResultObject> EditAttendanceAsync(Attendance attendance);
+        Task<BitResultObject> EditAttendancesAsync(List<Attendance> attendances);
 
-        Task<BitResultObject> RemoveAttendanceAsync(Attendance attendance);
+        Task<BitResultObject> RemoveAttendancesAsync(List<Attendance> attendances);
 
-        Task<BitResultObject> RemoveAttendanceAsync(long attendanceId);
+        Task<BitResultObject> RemoveAttendancesAsync(List<long> attendanceIds);
 
         Task<BitResultObject> ExistAttendanceAsync(long attendanceId);
     }

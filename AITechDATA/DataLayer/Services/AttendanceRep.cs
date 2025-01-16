@@ -20,15 +20,18 @@ namespace AITechDATA.DataLayer.Services
             _context = DbTools.GetDbContext();
         }
 
-        public async Task<BitResultObject> AddAttendanceAsync(Attendance attendance)
+        public async Task<BitResultObject> AddAttendancesAsync(List<Attendance> attendances)
         {
             BitResultObject result = new BitResultObject();
             try
             {
-                await _context.Attendances.AddAsync(attendance);
+                await _context.Attendances.AddRangeAsync(attendances);
                 await _context.SaveChangesAsync();
-                result.ID = attendance.ID;
-                _context.Entry(attendance).State = EntityState.Detached;
+                result.ID = attendances.FirstOrDefault().ID;
+                foreach (var attendance in attendances)
+                {
+                    _context.Entry(attendance).State = EntityState.Detached;
+                }
             }
             catch (Exception ex)
             {
@@ -38,15 +41,18 @@ namespace AITechDATA.DataLayer.Services
             return result;
         }
 
-        public async Task<BitResultObject> EditAttendanceAsync(Attendance attendance)
+        public async Task<BitResultObject> EditAttendancesAsync(List<Attendance> attendances)
         {
             BitResultObject result = new BitResultObject();
             try
             {
-                _context.Attendances.Update(attendance);
+                _context.Attendances.UpdateRange(attendances);
                 await _context.SaveChangesAsync();
-                result.ID = attendance.ID;
-                _context.Entry(attendance).State = EntityState.Detached;
+                result.ID = attendances.FirstOrDefault().ID;
+                foreach (var attendance in attendances)
+                {
+                    _context.Entry(attendance).State = EntityState.Detached;
+                }
             }
             catch (Exception ex)
             {
@@ -122,15 +128,18 @@ namespace AITechDATA.DataLayer.Services
             return result;
         }
 
-        public async Task<BitResultObject> RemoveAttendanceAsync(Attendance attendance)
+        public async Task<BitResultObject> RemoveAttendancesAsync(List<Attendance> attendances)
         {
             BitResultObject result = new BitResultObject();
             try
             {
-                _context.Attendances.Remove(attendance);
+                _context.Attendances.RemoveRange(attendances);
                 await _context.SaveChangesAsync();
-                result.ID = attendance.ID;
-                _context.Entry(attendance).State = EntityState.Detached;
+                result.ID = attendances.FirstOrDefault().ID;
+                foreach (var attendance in attendances)
+                {
+                    _context.Entry(attendance).State = EntityState.Detached;
+                }
             }
             catch (Exception ex)
             {
@@ -140,13 +149,31 @@ namespace AITechDATA.DataLayer.Services
             return result;
         }
 
-        public async Task<BitResultObject> RemoveAttendanceAsync(long attendanceId)
+        public async Task<BitResultObject> RemoveAttendancesAsync(List<long> attendanceIds)
         {
             BitResultObject result = new BitResultObject();
             try
             {
-                var attendance = await GetAttendanceByIdAsync(attendanceId);
-                result = await RemoveAttendanceAsync(attendance.Result);
+                var AttendancesToRemove = new List<Attendance>();
+
+                foreach (var AttendanceId in attendanceIds)
+                {
+                    var Attendance = await GetAttendanceByIdAsync(AttendanceId);
+                    if (Attendance.Result != null)
+                    {
+                        AttendancesToRemove.Add(Attendance.Result);
+                    }
+                }
+
+                if (AttendancesToRemove.Any())
+                {
+                    result = await RemoveAttendancesAsync(AttendancesToRemove);
+                }
+                else
+                {
+                    result.Status = false;
+                    result.ErrorMessage = "No matching Attendances found to remove.";
+                }
             }
             catch (Exception ex)
             {

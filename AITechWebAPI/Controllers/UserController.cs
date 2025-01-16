@@ -177,142 +177,139 @@ namespace AITechWebAPI.Controllers
         }
 
 
-        //[HttpPost("AddUser")]
-        //public async Task<ActionResult<BitResultObject>> AddUser(AddEditUserProRequestBody requestBody)
-        //{
-        //    BitResultObject result = new BitResultObject();
-        //    if (!ModelState.IsValid)
-        //    {
-        //        return BadRequest(requestBody);
-        //    }
+        [HttpPost("AddUser")]
+        public async Task<ActionResult<BitResultObject>> AddUser(AddEditUserProRequestBody requestBody)
+        {
+            BitResultObject result = new BitResultObject();
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(requestBody);
+            }
 
-        //    Address address = new Address()
-        //    {
-        //        CityID = requestBody.CityID,
-        //        AddressLocationHorizentalPoint = requestBody.AddressLocationHorizentalPoint,
-        //        AddressLocationVerticalPoint = requestBody.AddressLocationVerticalPoint,
-        //        AddressPostalCode = requestBody.AddressPostalCode,
-        //        AddressStreet = requestBody.AddressStreet,
-        //       // Description = requestBody.AddressDescription,
-        //        CreateDate = DateTime.Now.ToShamsi(),
-        //        UpdateDate = DateTime.Now.ToShamsi(),
+            Address address = new Address()
+            {
+                CityID = requestBody.CityID,
+                AddressLocationHorizentalPoint = requestBody.AddressLocationHorizentalPoint,
+                AddressLocationVerticalPoint = requestBody.AddressLocationVerticalPoint,
+                AddressPostalCode = requestBody.AddressPostalCode,
+                AddressStreet = requestBody.AddressStreet,
+                // Description = requestBody.AddressDescription,
+                CreateDate = DateTime.Now.ToShamsi(),
+                UpdateDate = DateTime.Now.ToShamsi(),
 
-        //    };
+            };
 
-        //    if (result.Status)
-        //    {
-        //        result = await _addressRep.AddAddressAsync(address);
+            if (result.Status)
+            {
+                result = await _addressRep.AddAddressAsync(address);
 
-        //        User User = new User()
-        //        {
-        //            CreateDate = DateTime.Now.ToShamsi(),
-        //            UpdateDate = DateTime.Now.ToShamsi(),
-        //            AddressID = address.ID,
-        //            DateOfBirth = requestBody.DateOfBirth?.StringToDate(),
-        //            FirstName = requestBody.FirstName,
-        //            LastName = requestBody.LastName,
-        //            Email = requestBody.Email,
-        //            NaCode = requestBody.NaCode,
-        //            PhoneNumber = requestBody.PhoneNumber,
-        //            Description = requestBody.Description,
-        //        };
-        //        result = await _UserRep.AddUserAsync(User);
-        //    }
+                User User = new User()
+                {
+                    CreateDate = DateTime.Now.ToShamsi(),
+                    UpdateDate = DateTime.Now.ToShamsi(),
+                    ID = requestBody.ID,
+                    Email = requestBody.Email,
+                    Username = requestBody.Username,
+                    AddressId = address.ID,
+                    FullName = requestBody.FullName,
+                    PasswordHash = requestBody.Password.ToHash(),
+                    RoleId = requestBody.RoleId,
+                };
+                result = await _UserRep.AddUserAsync(User);
+            }
 
-        //    if (result.Status)
-        //    {
-        //        #region AddLog
+            if (result.Status)
+            {
+                #region AddLog
 
-        //        Log log = new Log()
-        //        {
-        //            CreateDate = DateTime.Now.ToShamsi(),
-        //            UpdateDate = DateTime.Now.ToShamsi(),
-        //            LogTime = DateTime.Now.ToShamsi(),
-        //            ActionName = this.ControllerContext.RouteData.Values["action"].ToString(),
+                Log log = new Log()
+                {
+                    CreateDate = DateTime.Now.ToShamsi(),
+                    UpdateDate = DateTime.Now.ToShamsi(),
+                    LogTime = DateTime.Now.ToShamsi(),
+                    ActionName = this.ControllerContext.RouteData.Values["action"].ToString(),
 
-        //        };
-        //        await _logRep.AddLogAsync(log);
+                };
+                await _logRep.AddLogAsync(log);
 
-        //        #endregion
+                #endregion
 
 
-        //        return Ok(result);
-        //    }
+                return Ok(result);
+            }
 
-        //    return BadRequest(result);
-        //}
+            return BadRequest(result);
+        }
 
-        //[HttpPut("EditUser")]
-        //public async Task<ActionResult<BitResultObject>> EditUser(AddEditUserProRequestBody requestBody)
-        //{
-        //    var result = new BitResultObject();
-        //    if (!ModelState.IsValid)
-        //    {
-        //        return BadRequest(requestBody);
-        //    }
-        //    var theRow = await _UserRep.GetUserByIdAsync(requestBody.ID);
-        //    if (!theRow.Status)
-        //    {
-        //        result.Status = theRow.Status;
-        //        result.ErrorMessage = theRow.ErrorMessage;
-        //    }
+        [HttpPut("EditUser")]
+        public async Task<ActionResult<BitResultObject>> EditUser(AddEditUserProRequestBody requestBody)
+        {
+            var result = new BitResultObject();
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(requestBody);
+            }
+            var theRow = await _UserRep.GetUserByIdAsync(requestBody.ID);
+            if (!theRow.Status)
+            {
+                result.Status = theRow.Status;
+                result.ErrorMessage = theRow.ErrorMessage;
+            }
 
-        //    Address address = new Address()
-        //    {
-        //        CityID = requestBody.CityID,
-        //        ID = theRow.Result.AddressID,
-        //        AddressLocationHorizentalPoint = requestBody.AddressLocationHorizentalPoint,
-        //        AddressLocationVerticalPoint = requestBody.AddressLocationVerticalPoint,
-        //        AddressPostalCode = requestBody.AddressPostalCode,
-        //        AddressStreet = requestBody.AddressStreet,
-        //        Description = requestBody.AddressDescription,
-        //        CreateDate = theRow.Result.Address.CreateDate,
-        //        UpdateDate = DateTime.Now.ToShamsi(),
+            Address address = new Address()
+            {
+                CityID = requestBody.CityID,
+                ID = theRow.Result.AddressId,
+                AddressLocationHorizentalPoint = requestBody.AddressLocationHorizentalPoint,
+                AddressLocationVerticalPoint = requestBody.AddressLocationVerticalPoint,
+                AddressPostalCode = requestBody.AddressPostalCode,
+                AddressStreet = requestBody.AddressStreet,
+                //Description = requestBody.AddressDescription,
+                CreateDate = theRow.Result.Address.CreateDate,
+                UpdateDate = DateTime.Now.ToShamsi(),
 
-        //    };
+            };
 
-        //    if (result.Status)
-        //    {
-        //        result = await _addressRep.EditAddressAsync(address);
+            if (result.Status)
+            {
+                result = await _addressRep.EditAddressAsync(address);
 
-        //        User User = new User()
-        //        {
-        //            CreateDate = theRow.Result.CreateDate,
-        //            UpdateDate = DateTime.Now.ToShamsi(),
-        //            ID = requestBody.ID,
-        //            AddressID = address.ID,
-        //            DateOfBirth = requestBody.DateOfBirth?.StringToDate(),
-        //            FirstName = requestBody.FirstName,
-        //            LastName = requestBody.LastName,
-        //            Email = requestBody.Email,
-        //            NaCode = requestBody.NaCode,
-        //            PhoneNumber = requestBody.PhoneNumber,
-        //            Description = requestBody.Description,
-        //        };
-        //        result = await _UserRep.EditUserAsync(User);
-        //    }
+                User User = new User()
+                {
+                    CreateDate = theRow.Result.CreateDate,
+                    UpdateDate = DateTime.Now.ToShamsi(),
+                    ID = requestBody.ID,
+                    Email = requestBody.Email,
+                    Username = requestBody.Username,
+                    AddressId = address.ID,
+                    FullName = requestBody.FullName,
+                    PasswordHash = requestBody.Password.ToHash(),
+                    RoleId = requestBody.RoleId,
+                };
+                result = await _UserRep.EditUserAsync(User);
+            }
 
-        //    if (result.Status)
-        //    {
+            if (result.Status)
+            {
 
-        //        #region AddLog
+                #region AddLog
 
-        //        Log log = new Log()
-        //        {
-        //            CreateDate = DateTime.Now.ToShamsi(),
-        //            UpdateDate = DateTime.Now.ToShamsi(),
-        //            LogTime = DateTime.Now.ToShamsi(),
-        //            ActionName = this.ControllerContext.RouteData.Values["action"].ToString(),
+                Log log = new Log()
+                {
+                    CreateDate = DateTime.Now.ToShamsi(),
+                    UpdateDate = DateTime.Now.ToShamsi(),
+                    LogTime = DateTime.Now.ToShamsi(),
+                    ActionName = this.ControllerContext.RouteData.Values["action"].ToString(),
 
-        //        };
-        //        await _logRep.AddLogAsync(log);
+                };
+                await _logRep.AddLogAsync(log);
 
-        //        #endregion
+                #endregion
 
-        //        return Ok(result);
-        //    }
-        //    return BadRequest(result);
-        //}
+                return Ok(result);
+            }
+            return BadRequest(result);
+        }
 
 
         [HttpDelete("DeleteUser_Base")]
