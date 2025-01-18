@@ -1,11 +1,11 @@
 ﻿using AITechWebAPI.Models.Public;
 using System.ComponentModel.DataAnnotations;
 
-namespace AITechWebAPI.Models.Notification
+namespace AITechWebAPI.Models.AdminReport
 {
     public class GetAdminReportListRequestBody : GetListRequestBody
     {
-        [Display(Name = "کد شخص")]
-        public long UserId { get; set; } = 0;
+        [Display(Name = "کد کاربری مدیر")]
+        public long AdminId { get; set; } = 0;
     }
 }

@@ -10,7 +10,7 @@ namespace AITechDATA.DataLayer.Repositories
 {
     public interface IGroupRep
     {
-        Task<ListResultObject<Group>> GetAllGroupsAsync(long categoryId = 0, int pageIndex = 1, int pageSize = 20, string searchText = "",string sortQuery ="");
+        Task<ListResultObject<Group>> GetAllGroupsAsync(long courseId = 0, int pageIndex = 1, int pageSize = 20, string searchText = "",string sortQuery ="");
 
         Task<RowResultObject<Group>> GetGroupByIdAsync(long groupId);
 
