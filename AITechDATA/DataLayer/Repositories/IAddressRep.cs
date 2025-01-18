@@ -12,7 +12,7 @@ namespace AITechDATA.DataLayer.Repositories
     {
         public Task<ListResultObject<Address>> GetAllAddressesAsync(long CityId = 0,int pageIndex = 1, int pageSize = 20, string searchText = "",string sortQuery ="");
         public Task<RowResultObject<Address>> GetAddressByIdAsync(long addressId);
-        public Task<RowResultObject<Address>> GetAddressByPersonIdAsync(long personId);
+        public Task<RowResultObject<Address>> GetAddressByUserIdAsync(long UserId);
         public Task<BitResultObject> AddAddressAsync(Address address);
         public Task<BitResultObject> EditAddressAsync(Address address);
         public Task<BitResultObject> RemoveAddressAsync(Address address);

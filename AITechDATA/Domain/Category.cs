@@ -12,9 +12,9 @@ namespace AITechDATA.Domain
         [Display(Name = "نام دسته بندی")]
         public string CategoryName { get; set; }
 
-        public ICollection<Course> Courses { get; set; } // ارتباط یک به چند با Course
-
         [Display(Name = "توضیحات")]
-        public String? CategoryDescription { get; set; }
+        public string? CategoryDescription { get; set; }
+
+        public ICollection<Course> Courses { get; set; } // ارتباط یک به چند با Course
     }
 }

@@ -34,7 +34,7 @@ namespace AITechWebAPI.Controllers
         }
 
         [HttpPost("GetAllNotifications_Base")]
-        public async Task<ActionResult<ListResultObject<Notification>>> GetAllNotifications_Base(GetNotificationListRequestBody requestBody)
+        public async Task<ActionResult<ListResultObject<Notification>>> GetAllNotifications_Base(GetAdminReportListRequestBody requestBody)
         {
             if (!ModelState.IsValid)
             {

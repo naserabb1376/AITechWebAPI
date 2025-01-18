@@ -126,16 +126,16 @@ namespace AITechDATA.DataLayer.Services
             return result;
         }
 
-        public async Task<RowResultObject<Address>> GetAddressByPersonIdAsync(long personId)
+        public async Task<RowResultObject<Address>> GetAddressByUserIdAsync(long UserId)
         {
             RowResultObject<Address> result = new RowResultObject<Address>();
             try
             {
-                var person = await _context.Users
+                var User = await _context.Users
                 .Include(x => x.Address)
                 .AsNoTracking()
-                .SingleOrDefaultAsync(x => x.ID == personId);
-                result.Result = person?.Address;
+                .SingleOrDefaultAsync(x => x.ID == UserId);
+                result.Result = User?.Address;
             }
             catch (Exception ex)
             {
