@@ -74,7 +74,7 @@ namespace AITechDATA.DataLayer.Services
             return result;
         }
 
-        public async Task<ListResultObject<AdminReport>> GetAllAdminReportsAsync(int pageIndex = 1, int pageSize = 20, string searchText = "",string sortQuery ="")
+        public async Task<ListResultObject<AdminReport>> GetAllAdminReportsAsync(long userId = 0, int pageIndex = 1, int pageSize = 20, string searchText = "",string sortQuery ="")
         {
             ListResultObject<AdminReport> results = new ListResultObject<AdminReport>();
             try
@@ -82,9 +82,10 @@ namespace AITechDATA.DataLayer.Services
                 var query = _context.AdminReports
                     .AsNoTracking()
                     .Where(x =>
-                        (!string.IsNullOrEmpty(x.Title) && x.Title.Contains(searchText)) ||
+                        (userId > 0 && x.AdminId == userId)
+                        || ((!string.IsNullOrEmpty(x.Title) && x.Title.Contains(searchText)) ||
                         (!string.IsNullOrEmpty(x.Content) && x.Content.Contains(searchText))
-                    );
+                    ));
 
                 results.TotalCount = query.Count();
                 results.PageCount = DbTools.GetPageCount(results.TotalCount, pageSize);

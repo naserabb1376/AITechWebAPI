@@ -20,15 +20,18 @@ namespace AITechDATA.DataLayer.Services
             _context = DbTools.GetDbContext();
         }
 
-        public async Task<BitResultObject> AddUserGroupAsync(UserGroup UserGroup)
+        public async Task<BitResultObject> AddUserGroupsAsync(List<UserGroup> UserGroups)
         {
             BitResultObject result = new BitResultObject();
             try
             {
-                await _context.UserGroups.AddAsync(UserGroup);
+                await _context.UserGroups.AddRangeAsync(UserGroups);
                 await _context.SaveChangesAsync();
-                result.ID = UserGroup.ID;
-                _context.Entry(UserGroup).State = EntityState.Detached;
+                result.ID = UserGroups.FirstOrDefault().ID;
+                foreach (var UserGroup in UserGroups)
+                {
+                    _context.Entry(UserGroup).State = EntityState.Detached;
+                }
             }
             catch (Exception ex)
             {
@@ -38,15 +41,18 @@ namespace AITechDATA.DataLayer.Services
             return result;
         }
 
-        public async Task<BitResultObject> EditUserGroupAsync(UserGroup UserGroup)
+        public async Task<BitResultObject> EditUserGroupsAsync(List<UserGroup> UserGroups)
         {
             BitResultObject result = new BitResultObject();
             try
             {
-                _context.UserGroups.Update(UserGroup);
+                _context.UserGroups.UpdateRange(UserGroups);
                 await _context.SaveChangesAsync();
-                result.ID = UserGroup.ID;
-                _context.Entry(UserGroup).State = EntityState.Detached;
+                result.ID = UserGroups.FirstOrDefault().ID;
+                foreach (var UserGroup in UserGroups)
+                {
+                    _context.Entry(UserGroup).State = EntityState.Detached;
+                }
             }
             catch (Exception ex)
             {
@@ -74,7 +80,7 @@ namespace AITechDATA.DataLayer.Services
             return result;
         }
 
-        public async Task<ListResultObject<UserGroup>> GetAllUserGroupsAsync(int pageIndex = 1, int pageSize = 20, string searchText = "",string sortQuery ="")
+        public async Task<ListResultObject<UserGroup>> GetAllUserGroupsAsync(long userId = 0, long groupId = 0, int pageIndex = 1, int pageSize = 20, string searchText = "", string sortQuery = "")
         {
             ListResultObject<UserGroup> results = new ListResultObject<UserGroup>();
             try
@@ -82,9 +88,11 @@ namespace AITechDATA.DataLayer.Services
                 var query = _context.UserGroups
                     .AsNoTracking()
                     .Where(x =>
-                        x.User.FullName.ToString().Contains(searchText) ||
+                     (groupId > 0 && x.GroupId == groupId) ||
+                     (userId > 0 && x.UserId == userId) ||
+                       (x.User.FullName.ToString().Contains(searchText) ||
                         x.Group.Name.ToString().Contains(searchText)
-                    );
+                    ));
 
                 results.TotalCount = query.Count();
                 results.PageCount = DbTools.GetPageCount(results.TotalCount, pageSize);
@@ -121,15 +129,18 @@ namespace AITechDATA.DataLayer.Services
             return result;
         }
 
-        public async Task<BitResultObject> RemoveUserGroupAsync(UserGroup UserGroup)
+        public async Task<BitResultObject> RemoveUserGroupsAsync(List<UserGroup> UserGroups)
         {
             BitResultObject result = new BitResultObject();
             try
             {
-                _context.UserGroups.Remove(UserGroup);
+                _context.UserGroups.RemoveRange(UserGroups);
                 await _context.SaveChangesAsync();
-                result.ID = UserGroup.ID;
-                _context.Entry(UserGroup).State = EntityState.Detached;
+                result.ID = UserGroups.FirstOrDefault().ID;
+                foreach (var UserGroup in UserGroups)
+                {
+                    _context.Entry(UserGroup).State = EntityState.Detached;
+                }
             }
             catch (Exception ex)
             {
@@ -139,13 +150,31 @@ namespace AITechDATA.DataLayer.Services
             return result;
         }
 
-        public async Task<BitResultObject> RemoveUserGroupAsync(long UserGroupId)
+        public async Task<BitResultObject> RemoveUserGroupsAsync(List<long> UserGroupIds)
         {
             BitResultObject result = new BitResultObject();
             try
             {
-                var UserGroup = await GetUserGroupByIdAsync(UserGroupId);
-                result = await RemoveUserGroupAsync(UserGroup.Result);
+                var UserGroupsToRemove = new List<UserGroup>();
+
+                foreach (var UserGroupId in UserGroupIds)
+                {
+                    var UserGroup = await GetUserGroupByIdAsync(UserGroupId);
+                    if (UserGroup.Result != null)
+                    {
+                        UserGroupsToRemove.Add(UserGroup.Result);
+                    }
+                }
+
+                if (UserGroupsToRemove.Any())
+                {
+                    result = await RemoveUserGroupsAsync(UserGroupsToRemove);
+                }
+                else
+                {
+                    result.Status = false;
+                    result.ErrorMessage = "No matching UserGroups found to remove.";
+                }
             }
             catch (Exception ex)
             {

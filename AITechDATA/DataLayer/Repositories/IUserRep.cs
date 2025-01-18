@@ -10,7 +10,7 @@ namespace AITechDATA.DataLayer.Repositories
 {
     public interface IUserRep
     {
-        Task<ListResultObject<User>> GetAllUsersAsync(long AddressId = 0, long RoleId = 0, int pageIndex = 1, int pageSize = 20, string searchText = "", string sortQuery = "");
+        Task<ListResultObject<User>> GetAllUsersAsync(long groupId=0,long courseId =0, long sessionAssignmentId=0,long sessionId=0, long AddressId = 0, long RoleId = 0, int pageIndex = 1, int pageSize = 20, string searchText = "", string sortQuery = "");
 
         Task<RowResultObject<User>> GetUserByIdAsync(long userId);
 

@@ -20,15 +20,18 @@ namespace AITechDATA.DataLayer.Services
             _context = DbTools.GetDbContext();
         }
 
-        public async Task<BitResultObject> AddUserCourseAsync(UserCourse UserCourse)
+        public async Task<BitResultObject> AddUserCoursesAsync(List<UserCourse> UserCourses)
         {
             BitResultObject result = new BitResultObject();
             try
             {
-                await _context.UserCourses.AddAsync(UserCourse);
+                await _context.UserCourses.AddRangeAsync(UserCourses);
                 await _context.SaveChangesAsync();
-                result.ID = UserCourse.ID;
-                _context.Entry(UserCourse).State = EntityState.Detached;
+                result.ID = UserCourses.FirstOrDefault().ID;
+                foreach (var UserCourse in UserCourses)
+                {
+                    _context.Entry(UserCourse).State = EntityState.Detached;
+                }
             }
             catch (Exception ex)
             {
@@ -38,15 +41,18 @@ namespace AITechDATA.DataLayer.Services
             return result;
         }
 
-        public async Task<BitResultObject> EditUserCourseAsync(UserCourse UserCourse)
+        public async Task<BitResultObject> EditUserCoursesAsync(List<UserCourse> UserCourses)
         {
             BitResultObject result = new BitResultObject();
             try
             {
-                _context.UserCourses.Update(UserCourse);
+                 _context.UserCourses.UpdateRange(UserCourses);
                 await _context.SaveChangesAsync();
-                result.ID = UserCourse.ID;
-                _context.Entry(UserCourse).State = EntityState.Detached;
+                result.ID = UserCourses.FirstOrDefault().ID;
+                foreach (var UserCourse in UserCourses)
+                {
+                    _context.Entry(UserCourse).State = EntityState.Detached;
+                }
             }
             catch (Exception ex)
             {
@@ -84,9 +90,9 @@ namespace AITechDATA.DataLayer.Services
                     .Where(x =>
                         (CourseId > 0 && x.CourseId == CourseId) ||
                         (UserId > 0 && x.UserId == UserId) ||
-                        x.User.FullName.ToString().Contains(searchText) ||
+                       ( x.User.FullName.ToString().Contains(searchText) ||
                         x.Course.Title.ToString().Contains(searchText)
-                    );
+                    ));
 
                 results.TotalCount = query.Count();
                 results.PageCount = DbTools.GetPageCount(results.TotalCount, pageSize);
@@ -123,15 +129,18 @@ namespace AITechDATA.DataLayer.Services
             return result;
         }
 
-        public async Task<BitResultObject> RemoveUserCourseAsync(UserCourse UserCourse)
+        public async Task<BitResultObject> RemoveUserCoursesAsync(List<UserCourse> UserCourses)
         {
             BitResultObject result = new BitResultObject();
             try
             {
-                _context.UserCourses.Remove(UserCourse);
+                 _context.UserCourses.RemoveRange(UserCourses);
                 await _context.SaveChangesAsync();
-                result.ID = UserCourse.ID;
-                _context.Entry(UserCourse).State = EntityState.Detached;
+                result.ID = UserCourses.FirstOrDefault().ID;
+                foreach (var UserCourse in UserCourses)
+                {
+                    _context.Entry(UserCourse).State = EntityState.Detached;
+                }
             }
             catch (Exception ex)
             {
@@ -141,13 +150,31 @@ namespace AITechDATA.DataLayer.Services
             return result;
         }
 
-        public async Task<BitResultObject> RemoveUserCourseAsync(long UserCourseId)
+        public async Task<BitResultObject> RemoveUserCoursesAsync(List<long> UserCourseIds)
         {
             BitResultObject result = new BitResultObject();
             try
             {
-                var UserCourse = await GetUserCourseByIdAsync(UserCourseId);
-                result = await RemoveUserCourseAsync(UserCourse.Result);
+                var UserCoursesToRemove = new List<UserCourse>();
+
+                foreach (var UserCourseId in UserCourseIds)
+                {
+                    var UserCourse = await GetUserCourseByIdAsync(UserCourseId);
+                    if (UserCourse.Result != null)
+                    {
+                        UserCoursesToRemove.Add(UserCourse.Result);
+                    }
+                }
+
+                if (UserCoursesToRemove.Any())
+                {
+                    result = await RemoveUserCoursesAsync(UserCoursesToRemove);
+                }
+                else
+                {
+                    result.Status = false;
+                    result.ErrorMessage = "No matching UserCourses found to remove.";
+                }
             }
             catch (Exception ex)
             {

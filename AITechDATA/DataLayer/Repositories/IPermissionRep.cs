@@ -10,7 +10,7 @@ namespace AITechDATA.DataLayer.Repositories
 {
     public interface IPermissionRep
     {
-        Task<ListResultObject<Permission>> GetAllPermissionsAsync(int pageIndex = 1, int pageSize = 20, string searchText = "",string sortQuery ="");
+        Task<ListResultObject<Permission>> GetAllPermissionsAsync(long roleId =0,int pageIndex = 1, int pageSize = 20, string searchText = "",string sortQuery ="");
 
         Task<RowResultObject<Permission>> GetPermissionByIdAsync(long permissionId);
 

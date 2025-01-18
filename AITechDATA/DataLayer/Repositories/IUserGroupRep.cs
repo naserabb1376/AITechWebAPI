@@ -10,17 +10,18 @@ namespace AITechDATA.DataLayer.Repositories
 {
     public interface IUserGroupRep
     {
-        Task<ListResultObject<UserGroup>> GetAllUserGroupsAsync(int pageIndex = 1, int pageSize = 20, string searchText = "",string sortQuery ="");
+        Task<ListResultObject<UserGroup>> GetAllUserGroupsAsync(long userId=0,long groupId=0,int pageIndex = 1, int pageSize = 20, string searchText = "",string sortQuery ="");
 
         Task<RowResultObject<UserGroup>> GetUserGroupByIdAsync(long UserGroupId);
 
-        Task<BitResultObject> AddUserGroupAsync(UserGroup UserGroup);
 
-        Task<BitResultObject> EditUserGroupAsync(UserGroup UserGroup);
+        Task<BitResultObject> AddUserGroupsAsync(List<UserGroup> UserGroups);
 
-        Task<BitResultObject> RemoveUserGroupAsync(UserGroup UserGroup);
+        Task<BitResultObject> EditUserGroupsAsync(List<UserGroup> UserGroups);
 
-        Task<BitResultObject> RemoveUserGroupAsync(long UserGroupId);
+        Task<BitResultObject> RemoveUserGroupsAsync(List<UserGroup> UserGroups);
+
+        Task<BitResultObject> RemoveUserGroupsAsync(List<long> UserGroupIds);
 
         Task<BitResultObject> ExistUserGroupAsync(long UserGroupId);
     }
