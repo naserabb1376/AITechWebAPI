@@ -74,17 +74,30 @@ namespace AITechDATA.DataLayer.Services
             return result;
         }
 
-        public async Task<ListResultObject<Role>> GetAllRolesAsync(int pageIndex = 1, int pageSize = 20, string searchText = "",string sortQuery ="")
+        public async Task<ListResultObject<Role>> GetAllRolesAsync(long permissionId=0,int pageIndex = 1, int pageSize = 20, string searchText = "",string sortQuery ="")
         {
             ListResultObject<Role> results = new ListResultObject<Role>();
             try
             {
-                var query = _context.Roles
-                    .AsNoTracking()
-                    .Where(x =>
+                IQueryable<Role> query;
+                if (permissionId > 0)
+                {
+                    query = _context.PermissionRoles.Where(x => x.PerrmissionId == permissionId).Select(x => x.Role)
+                   .AsNoTracking()
+                   .Where(x =>
                         (!string.IsNullOrEmpty(x.Name) && x.Name.Contains(searchText)) ||
-                        (!string.IsNullOrEmpty(x.Description) && x.Description.Contains(searchText))
-                    );
+                       (!string.IsNullOrEmpty(x.Description) && x.Description.Contains(searchText))
+                   );
+                }
+               else
+                {
+                    query = _context.Roles
+                   .AsNoTracking()
+                   .Where(x =>
+                       (!string.IsNullOrEmpty(x.Name) && x.Name.Contains(searchText)) ||
+                       (!string.IsNullOrEmpty(x.Description) && x.Description.Contains(searchText))
+                   );
+                }
 
                 results.TotalCount = query.Count();
                 results.PageCount = DbTools.GetPageCount(results.TotalCount, pageSize);

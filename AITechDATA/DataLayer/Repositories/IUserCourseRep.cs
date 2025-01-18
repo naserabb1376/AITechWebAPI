@@ -9,13 +9,13 @@ namespace AITechDATA.DataLayer.Repositories
 
         Task<RowResultObject<UserCourse>> GetUserCourseByIdAsync(long UserCourseId);
 
-        Task<BitResultObject> AddUserCourseAsync(UserCourse UserCourse);
+        Task<BitResultObject> AddUserCoursesAsync(List<UserCourse> UserCourses);
 
-        Task<BitResultObject> EditUserCourseAsync(UserCourse UserCourse);
+        Task<BitResultObject> EditUserCoursesAsync(List<UserCourse> UserCourses);
 
-        Task<BitResultObject> RemoveUserCourseAsync(UserCourse UserCourse);
+        Task<BitResultObject> RemoveUserCoursesAsync(List<UserCourse> UserCourses);
 
-        Task<BitResultObject> RemoveUserCourseAsync(long UserCourseId);
+        Task<BitResultObject> RemoveUserCoursesAsync(List<long> UserCourseIds);
 
         Task<BitResultObject> ExistUserCourseAsync(long UserCourseId);
     }
