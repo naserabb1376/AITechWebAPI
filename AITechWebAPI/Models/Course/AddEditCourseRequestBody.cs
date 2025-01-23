@@ -2,7 +2,7 @@
 
 namespace AITechWebAPI.Models.Course
 {
-    public class AddEditACourseRequestBody
+    public class AddEditCourseRequestBody
     {
         public long ID { get; set; } = 0;
 

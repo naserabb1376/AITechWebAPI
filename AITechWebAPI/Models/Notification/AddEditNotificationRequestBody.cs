@@ -6,7 +6,7 @@ namespace AITechWebAPI.Models.Notification
     {
         public long ID { get; set; } = 0;
 
-        [Display(Name = "کد شخص")]
+        [Display(Name = "کد کاربر")]
         [Required(ErrorMessage = "لطفا {0} را وارد کنید")]
         [Range(1, long.MaxValue, ErrorMessage = "مقدار {0} باید بزرگتر از 0 باشد")]
         public long UserID { get; set; }
