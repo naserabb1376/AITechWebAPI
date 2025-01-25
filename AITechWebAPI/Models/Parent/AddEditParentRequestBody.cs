@@ -16,6 +16,9 @@ namespace AITechWebAPI.Models.Parent
 
         [Display(Name = "شماره تماس ولی")]
         [Required(ErrorMessage = "لطفا {0} را وارد کنید")]
+        [RegularExpression(@"^([0-9]{11})$", ErrorMessage = "مقدار {0} باید 11 رقمی و فقط شامل اعداد باشد")]
+        [MaxLength(11)]
+
         public string ContactNumber { get; set; }
 
         [Display(Name = "کد دانش آموز")]

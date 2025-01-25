@@ -1,4 +1,5 @@
-﻿using System;
+﻿using AITechDATA.Domain;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -13,5 +14,6 @@ namespace AITechDATA.ResultObjects
         public int TotalCount { get; set; } = 0;
         public int PageCount { get; set; } = 0;
         public List<T> Results { get; set; } = new List<T>();
+        public List<Image> Images { get; set; } = new List<Image>();
     }
 }
