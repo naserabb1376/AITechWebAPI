@@ -1,4 +1,5 @@
-﻿using System;
+﻿using AITechDATA.Tools;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -14,6 +15,6 @@ namespace AITechDATA.Domain
         public string FullName { get; set; } // نام کامل دانشجو
         public string Email { get; set; } // ایمیل
         public string PhoneNumber { get; set; } // شماره تماس
-        public DateTime RegistrationDate { get; set; } = DateTime.Now; // تاریخ ثبت‌نام
+        public DateTime RegistrationDate { get; set; } = DateTime.Now.ToShamsi(); // تاریخ ثبت‌نام
     }
 }
