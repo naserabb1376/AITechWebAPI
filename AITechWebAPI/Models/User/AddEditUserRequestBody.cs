@@ -46,6 +46,7 @@ namespace AITechWebAPI.Models.User
 
         [Display(Name = "نام کاربری")]
         [Required(ErrorMessage = "لطفا {0} را وارد کنید")]
+       // [RegularExpression(@"^([0-9]{11})$", ErrorMessage = "مقدار {0} باید 11 رقمی و فقط شامل اعداد باشد")]
         public string Username { get; set; }
 
         [Display(Name = "کلمه عبور")]
@@ -83,6 +84,7 @@ namespace AITechWebAPI.Models.User
 
         [Display(Name = "نام کاربری")]
         [Required(ErrorMessage = "لطفا {0} را وارد کنید")]
+       // [RegularExpression(@"^([0-9]{11})$", ErrorMessage = "مقدار {0} باید 11 رقمی و فقط شامل اعداد باشد")]
         public string Username { get; set; }
 
         [Display(Name = "کلمه عبور")]
