@@ -12,6 +12,5 @@ namespace AITechDATA.ResultObjects
         public bool Status { get; set; } = true;
         public string ErrorMessage { get; set; } = "";
         public T Result { get; set; }
-        public Image Image { get; set; } = new Image();
     }
 }

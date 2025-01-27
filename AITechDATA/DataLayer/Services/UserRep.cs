@@ -175,6 +175,16 @@ namespace AITechDATA.DataLayer.Services
                     .Include(x => x.Assignments)
                     .Include(x => x.StudentDetails)
                     .ToListAsync();
+
+
+                // Map images for each user
+                results.ResultImages = results.Results
+                    .ToDictionary(
+                        user => user,
+                        user => _context.Images
+                            .Where(img => img.ForeignKeyId == user.ID && img.EntityType == "User")
+                            .ToList()
+                    );
             }
             catch (Exception ex)
             {
