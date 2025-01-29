@@ -22,6 +22,6 @@ namespace AITechWebAPI.Models.PaymentHistory
 
         [Display(Name = "تاریخ پرداخت")]
         [Required(ErrorMessage = "لطفا {0} را وارد کنید")]
-        public DateTime? PaymentDate { get; set; }
+        public string? PaymentDate { get; set; }
     }
 }

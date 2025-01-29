@@ -1,9 +1,9 @@
 ﻿using AITechWebAPI.Models.Public;
 using System.ComponentModel.DataAnnotations;
 
-namespace AITechWebAPI.Models.Login
+namespace AITechWebAPI.Models.LoginMethod
 {
-    public class GetLoginRowRequestBody : GetRowRequestBody
+    public class GetLoginMethodRowRequestBody : GetRowRequestBody
     {
         
 

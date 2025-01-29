@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using AITechDATA.CustomResponses;
 
 namespace AITechDATA.DataLayer.Services
 {
@@ -95,9 +96,85 @@ namespace AITechDATA.DataLayer.Services
             return result;
         }
 
-        public async Task<ListResultObject<User>> GetAllUsersAsync(long groupId=0,long courseId=0,long sessionAssignmentId = 0, long sessionId = 0, long AddressId = 0, long RoleId = 0, int pageIndex = 1, int pageSize = 20, string searchText = "", string sortQuery = "")
+        public async Task<RowResultObject<User>> AuthenticateAsync(string userName, string password, int loginType)
         {
-            ListResultObject<User> results = new ListResultObject<User>();
+            RowResultObject<User> result = new RowResultObject<User>();
+            try
+            {
+                switch (loginType)
+                {
+                    default:
+                    case 1:
+                        {
+                            result.Status = await _context.Users
+               .AsNoTracking()
+               .AnyAsync(x => x.Username == userName && x.PasswordHash == password.ToHash());
+                            if (result.Status)
+                            {
+                                var loginRow = await _context.Users
+                            .AsNoTracking()
+                            .SingleOrDefaultAsync(x => x.Username == userName && x.PasswordHash == password.ToHash());
+                                if (loginRow != null)
+                                {
+                                    result.Result = loginRow;
+                                    result.ErrorMessage = $"احراز هویت موفق بود";
+                                }
+                                else
+                                {
+                                    result.Status = false;
+                                    result.ErrorMessage = $"احراز هویت ناموفق بود";
+
+                                }
+
+                            }
+                            else
+                            {
+                                result.ErrorMessage = $"احراز هویت ناموفق بود";
+                            }
+                        }
+                        break;
+                    case 2:
+                        {
+                            result.Status = await _context.Users
+               .AsNoTracking()
+               .AnyAsync(x =>x.Username == userName);
+                            if (result.Status)
+                            {
+                                var loginRow = await _context.Users
+               .AsNoTracking()
+               .SingleOrDefaultAsync(x => x.Username== userName);
+                                if (loginRow != null)
+                                {
+                                    result.Result = loginRow;
+                                    result.ErrorMessage = $"احراز هویت موفق بود";
+                                }
+                                else
+                                {
+                                    result.Status = false;
+                                    result.ErrorMessage = $"احراز هویت ناموفق بود";
+                                }
+
+                            }
+                            else
+                            {
+                                result.ErrorMessage = $"احراز هویت ناموفق بود";
+                            }
+                        }
+                        break;
+                }
+
+            }
+            catch (Exception ex)
+            {
+                result.Status = false;
+                result.ErrorMessage = $"{ex.Message} - {ex.InnerException?.Message}";
+            }
+            return result;
+        }
+
+        public async Task<UserListCustomResponse<User>> GetAllUsersAsync(long groupId=0,long courseId=0,long sessionAssignmentId = 0, long sessionId = 0, long AddressId = 0, long RoleId = 0, int pageIndex = 1, int pageSize = 20, string searchText = "", string sortQuery = "")
+        {
+            UserListCustomResponse<User> results = new UserListCustomResponse<User>();
             try
             {
                 IQueryable<User> query;
@@ -194,9 +271,9 @@ namespace AITechDATA.DataLayer.Services
             return results;
         }
 
-        public async Task<RowResultObject<User>> GetUserByIdAsync(long userId)
+        public async Task<UserRowCustomResponse<User>> GetUserByIdAsync(long userId)
         {
-            RowResultObject<User> result = new RowResultObject<User>();
+            UserRowCustomResponse<User> result = new UserRowCustomResponse<User>();
             try
             {
                 result.Result = await _context.Users
@@ -209,6 +286,17 @@ namespace AITechDATA.DataLayer.Services
                     .Include(x => x.Assignments)
                     .Include(x => x.StudentDetails)
                     .SingleOrDefaultAsync(x => x.ID == userId);
+
+                // اگر کاربر وجود داشت، لیست تصاویرش را دریافت کن
+                if (result.Result != null)
+                {
+                    result.ResultImages = new Dictionary<User, List<Image>?>
+            {
+                { result.Result, await _context.Images
+                    .Where(img => img.ForeignKeyId == userId && img.EntityType == "User")
+                    .ToListAsync() }
+            };
+                }
             }
             catch (Exception ex)
             {
@@ -223,6 +311,11 @@ namespace AITechDATA.DataLayer.Services
             BitResultObject result = new BitResultObject();
             try
             {
+
+                // حذف تصاویر مرتبط با کاربر
+                var userImages = _context.Images.Where(img => img.ForeignKeyId == user.ID && img.EntityType == "User");
+                _context.Images.RemoveRange(userImages);
+
                 _context.Users.Remove(user);
                 await _context.SaveChangesAsync();
                 result.ID = user.ID;

@@ -74,7 +74,7 @@ namespace AITechDATA.DataLayer.Services
             return result;
         }
 
-        public async Task<ListResultObject<Group>> GetAllGroupsAsync(long courseId=0,int pageIndex = 1, int pageSize = 20, string searchText = "",string sortQuery ="")
+        public async Task<ListResultObject<Group>> GetAllGroupsAsync(long courseId=0,string groupStatus = "", int pageIndex = 1, int pageSize = 20, string searchText = "",string sortQuery ="")
         {
             ListResultObject<Group> results = new ListResultObject<Group>();
             try
@@ -82,7 +82,10 @@ namespace AITechDATA.DataLayer.Services
                 var query = _context.Groups
                     .AsNoTracking()
                     .Where(x =>
-                        (courseId > 0 && x.CourseId == courseId)
+                       ( 
+                       (courseId > 0 && x.CourseId == courseId)
+                       || (!string.IsNullOrEmpty(groupStatus) && x.Status == (GroupStatus)Enum.Parse(typeof(GroupStatus), groupStatus))
+                       )
                         || ((!string.IsNullOrEmpty(x.Name) && x.Name.Contains(searchText)) ||
                         (x.Teacher.FullName.Contains(searchText)))
                     );

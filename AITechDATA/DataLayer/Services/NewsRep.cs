@@ -9,6 +9,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using AITechDATA.Domain;
+using System.Net.Sockets;
+using AITechDATA.CustomResponses;
 
 namespace AITechDATA.DataLayer.Services
 {
@@ -75,9 +77,9 @@ namespace AITechDATA.DataLayer.Services
             return result;
         }
 
-        public async Task<ListResultObject<News>> GetAllNewsAsync(long userId = 0, int pageIndex = 1, int pageSize = 20, string searchText = "",string sortQuery ="")
+        public async Task<NewsListCustomResponse<News>> GetAllNewsAsync(long userId = 0, int pageIndex = 1, int pageSize = 20, string searchText = "",string sortQuery ="")
         {
-            ListResultObject<News> results = new ListResultObject<News>();
+            NewsListCustomResponse<News> results = new NewsListCustomResponse<News>();
             try
             {
                 var query = _context.News
@@ -95,6 +97,14 @@ namespace AITechDATA.DataLayer.Services
                 results.Results = await query.OrderByDescending(x => x.PublishDate)
                      .SortBy(sortQuery).ToPaging(pageIndex, pageSize)
                     .ToListAsync();
+
+                results.ResultImages = results.Results
+    .ToDictionary(
+        user => user,
+        user => _context.Images
+            .Where(img => img.ForeignKeyId == user.ID && img.EntityType == "News")
+            .ToList()
+    );
             }
             catch (Exception ex)
             {
@@ -104,14 +114,24 @@ namespace AITechDATA.DataLayer.Services
             return results;
         }
 
-        public async Task<RowResultObject<News>> GetNewsByIdAsync(long newsId)
+        public async Task<NewsRowCustomResponse<News>> GetNewsByIdAsync(long newsId)
         {
-            RowResultObject<News> result = new RowResultObject<News>();
+            NewsRowCustomResponse<News> result = new NewsRowCustomResponse<News>();
             try
             {
                 result.Result = await _context.News
                     .AsNoTracking()
                     .SingleOrDefaultAsync(x => x.ID == newsId);
+
+                if (result.Result != null)
+                {
+                    result.ResultImages = new Dictionary<News, List<Image>?>
+{
+    { result.Result, await _context.Images
+        .Where(img => img.ForeignKeyId == newsId && img.EntityType == "News")
+        .ToListAsync() }
+};
+                }
             }
             catch (Exception ex)
             {
@@ -126,6 +146,9 @@ namespace AITechDATA.DataLayer.Services
             BitResultObject result = new BitResultObject();
             try
             {
+                var Images = _context.Images.Where(img => img.ForeignKeyId == news.ID && img.EntityType == "News");
+                _context.Images.RemoveRange(Images);
+
                 _context.News.Remove(news);
                 await _context.SaveChangesAsync();
                 result.ID = news.ID;

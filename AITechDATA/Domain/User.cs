@@ -25,8 +25,10 @@ namespace AITechDATA.Domain
         public ICollection<UserGroup> UserGroups { get; set; } 
         public ICollection<LoginMethod> LoginMethods { get; set; } 
         public ICollection<Assignment> Assignments { get; set; } // تمرین‌های ارسال شده توسط کاربر
+        public ICollection<Attendance> Attendances { get; set; } // حضور و غیاب هر کاربر
         public ICollection<Notification> Notifications { get; set; } // اعلان ‌های ارسال شده توسط کاربر
         public ICollection<Event> Events { get; set; } // رویداد‌های ثبت شده توسط کاربر
+        public ICollection<TicketMessage> TicketMessages { get; set; } // پاسخ تیکت‌های ثبت شده توسط مدیر
         public ICollection<News> News { get; set; } // اخبار ثبت شده توسط کاربر
         public StudentDetails StudentDetails { get; set; } // جزئیات دانش‌آموز
     }

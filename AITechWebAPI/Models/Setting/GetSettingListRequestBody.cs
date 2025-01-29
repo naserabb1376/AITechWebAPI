@@ -7,5 +7,8 @@ namespace AITechWebAPI.Models.Setting
     {
         [Display(Name = "کد والد")]
         public long ParentId { get; set; } = 0;
+
+        [Display(Name = "کلید")]
+        public string Key { get; set; } = "";
     }
 }

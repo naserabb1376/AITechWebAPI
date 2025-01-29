@@ -178,11 +178,13 @@ namespace AITechDATA.Tools
             return summary;
         }
 
-        public static DateTime? StringToDate(this string stringDate)
+        public static DateTime StringToDate(this string stringDateTime)
         {
-            if (string.IsNullOrEmpty(stringDate)) return null;
-            var arr = stringDate.Split('/');
-            var date = new DateTime(int.Parse(arr[0]), int.Parse(arr[1]), int.Parse(arr[2]));
+            if (string.IsNullOrEmpty(stringDateTime)) return DateTime.Now.ToShamsi();
+            var arr = stringDateTime.Split(' ');
+            var stringDateArr = arr[0].Split('/');
+            var stringTimeArr = arr[1].Split(':');
+            var date = new DateTime(int.Parse(stringDateArr[0]), int.Parse(stringDateArr[1]), int.Parse(stringDateArr[2]), int.Parse(stringTimeArr[0]), int.Parse(stringTimeArr[1]), int.Parse(stringTimeArr[2]),0);
             return date;
         }
 
@@ -191,6 +193,16 @@ namespace AITechDATA.Tools
             if (date == null) return "";
             string stringDate = $"{date?.Year}/{date?.Month}/{date?.Day} {date?.Hour}:{date?.Minute}";
             return stringDate;
+        }
+
+        public static TimeSpan StringToTimeSpan(this string time)
+        {
+            return TimeSpan.ParseExact(time, @"hh\:mm\:ss", CultureInfo.InvariantCulture);
+        }
+
+        public static string TimeSpanToString(this TimeSpan timeSpan)
+        {
+            return timeSpan.ToString(@"hh\:mm\:ss");
         }
     }
 }

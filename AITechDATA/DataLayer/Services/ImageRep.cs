@@ -8,6 +8,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using AITechDATA.Domain;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
 
 namespace AITechDATA.DataLayer.Services
 {
@@ -20,15 +21,18 @@ namespace AITechDATA.DataLayer.Services
             _context = DbTools.GetDbContext();
         }
 
-        public async Task<BitResultObject> AddImageAsync(Image image)
+        public async Task<BitResultObject> AddImagesAsync(List<Image> images)
         {
             BitResultObject result = new BitResultObject();
             try
             {
-                await _context.Images.AddAsync(image);
+               await _context.Images.AddRangeAsync(images);
                 await _context.SaveChangesAsync();
-                result.ID = image.ID;
-                _context.Entry(image).State = EntityState.Detached;
+                result.ID = images.FirstOrDefault().ID;
+                foreach (var image in images)
+                {
+                    _context.Entry(image).State = EntityState.Detached;
+                }
             }
             catch (Exception ex)
             {
@@ -38,15 +42,18 @@ namespace AITechDATA.DataLayer.Services
             return result;
         }
 
-        public async Task<BitResultObject> EditImageAsync(Image image)
+        public async Task<BitResultObject> EditImagesAsync(List<Image> images)
         {
             BitResultObject result = new BitResultObject();
             try
             {
-                _context.Images.Update(image);
+                _context.Images.UpdateRange(images);
                 await _context.SaveChangesAsync();
-                result.ID = image.ID;
-                _context.Entry(image).State = EntityState.Detached;
+                result.ID = images.FirstOrDefault().ID;
+                foreach (var image in images)
+                {
+                    _context.Entry(image).State = EntityState.Detached;
+                }
             }
             catch (Exception ex)
             {
@@ -74,7 +81,7 @@ namespace AITechDATA.DataLayer.Services
             return result;
         }
 
-        public async Task<ListResultObject<Image>> GetAllImagesAsync(int pageIndex = 1, int pageSize = 20, string searchText = "",string sortQuery ="")
+        public async Task<ListResultObject<Image>> GetAllImagesAsync(string entityType = "", long foreignKey = 0, int pageIndex = 1, int pageSize = 20, string searchText = "",string sortQuery ="")
         {
             ListResultObject<Image> results = new ListResultObject<Image>();
             try
@@ -82,10 +89,14 @@ namespace AITechDATA.DataLayer.Services
                 var query = _context.Images
                     .AsNoTracking()
                     .Where(x =>
-                        (!string.IsNullOrEmpty(x.FileName) && x.FileName.Contains(searchText)) ||
+                        (
+                    (foreignKey > 0 && x.ForeignKeyId == foreignKey) ||
+                    (!string.IsNullOrEmpty(entityType) && x.EntityType == entityType)
+                        ) ||
+                       ((!string.IsNullOrEmpty(x.FileName) && x.FileName.Contains(searchText)) ||
                         (!string.IsNullOrEmpty(x.Description) && x.Description.Contains(searchText)) ||
                         (!string.IsNullOrEmpty(x.EntityType) && x.EntityType.Contains(searchText))
-                    );
+                    ));
 
                 results.TotalCount = query.Count();
                 results.PageCount = DbTools.GetPageCount(results.TotalCount, pageSize);
@@ -118,15 +129,18 @@ namespace AITechDATA.DataLayer.Services
             return result;
         }
 
-        public async Task<BitResultObject> RemoveImageAsync(Image image)
+        public async Task<BitResultObject> RemoveImagesAsync(List<Image> images)
         {
             BitResultObject result = new BitResultObject();
             try
             {
-                _context.Images.Remove(image);
+                _context.Images.RemoveRange(images);
                 await _context.SaveChangesAsync();
-                result.ID = image.ID;
-                _context.Entry(image).State = EntityState.Detached;
+                result.ID = images.FirstOrDefault().ID;
+                foreach (var image in images)
+                {
+                    _context.Entry(image).State = EntityState.Detached;
+                }
             }
             catch (Exception ex)
             {
@@ -136,13 +150,31 @@ namespace AITechDATA.DataLayer.Services
             return result;
         }
 
-        public async Task<BitResultObject> RemoveImageAsync(long imageId)
+        public async Task<BitResultObject> RemoveImagesAsync(List<long> ImageIds)
         {
             BitResultObject result = new BitResultObject();
             try
             {
-                var image = await GetImageByIdAsync(imageId);
-                result = await RemoveImageAsync(image.Result);
+                var ImagesToRemove = new List<Image>();
+
+                foreach (var ImageId in ImageIds)
+                {
+                    var Image = await GetImageByIdAsync(ImageId);
+                    if (Image.Result != null)
+                    {
+                        ImagesToRemove.Add(Image.Result);
+                    }
+                }
+
+                if (ImagesToRemove.Any())
+                {
+                    result = await RemoveImagesAsync(ImagesToRemove);
+                }
+                else
+                {
+                    result.Status = false;
+                    result.ErrorMessage = "No matching Images found to remove.";
+                }
             }
             catch (Exception ex)
             {

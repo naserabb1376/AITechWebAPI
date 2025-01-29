@@ -14,6 +14,7 @@ using AITechDATA.Tools;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+using AITechWebAPI.Models.News;
 
 namespace AITechWebAPI.Controllers
 {
@@ -34,7 +35,7 @@ namespace AITechWebAPI.Controllers
         }
 
         [HttpPost("GetAllNotifications_Base")]
-        public async Task<ActionResult<ListResultObject<Notification>>> GetAllNotifications_Base(GetAdminReportListRequestBody requestBody)
+        public async Task<ActionResult<ListResultObject<Notification>>> GetAllNotifications_Base(GetNewsListRequestBody requestBody)
         {
             if (!ModelState.IsValid)
             {

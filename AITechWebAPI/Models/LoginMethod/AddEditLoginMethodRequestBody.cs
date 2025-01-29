@@ -1,8 +1,8 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace AITechWebAPI.Models.Login
+namespace AITechWebAPI.Models.LoginMethod
 {
-    public class AddEditLoginRequestBody
+    public class AddEditLoginMethodRequestBody
     {
         public long ID { get; set; } = 0;
 
@@ -21,10 +21,13 @@ namespace AITechWebAPI.Models.Login
 
         [Display(Name = "کلمه عبور")]
         [Required(ErrorMessage = "لطفا {0} را وارد کنید")]
+        //[MaxLength(20)]
+        //[DataType(DataType.Password)] //Hide Characters
+        //[RegularExpression(@"^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{6,20}$", ErrorMessage = "کلمه عبور باید شامل حرف و عدد باشد")] //check exist number & alphabet chars in password field
         public string Password { get; set; }
 
         [Display(Name = "تاریخ انقضا")]
-        public DateTime? ExpirationDate { get; set; }
+        public string? ExpirationDate { get; set; }
       // public string? Description { get; set; }
     }
 }

@@ -1,0 +1,207 @@
+﻿using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.IdentityModel.Tokens;
+using AITechWebAPI.Models;
+using AITechWebAPI.Models.PreRegistration;
+using AITechWebAPI.Models.Public;
+using AITechDATA.DataLayer.Repositories;
+using AITechDATA.DataLayer.Services;
+using AITechDATA.Domain;
+using AITechDATA.ResultObjects;
+using AITechDATA.Tools;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using System.Text;
+
+namespace AITechWebAPI.Controllers
+{
+    [Route("PreRegistration")]
+    [ApiController]
+    //[Authorize]
+    [Produces("application/json")]
+
+    public class PreRegistrationController : ControllerBase
+    {
+        IPreRegistrationRep _PreRegistrationRep;
+        ILogRep _logRep;
+
+        public PreRegistrationController(IPreRegistrationRep PreRegistrationRep,ILogRep logRep)
+        {
+           _PreRegistrationRep = PreRegistrationRep;
+           _logRep = logRep;
+        }
+
+        [HttpPost("GetAllPreRegistrations_Base")]
+        public async Task<ActionResult<ListResultObject<PreRegistration>>> GetAllPreRegistrations_Base(GetPreRegistrationListRequestBody requestBody)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(requestBody);
+            }
+            var result = await _PreRegistrationRep.GetAllPreRegistrationsAsync(requestBody.GroupId,requestBody.PageIndex,requestBody.PageSize,requestBody.SearchText,requestBody.SortQuery);
+            if (result.Status)
+            {
+                return Ok(result);
+            }
+            return BadRequest(result);
+        }
+
+        [HttpPost("GetPreRegistrationById_Base")]
+        public async Task<ActionResult<RowResultObject<PreRegistration>>> GetPreRegistrationById_Base(GetRowRequestBody requestBody)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(requestBody);
+            }
+            var result = await _PreRegistrationRep.GetPreRegistrationByIdAsync(requestBody.ID);
+            if (result.Status)
+            {
+                return Ok(result);
+            }
+            return BadRequest(result);
+        }
+
+
+
+        [HttpPost("ExistPreRegistration_Base")]
+        [AllowAnonymous]
+        public async Task<ActionResult<BitResultObject>> ExistPreRegistration_Base(GetRowRequestBody requestBody)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(requestBody);
+            }
+            var result = await _PreRegistrationRep.ExistPreRegistrationAsync(requestBody.ID);
+            if (string.IsNullOrEmpty(result.ErrorMessage))
+            {
+                return Ok(result);
+            }
+            return BadRequest(result);
+        }
+
+        [HttpPost("AddPreRegistration_Base")]
+        public async Task<ActionResult<BitResultObject>> AddPreRegistration_Base(AddEditPreRegistrationRequestBody requestBody)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(requestBody);
+            }
+            PreRegistration PreRegistration = new PreRegistration()
+            {
+                CreateDate = DateTime.Now.ToShamsi(),
+                UpdateDate = DateTime.Now.ToShamsi(),
+                Email = requestBody.Email,
+                FullName = requestBody.FullName,
+                PhoneNumber = requestBody.PhoneNumber,
+                GroupId = requestBody.GroupId,
+                RegistrationDate = requestBody.RegistrationDate.StringToDate(),
+               // Description = requestBody.Description,
+            };
+            var result = await _PreRegistrationRep.AddPreRegistrationAsync(PreRegistration);
+            if (result.Status)
+            {
+                #region AddLog
+
+                Log log = new Log()
+                {
+                    CreateDate = DateTime.Now.ToShamsi(),
+                    UpdateDate = DateTime.Now.ToShamsi(),
+                    LogTime = DateTime.Now.ToShamsi(),
+                    ActionName = this.ControllerContext.RouteData.Values["action"].ToString(),
+
+                };
+                await _logRep.AddLogAsync(log);
+
+                #endregion
+
+
+                return Ok(result);
+            }
+            return BadRequest(result);
+        }
+
+        [HttpPut("EditPreRegistration_Base")]
+        public async Task<ActionResult<BitResultObject>> EditPreRegistration_Base(AddEditPreRegistrationRequestBody requestBody)
+        {
+            var result = new BitResultObject();
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(requestBody);
+            }
+            var theRow = await _PreRegistrationRep.GetPreRegistrationByIdAsync(requestBody.ID);
+            if (!theRow.Status)
+            {
+                result.Status = theRow.Status;
+                result.ErrorMessage = theRow.ErrorMessage;
+            }
+
+            PreRegistration PreRegistration = new PreRegistration()
+            {
+                CreateDate = theRow.Result.CreateDate,
+                UpdateDate = DateTime.Now.ToShamsi(),
+                Email = requestBody.Email,
+                FullName = requestBody.FullName,
+                PhoneNumber = requestBody.PhoneNumber,
+                GroupId = requestBody.GroupId,
+                RegistrationDate = requestBody.RegistrationDate.StringToDate(),
+                ID = requestBody.ID,
+                // Description = requestBody.Description,
+
+
+            };
+            result = await _PreRegistrationRep.EditPreRegistrationAsync(PreRegistration);
+            if (result.Status)
+            {
+
+                #region AddLog
+
+                Log log = new Log()
+                {
+                    CreateDate = DateTime.Now.ToShamsi(),
+                    UpdateDate = DateTime.Now.ToShamsi(),
+                    LogTime = DateTime.Now.ToShamsi(),
+                    ActionName = this.ControllerContext.RouteData.Values["action"].ToString(),
+
+                };
+                await _logRep.AddLogAsync(log);
+
+                #endregion
+
+                return Ok(result);
+            }
+            return BadRequest(result);
+        }
+
+        [HttpDelete("DeletePreRegistration_Base")]
+        public async Task<ActionResult<BitResultObject>> DeletePreRegistration_Base(GetRowRequestBody requestBody)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(requestBody);
+            }
+            var result = await _PreRegistrationRep.RemovePreRegistrationAsync(requestBody.ID);
+            if (result.Status)
+            {
+
+                #region AddLog
+
+                Log log = new Log()
+                {
+                    CreateDate = DateTime.Now.ToShamsi(),
+                    UpdateDate = DateTime.Now.ToShamsi(),
+                    LogTime = DateTime.Now.ToShamsi(),
+                    ActionName = this.ControllerContext.RouteData.Values["action"].ToString(),
+
+                };
+                await _logRep.AddLogAsync(log);
+
+                #endregion
+
+                return Ok(result);
+            }
+            return BadRequest(result);
+        }
+    }
+}

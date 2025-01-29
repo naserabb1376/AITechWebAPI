@@ -8,6 +8,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Net.Sockets;
+using AITechDATA.CustomResponses;
 
 namespace AITechDATA.DataLayer.Services
 {
@@ -74,15 +76,16 @@ namespace AITechDATA.DataLayer.Services
             return result;
         }
 
-        public async Task<ListResultObject<Setting>> GetAllSettingsAsync(long ParentId = 0, int pageIndex = 1, int pageSize = 20, string searchText = "", string sortQuery = "")
+        public async Task<SettingListCustomResponse<Setting>> GetAllSettingsAsync(long ParentId = 0,string key="", int pageIndex = 1, int pageSize = 20, string searchText = "", string sortQuery = "")
         {
-            ListResultObject<Setting> results = new ListResultObject<Setting>();
+            SettingListCustomResponse<Setting> results = new SettingListCustomResponse<Setting>();
             try
             {
                 var query = _context.Settings
                     .AsNoTracking()
                     .Where(x =>
                         (ParentId > 0 && x.ParentId == ParentId) ||
+                        (!string.IsNullOrEmpty(key) && x.Key == key) ||
                         (!string.IsNullOrEmpty(x.Key) && x.Key.Contains(searchText)) ||
                         (!string.IsNullOrEmpty(x.Value) && x.Value.Contains(searchText))
                     );
@@ -94,6 +97,14 @@ namespace AITechDATA.DataLayer.Services
                     .Include(x => x.Parent)
                     .Include(x => x.Children)
                     .ToListAsync();
+
+                results.ResultImages = results.Results
+    .ToDictionary(
+        user => user,
+        user => _context.Images
+            .Where(img => img.ForeignKeyId == user.ID && img.EntityType == "Setting")
+            .ToList()
+    );
             }
             catch (Exception ex)
             {
@@ -103,9 +114,9 @@ namespace AITechDATA.DataLayer.Services
             return results;
         }
 
-        public async Task<RowResultObject<Setting>> GetSettingByIdAsync(long settingId)
+        public async Task<SettingRowCustomResponse<Setting>> GetSettingByIdAsync(long settingId)
         {
-            RowResultObject<Setting> result = new RowResultObject<Setting>();
+            SettingRowCustomResponse<Setting> result = new SettingRowCustomResponse<Setting>();
             try
             {
                 result.Result = await _context.Settings
@@ -113,6 +124,16 @@ namespace AITechDATA.DataLayer.Services
                     .Include(x => x.Parent)
                     .Include(x => x.Children)
                     .SingleOrDefaultAsync(x => x.ID == settingId);
+
+                if (result.Result != null)
+                {
+                    result.ResultImages = new Dictionary<Setting, List<Image>?>
+{
+    { result.Result, await _context.Images
+        .Where(img => img.ForeignKeyId == settingId && img.EntityType == "Setting")
+        .ToListAsync() }
+};
+                }
             }
             catch (Exception ex)
             {
@@ -127,6 +148,9 @@ namespace AITechDATA.DataLayer.Services
             BitResultObject result = new BitResultObject();
             try
             {
+                var Images = _context.Images.Where(img => img.ForeignKeyId == setting.ID && img.EntityType == "Setting");
+                _context.Images.RemoveRange(Images);
+
                 _context.Settings.Remove(setting);
                 await _context.SaveChangesAsync();
                 result.ID = setting.ID;
