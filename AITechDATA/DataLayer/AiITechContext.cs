@@ -64,6 +64,182 @@ namespace AITechDATA.DataLayer
                 .WithMany()
                 .HasForeignKey(g => g.TeacherId)
                 .OnDelete(DeleteBehavior.Restrict); // یا DeleteBehavior.NoAction
+
+            modelBuilder.Entity<FileUpload>()
+               .HasOne(x => x.Assignment)
+               .WithMany(x => x.Files)
+               .HasForeignKey(x => x.AssignmentId)
+               .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<Course>()
+             .HasOne(x => x.Category)
+             .WithMany(x => x.Courses)
+             .HasForeignKey(x => x.CategoryId)
+             .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<Address>()
+             .HasOne(x => x.City)
+             .WithMany(x => x.Addresses)
+             .HasForeignKey(x => x.CityID)
+             .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<UserCourse>()
+            .HasOne(x => x.User)
+            .WithMany(x => x.UserCourses)
+            .HasForeignKey(x => x.UserId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<UserCourse>()
+           .HasOne(x => x.Course)
+           .WithMany(x => x.UserCourses)
+           .HasForeignKey(x => x.CourseId)
+           .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<UserGroup>()
+         .HasOne(x => x.User)
+         .WithMany(x => x.UserGroups)
+         .HasForeignKey(x => x.UserId)
+         .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<UserGroup>()
+           .HasOne(x => x.Group)
+           .WithMany(x => x.Students)
+           .HasForeignKey(x => x.GroupId)
+           .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<PermissionRole>()
+          .HasOne(x => x.Permission)
+          .WithMany(x => x.PermissionRoles)
+          .HasForeignKey(x => x.PerrmissionId)
+          .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<PermissionRole>()
+          .HasOne(x => x.Role)
+          .WithMany(x => x.PermissionRoles)
+          .HasForeignKey(x => x.RoleId)
+          .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<Assignment>()
+          .HasOne(x => x.User)
+          .WithMany(x => x.Assignments)
+          .HasForeignKey(x => x.UserId)
+          .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<Assignment>()
+          .HasOne(x => x.SessionAssignment)
+          .WithMany(x => x.Assignments)
+          .HasForeignKey(x => x.SessionAssignmentId)
+          .OnDelete(DeleteBehavior.Cascade);
+
+
+            modelBuilder.Entity<Attendance>()
+          .HasOne(x => x.User)
+          .WithMany(x => x.Attendances)
+          .HasForeignKey(x => x.UserId)
+          .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<Attendance>()
+          .HasOne(x => x.Session)
+          .WithMany(x => x.Attendances)
+          .HasForeignKey(x => x.SessionId)
+          .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<Group>()
+          .HasOne(x => x.Course)
+          .WithMany(x => x.Groups)
+          .HasForeignKey(x => x.CourseId)
+          .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<Session>()
+         .HasOne(x => x.Group)
+         .WithMany(x => x.Sessions)
+         .HasForeignKey(x => x.GroupId)
+         .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<PreRegistration>()
+        .HasOne(x => x.Group)
+        .WithMany(x => x.PreRegistrations)
+        .HasForeignKey(x => x.GroupId)
+        .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<PaymentHistory>()
+   .HasOne(x => x.Group)
+   .WithMany(x => x.PaymentHistories)
+   .HasForeignKey(x => x.GroupId)
+   .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<PaymentHistory>()
+   .HasOne(x => x.User)
+   .WithMany(x => x.PaymentHistories)
+   .HasForeignKey(x => x.UserId)
+   .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<User>()
+   .HasOne(x => x.Role)
+   .WithMany(x => x.Users)
+   .HasForeignKey(x => x.RoleId)
+   .OnDelete(DeleteBehavior.NoAction);
+
+            modelBuilder.Entity<SessionAssignment>()
+   .HasOne(x => x.Session)
+   .WithMany(x => x.SessionAssignments)
+   .HasForeignKey(x => x.SessionId)
+   .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<Setting>()
+   .HasOne(x => x.Parent)
+   .WithMany(x => x.Children)
+   .HasForeignKey(x => x.ParentId)
+   .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<Parent>()
+.HasOne(x => x.StudentDetails)
+.WithMany(x => x.Parents)
+.HasForeignKey(x => x.StudentDetailsId)
+.OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<TicketMessage>()
+.HasOne(x => x.Ticket)
+.WithMany(x => x.Messages)
+.HasForeignKey(x => x.TicketId)
+.OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<TicketMessage>()
+.HasOne(x => x.Admin)
+.WithMany(x => x.TicketMessages)
+.HasForeignKey(x => x.AdminId)
+.OnDelete(DeleteBehavior.NoAction);
+
+            modelBuilder.Entity<TeacherResume>()
+.HasOne(x => x.User)
+.WithMany(x => x.TeacherResumes)
+.HasForeignKey(x => x.UserId)
+.OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<LoginMethod>()
+.HasOne(x => x.User)
+.WithMany(x => x.LoginMethods)
+.HasForeignKey(x => x.UserId)
+.OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<Event>()
+.HasOne(x => x.User)
+.WithMany(x => x.Events)
+.HasForeignKey(x => x.UserId)
+.OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<News>()
+.HasOne(x => x.User)
+.WithMany(x => x.News)
+.HasForeignKey(x => x.UserId)
+.OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<Notification>()
+.HasOne(x => x.User)
+.WithMany(x => x.Notifications)
+.HasForeignKey(x => x.UserId)
+.OnDelete(DeleteBehavior.Cascade);
+
         }
     }
 }

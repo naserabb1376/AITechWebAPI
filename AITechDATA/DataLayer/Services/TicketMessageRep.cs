@@ -79,7 +79,7 @@ namespace AITechDATA.DataLayer.Services
             ListResultObject<TicketMessage> results = new ListResultObject<TicketMessage>();
             try
             {
-                var query = _context.TicketMessages
+                var query = _context.TicketMessages.Include(x=> x.Ticket)
                     .AsNoTracking()
                     .Where(x =>
                         (AdminId > 0 && x.AdminId == AdminId) || (TicketId > 0 && x.TicketId == TicketId) ||

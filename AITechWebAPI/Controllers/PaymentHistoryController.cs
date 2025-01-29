@@ -93,7 +93,7 @@ namespace AITechWebAPI.Controllers
                 GroupId = requestBody.GroupID,
                 Amount = requestBody.Amount,
                 UserId = requestBody.UserID,
-                PaymentDate = requestBody.PaymentDate ?? DateTime.Now.ToShamsi(),
+                PaymentDate = requestBody.PaymentDate.StringToDate(),
               //  Description = requestBody.Description,
             };
             var result = await _PaymentHistoryRep.AddPaymentHistoryAsync(PaymentHistory);
@@ -142,7 +142,7 @@ namespace AITechWebAPI.Controllers
                 GroupId = requestBody.GroupID,
                 Amount = requestBody.Amount,
                 UserId = requestBody.UserID,
-                PaymentDate = requestBody.PaymentDate ?? DateTime.Now.ToShamsi(),
+                PaymentDate = requestBody.PaymentDate.StringToDate(),
                // Description = requestBody.Description,
             };
             result = await _PaymentHistoryRep.EditPaymentHistoryAsync(PaymentHistory);

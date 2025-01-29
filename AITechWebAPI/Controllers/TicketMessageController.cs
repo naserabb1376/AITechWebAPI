@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
 using AITechWebAPI.Models;
-using AITechWebAPI.Models.Login;
+using AITechWebAPI.Models.TicketMessage;
 using AITechWebAPI.Models.Public;
 using AITechDATA.DataLayer.Repositories;
 using AITechDATA.DataLayer.Services;
@@ -17,30 +17,30 @@ using System.Text;
 
 namespace AITechWebAPI.Controllers
 {
-    [Route("Login")]
+    [Route("TicketMessage")]
     [ApiController]
     //[Authorize]
     [Produces("application/json")]
 
-    public class LoginController : ControllerBase
+    public class TicketMessageController : ControllerBase
     {
-        ILoginMethodRep _LoginRep;
+        ITicketMessageRep _TicketMessageRep;
         ILogRep _logRep;
 
-        public LoginController(ILoginMethodRep LoginRep,ILogRep logRep)
+        public TicketMessageController(ITicketMessageRep TicketMessageRep,ILogRep logRep)
         {
-           _LoginRep = LoginRep;
+           _TicketMessageRep = TicketMessageRep;
            _logRep = logRep;
         }
 
-        [HttpPost("GetAllLogins_Base")]
-        public async Task<ActionResult<ListResultObject<LoginMethod>>> GetAllLogins_Base(GetLoginListRequestBody requestBody)
+        [HttpPost("GetAllTicketMessages_Base")]
+        public async Task<ActionResult<ListResultObject<TicketMessage>>> GetAllTicketMessages_Base(GetTicketMessageListRequestBody requestBody)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(requestBody);
             }
-            var result = await _LoginRep.GetAllLoginMethodsAsync(requestBody.PersonId,requestBody.PageIndex,requestBody.PageSize,requestBody.SearchText,requestBody.SortQuery);
+            var result = await _TicketMessageRep.GetAllTicketMessagesAsync(requestBody.UserId,requestBody.TicketId,requestBody.PageIndex,requestBody.PageSize,requestBody.SearchText,requestBody.SortQuery);
             if (result.Status)
             {
                 return Ok(result);
@@ -48,14 +48,14 @@ namespace AITechWebAPI.Controllers
             return BadRequest(result);
         }
 
-        [HttpPost("GetLoginById_Base")]
-        public async Task<ActionResult<RowResultObject<LoginMethod>>> GetLoginById_Base(GetLoginRowRequestBody requestBody)
+        [HttpPost("GetTicketMessageById_Base")]
+        public async Task<ActionResult<RowResultObject<TicketMessage>>> GetTicketMessageById_Base(GetRowRequestBody requestBody)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(requestBody);
             }
-            var result = await _LoginRep.GetLoginMethodByIdAsync(requestBody.ID);
+            var result = await _TicketMessageRep.GetTicketMessageByIdAsync(requestBody.ID);
             if (result.Status)
             {
                 return Ok(result);
@@ -63,17 +63,14 @@ namespace AITechWebAPI.Controllers
             return BadRequest(result);
         }
 
-
-
-        [HttpPost("ExistLogin_Base")]
-        [AllowAnonymous]
-        public async Task<ActionResult<BitResultObject>> ExistLogin_Base(GetRowRequestBody requestBody)
+        [HttpPost("ExistTicketMessage_Base")]
+        public async Task<ActionResult<BitResultObject>> ExistTicketMessage_Base(GetRowRequestBody requestBody)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(requestBody);
             }
-            var result = await _LoginRep.ExistLoginMethodAsync(requestBody.ID);
+            var result = await _TicketMessageRep.ExistTicketMessageAsync(requestBody.ID);
             if (string.IsNullOrEmpty(result.ErrorMessage))
             {
                 return Ok(result);
@@ -81,24 +78,23 @@ namespace AITechWebAPI.Controllers
             return BadRequest(result);
         }
 
-        [HttpPost("AddLogin_Base")]
-        public async Task<ActionResult<BitResultObject>> AddLogin_Base(AddEditLoginRequestBody requestBody)
+        [HttpPost("AddTicketMessage_Base")]
+        public async Task<ActionResult<BitResultObject>> AddTicketMessage_Base(AddEditTicketMessageRequestBody requestBody)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(requestBody);
             }
-            LoginMethod Login = new LoginMethod()
+            TicketMessage TicketMessage = new TicketMessage()
             {
                 CreateDate = DateTime.Now.ToShamsi(),
                 UpdateDate = DateTime.Now.ToShamsi(),
-                ExpirationDate = requestBody.ExpirationDate ?? DateTime.Now.ToShamsi(),
-                UserId = requestBody.UserID,
-                Token = requestBody.Token,
-                Method = requestBody.Method,
-               // Description = requestBody.Description,
+                AdminId = requestBody.UserId,
+                TicketId= requestBody.TicketId,
+                IsAdminResponse = requestBody.IsAdminResponse,
+                MessageContent = requestBody.MessageContent
             };
-            var result = await _LoginRep.AddLoginMethodAsync(Login);
+            var result = await _TicketMessageRep.AddTicketMessageAsync(TicketMessage);
             if (result.Status)
             {
                 #region AddLog
@@ -121,35 +117,32 @@ namespace AITechWebAPI.Controllers
             return BadRequest(result);
         }
 
-        [HttpPut("EditLogin_Base")]
-        public async Task<ActionResult<BitResultObject>> EditLogin_Base(AddEditLoginRequestBody requestBody)
+        [HttpPut("EditTicketMessage_Base")]
+        public async Task<ActionResult<BitResultObject>> EditTicketMessage_Base(AddEditTicketMessageRequestBody requestBody)
         {
             var result = new BitResultObject();
             if (!ModelState.IsValid)
             {
                 return BadRequest(requestBody);
             }
-            var theRow = await _LoginRep.GetLoginMethodByIdAsync(requestBody.ID);
+            var theRow = await _TicketMessageRep.GetTicketMessageByIdAsync(requestBody.ID);
             if (!theRow.Status)
             {
                 result.Status = theRow.Status;
                 result.ErrorMessage = theRow.ErrorMessage;
             }
 
-            LoginMethod Login = new LoginMethod()
+            TicketMessage TicketMessage = new TicketMessage()
             {
                 CreateDate = theRow.Result.CreateDate,
                 UpdateDate = DateTime.Now.ToShamsi(),
-                ExpirationDate = requestBody.ExpirationDate ?? DateTime.Now.ToShamsi(),
-                UserId = requestBody.UserID,
-                Token = requestBody.Token,
-                Method = requestBody.Method,
                 ID = requestBody.ID,
-                // Description = requestBody.Description,
-
-
+                AdminId = requestBody.UserId,
+                TicketId = requestBody.TicketId,
+                IsAdminResponse = requestBody.IsAdminResponse,
+                MessageContent = requestBody.MessageContent,
             };
-            result = await _LoginRep.EditLoginMethodAsync(Login);
+            result = await _TicketMessageRep.EditTicketMessageAsync(TicketMessage);
             if (result.Status)
             {
 
@@ -172,14 +165,14 @@ namespace AITechWebAPI.Controllers
             return BadRequest(result);
         }
 
-        [HttpDelete("DeleteLogin_Base")]
-        public async Task<ActionResult<BitResultObject>> DeleteLogin_Base(GetRowRequestBody requestBody)
+        [HttpDelete("DeleteTicketMessage_Base")]
+        public async Task<ActionResult<BitResultObject>> DeleteTicketMessage_Base(GetRowRequestBody requestBody)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(requestBody);
             }
-            var result = await _LoginRep.RemoveLoginMethodAsync(requestBody.ID);
+            var result = await _TicketMessageRep.RemoveTicketMessageAsync(requestBody.ID);
             if (result.Status)
             {
 

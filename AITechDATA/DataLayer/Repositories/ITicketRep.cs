@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using AITechDATA.CustomResponses;
 using AITechDATA.Domain;
 using AITechDATA.ResultObjects;
 
@@ -10,9 +11,9 @@ namespace AITechDATA.DataLayer.Repositories
 {
     public interface ITicketRep
     {
-        Task<ListResultObject<Ticket>> GetAllTicketsAsync(long UserId = 0, int pageIndex = 1, int pageSize = 20, string searchText = "", string sortQuery = "");
+        Task<TicketListCustomResponse<Ticket>> GetAllTicketsAsync(long UserId = 0, int pageIndex = 1, int pageSize = 20, string searchText = "", string sortQuery = "");
 
-        Task<RowResultObject<Ticket>> GetTicketByIdAsync(long ticketId);
+        Task<TicketRowCustomResponse<Ticket>> GetTicketByIdAsync(long ticketId);
 
         Task<BitResultObject> AddTicketAsync(Ticket ticket);
 

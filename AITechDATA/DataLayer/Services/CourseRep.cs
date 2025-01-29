@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using AITechDATA.CustomResponses;
 
 namespace AITechDATA.DataLayer.Services
 {
@@ -74,9 +75,9 @@ namespace AITechDATA.DataLayer.Services
             return result;
         }
 
-        public async Task<ListResultObject<Course>> GetAllCoursesAsync(long categoryId = 0, int pageIndex = 1, int pageSize = 20, string searchText = "",string sortQuery ="")
+        public async Task<CourseListCustomResponse<Course>> GetAllCoursesAsync(long categoryId = 0, int pageIndex = 1, int pageSize = 20, string searchText = "",string sortQuery ="")
         {
-            ListResultObject<Course> results = new ListResultObject<Course>();
+            CourseListCustomResponse<Course> results = new CourseListCustomResponse<Course>();
             try
             {
                 var query = _context.Courses
@@ -94,6 +95,15 @@ namespace AITechDATA.DataLayer.Services
                     .Include(x => x.Category)
                     .Include(x => x.Groups)
                     .ToListAsync();
+
+                // Map images for each Course
+                results.ResultImages = results.Results
+                    .ToDictionary(
+                        user => user,
+                        user => _context.Images
+                            .Where(img => img.ForeignKeyId == user.ID && img.EntityType == "Course")
+                            .ToList()
+                    );
             }
             catch (Exception ex)
             {
@@ -103,9 +113,9 @@ namespace AITechDATA.DataLayer.Services
             return results;
         }
 
-        public async Task<RowResultObject<Course>> GetCourseByIdAsync(long courseId)
+        public async Task<CourseRowCustomResponse<Course>> GetCourseByIdAsync(long courseId)
         {
-            RowResultObject<Course> result = new RowResultObject<Course>();
+            CourseRowCustomResponse<Course> result = new CourseRowCustomResponse<Course>();
             try
             {
                 result.Result = await _context.Courses
@@ -113,6 +123,16 @@ namespace AITechDATA.DataLayer.Services
                     .Include(x => x.Category)
                     .Include(x => x.Groups)
                     .SingleOrDefaultAsync(x => x.ID == courseId);
+
+                if (result.Result != null)
+                {
+                    result.ResultImages = new Dictionary<Course, List<Image>?>
+            {
+                { result.Result, await _context.Images
+                    .Where(img => img.ForeignKeyId == courseId && img.EntityType == "Course")
+                    .ToListAsync() }
+            };
+                }
             }
             catch (Exception ex)
             {
@@ -127,6 +147,9 @@ namespace AITechDATA.DataLayer.Services
             BitResultObject result = new BitResultObject();
             try
             {
+                var Images = _context.Images.Where(img => img.ForeignKeyId == course.ID && img.EntityType == "Course");
+                _context.Images.RemoveRange(Images);
+
                 _context.Courses.Remove(course);
                 await _context.SaveChangesAsync();
                 result.ID = course.ID;

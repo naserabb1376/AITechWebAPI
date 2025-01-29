@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using AITechDATA.CustomResponses;
 using AITechDATA.Domain;
 using AITechDATA.ResultObjects;
 
@@ -10,9 +11,11 @@ namespace AITechDATA.DataLayer.Repositories
 {
     public interface IUserRep
     {
-        Task<ListResultObject<User>> GetAllUsersAsync(long groupId=0,long courseId =0, long sessionAssignmentId=0,long sessionId=0, long AddressId = 0, long RoleId = 0, int pageIndex = 1, int pageSize = 20, string searchText = "", string sortQuery = "");
+        Task<UserListCustomResponse<User>> GetAllUsersAsync(long groupId=0,long courseId =0, long sessionAssignmentId=0,long sessionId=0, long AddressId = 0, long RoleId = 0, int pageIndex = 1, int pageSize = 20, string searchText = "", string sortQuery = "");
 
-        Task<RowResultObject<User>> GetUserByIdAsync(long userId);
+        Task<UserRowCustomResponse<User>> GetUserByIdAsync(long userId);
+
+        Task<RowResultObject<User>> AuthenticateAsync(string userName, string password, int loginType);
 
         Task<BitResultObject> AddUserAsync(User user);
 

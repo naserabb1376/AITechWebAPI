@@ -13,6 +13,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 using AITechWebAPI.Models.User;
+using AITechDATA.CustomResponses;
 
 namespace AITechWebAPI.Controllers
 {
@@ -35,7 +36,7 @@ namespace AITechWebAPI.Controllers
         }
 
         [HttpPost("GetAllUsers_Base")]
-        public async Task<ActionResult<ListResultObject<User>>> GetAllUsers_Base(GetUserListRequestBody requestBody)
+        public async Task<ActionResult<UserListCustomResponse<User>>> GetAllUsers_Base(GetUserListRequestBody requestBody)
         {
             if (!ModelState.IsValid)
             {
@@ -50,7 +51,7 @@ namespace AITechWebAPI.Controllers
         }
 
         [HttpPost("GetUserById_Base")]
-        public async Task<ActionResult<RowResultObject<User>>> GetUserById_Base(GetRowRequestBody requestBody)
+        public async Task<ActionResult<UserRowCustomResponse<User>>> GetUserById_Base(GetRowRequestBody requestBody)
         {
             if (!ModelState.IsValid)
             {

@@ -10,17 +10,17 @@ namespace AITechDATA.DataLayer.Repositories
 {
     public interface IImageRep
     {
-        Task<ListResultObject<Image>> GetAllImagesAsync(int pageIndex = 1, int pageSize = 20, string searchText = "",string sortQuery ="");
+        Task<ListResultObject<Image>> GetAllImagesAsync(string entityType="",long foreignKey=0,int pageIndex = 1, int pageSize = 20, string searchText = "",string sortQuery ="");
 
         Task<RowResultObject<Image>> GetImageByIdAsync(long imageId);
 
-        Task<BitResultObject> AddImageAsync(Image image);
+        Task<BitResultObject> AddImagesAsync(List<Image> images);
 
-        Task<BitResultObject> EditImageAsync(Image image);
+        Task<BitResultObject> EditImagesAsync(List<Image> images);
 
-        Task<BitResultObject> RemoveImageAsync(Image image);
+        Task<BitResultObject> RemoveImagesAsync(List<Image> images);
 
-        Task<BitResultObject> RemoveImageAsync(long imageId);
+        Task<BitResultObject> RemoveImagesAsync(List<long> imageIds);
 
         Task<BitResultObject> ExistImageAsync(long imageId);
     }

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using AITechDATA.CustomResponses;
 using AITechDATA.Domain;
 using AITechDATA.ResultObjects;
 
@@ -10,9 +11,9 @@ namespace AITechDATA.DataLayer.Repositories
 {
     public interface ICourseRep
     {
-        Task<ListResultObject<Course>> GetAllCoursesAsync(long categoryId = 0,int pageIndex = 1, int pageSize = 20, string searchText = "",string sortQuery ="");
+        Task<CourseListCustomResponse<Course>> GetAllCoursesAsync(long categoryId = 0,int pageIndex = 1, int pageSize = 20, string searchText = "",string sortQuery ="");
 
-        Task<RowResultObject<Course>> GetCourseByIdAsync(long courseId);
+        Task<CourseRowCustomResponse<Course>> GetCourseByIdAsync(long courseId);
 
         Task<BitResultObject> AddCourseAsync(Course course);
 

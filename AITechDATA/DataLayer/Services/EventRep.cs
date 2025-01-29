@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using AITechDATA.CustomResponses;
 
 namespace AITechDATA.DataLayer.Services
 {
@@ -74,9 +75,9 @@ namespace AITechDATA.DataLayer.Services
             return result;
         }
 
-        public async Task<ListResultObject<Event>> GetAllEventsAsync(long userId = 0,int pageIndex = 1, int pageSize = 20, string searchText = "",string sortQuery ="")
+        public async Task<EventListCustomResponse<Event>> GetAllEventsAsync(long userId = 0,int pageIndex = 1, int pageSize = 20, string searchText = "",string sortQuery ="")
         {
-            ListResultObject<Event> results = new ListResultObject<Event>();
+            EventListCustomResponse<Event> results = new EventListCustomResponse<Event>();
             try
             {
                 var query = _context.Events
@@ -93,6 +94,14 @@ namespace AITechDATA.DataLayer.Services
                 results.Results = await query.OrderByDescending(x => x.EventDate)
                      .SortBy(sortQuery).ToPaging(pageIndex, pageSize)
                     .ToListAsync();
+
+                results.ResultImages = results.Results
+                    .ToDictionary(
+                        user => user,
+                        user => _context.Images
+                            .Where(img => img.ForeignKeyId == user.ID && img.EntityType == "Event")
+                            .ToList()
+                    );
             }
             catch (Exception ex)
             {
@@ -102,14 +111,24 @@ namespace AITechDATA.DataLayer.Services
             return results;
         }
 
-        public async Task<RowResultObject<Event>> GetEventByIdAsync(long eventId)
+        public async Task<EventRowCustomResponse<Event>> GetEventByIdAsync(long eventId)
         {
-            RowResultObject<Event> result = new RowResultObject<Event>();
+            EventRowCustomResponse<Event> result = new EventRowCustomResponse<Event>();
             try
             {
                 result.Result = await _context.Events
                     .AsNoTracking()
                     .SingleOrDefaultAsync(x => x.ID == eventId);
+
+                if (result.Result != null)
+                {
+                    result.ResultImages = new Dictionary<Event, List<Image>?>
+{
+    { result.Result, await _context.Images
+        .Where(img => img.ForeignKeyId == eventId && img.EntityType == "Event")
+        .ToListAsync() }
+};
+                }
             }
             catch (Exception ex)
             {
@@ -124,6 +143,9 @@ namespace AITechDATA.DataLayer.Services
             BitResultObject result = new BitResultObject();
             try
             {
+                var Images = _context.Images.Where(img => img.ForeignKeyId == eventObj.ID && img.EntityType == "Event");
+                _context.Images.RemoveRange(Images);
+
                 _context.Events.Remove(eventObj);
                 await _context.SaveChangesAsync();
                 result.ID = eventObj.ID;

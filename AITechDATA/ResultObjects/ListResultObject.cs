@@ -13,6 +13,7 @@ namespace AITechDATA.ResultObjects
         public string ErrorMessage { get; set; } = "";
         public int TotalCount { get; set; } = 0;
         public int PageCount { get; set; } = 0;
+        public List<T> Results { get; set; } = new List<T>();
 
     }
 }

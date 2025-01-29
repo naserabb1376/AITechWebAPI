@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using AITechDATA.CustomResponses;
 
 namespace AITechDATA.DataLayer.Services
 {
@@ -74,12 +75,12 @@ namespace AITechDATA.DataLayer.Services
             return result;
         }
 
-        public async Task<ListResultObject<Ticket>> GetAllTicketsAsync(long UserId = 0, int pageIndex = 1, int pageSize = 20, string searchText = "", string sortQuery = "")
+        public async Task<TicketListCustomResponse<Ticket>> GetAllTicketsAsync(long UserId = 0, int pageIndex = 1, int pageSize = 20, string searchText = "", string sortQuery = "")
         {
-            ListResultObject<Ticket> results = new ListResultObject<Ticket>();
+            TicketListCustomResponse<Ticket> results = new TicketListCustomResponse<Ticket>();
             try
             {
-                var query = _context.Tickets
+                var query = _context.Tickets.Include(x=> x.Messages)
                     .AsNoTracking()
                     .Where(x =>
                         (UserId > 0 && x.UserId == UserId) ||
@@ -95,6 +96,15 @@ namespace AITechDATA.DataLayer.Services
                     .Include(x => x.User)
                     .Include(x => x.Messages)
                     .ToListAsync();
+
+
+                results.ResultImages = results.Results
+    .ToDictionary(
+        user => user,
+        user => _context.Images
+            .Where(img => img.ForeignKeyId == user.ID && img.EntityType == "Ticket")
+            .ToList()
+    );
             }
             catch (Exception ex)
             {
@@ -104,9 +114,9 @@ namespace AITechDATA.DataLayer.Services
             return results;
         }
 
-        public async Task<RowResultObject<Ticket>> GetTicketByIdAsync(long ticketId)
+        public async Task<TicketRowCustomResponse<Ticket>> GetTicketByIdAsync(long ticketId)
         {
-            RowResultObject<Ticket> result = new RowResultObject<Ticket>();
+            TicketRowCustomResponse<Ticket> result = new TicketRowCustomResponse<Ticket>();
             try
             {
                 result.Result = await _context.Tickets
@@ -114,6 +124,16 @@ namespace AITechDATA.DataLayer.Services
                     .Include(x => x.User)
                     .Include(x => x.Messages)
                     .SingleOrDefaultAsync(x => x.ID == ticketId);
+
+                if (result.Result != null)
+                {
+                    result.ResultImages = new Dictionary<Ticket, List<Image>?>
+{
+    { result.Result, await _context.Images
+        .Where(img => img.ForeignKeyId == ticketId && img.EntityType == "Ticket")
+        .ToListAsync() }
+};
+                }
             }
             catch (Exception ex)
             {
@@ -128,6 +148,9 @@ namespace AITechDATA.DataLayer.Services
             BitResultObject result = new BitResultObject();
             try
             {
+                var Images = _context.Images.Where(img => img.ForeignKeyId == ticket.ID && img.EntityType == "Ticket");
+                _context.Images.RemoveRange(Images);
+
                 _context.Tickets.Remove(ticket);
                 await _context.SaveChangesAsync();
                 result.ID = ticket.ID;
