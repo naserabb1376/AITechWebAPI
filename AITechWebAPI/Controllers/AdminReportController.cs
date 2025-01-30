@@ -19,7 +19,7 @@ namespace AITechWebAPI.Controllers
 {
     [Route("AdminReport")]
     [ApiController]
-    //[Authorize]
+    [Authorize]
     [Produces("application/json")]
 
     public class AdminReportController : ControllerBase

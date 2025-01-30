@@ -21,7 +21,7 @@ namespace AITechWebAPI.Controllers
 {
     [Route("News")]
     [ApiController]
-    //[Authorize]
+    [Authorize]
     [Produces("application/json")]
 
     public class NewsController : ControllerBase

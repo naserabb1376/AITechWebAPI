@@ -19,7 +19,7 @@ namespace AITechWebAPI.Controllers
 {
     [Route("Category")]
     [ApiController]
-    //[Authorize]
+    [Authorize]
     [Produces("application/json")]
 
     public class CategoryController : ControllerBase

@@ -19,7 +19,7 @@ namespace AITechWebAPI.Controllers
 {
     [Route("UserGroup")]
     [ApiController]
-    //[Authorize]
+    [Authorize]
     [Produces("application/json")]
 
     public class UserGroupController : ControllerBase

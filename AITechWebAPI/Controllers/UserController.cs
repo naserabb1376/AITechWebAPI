@@ -19,7 +19,7 @@ namespace AITechWebAPI.Controllers
 {
     [Route("User")]
     [ApiController]
-    //[Authorize]
+    [Authorize]
     [Produces("application/json")]
 
     public class UserController : ControllerBase

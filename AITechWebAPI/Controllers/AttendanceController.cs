@@ -19,7 +19,7 @@ namespace AITechWebAPI.Controllers
 {
     [Route("Attendance")]
     [ApiController]
-    //[Authorize]
+    [Authorize]
     [Produces("application/json")]
 
     public class AttendanceController : ControllerBase

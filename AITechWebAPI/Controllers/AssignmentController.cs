@@ -19,7 +19,7 @@ namespace AITechWebAPI.Controllers
 {
     [Route("Assignment")]
     [ApiController]
-    //[Authorize]
+    [Authorize]
     [Produces("application/json")]
 
     public class AssignmentController : ControllerBase

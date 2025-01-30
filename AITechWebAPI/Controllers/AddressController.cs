@@ -19,7 +19,7 @@ namespace AITechWebAPI.Controllers
 {
     [Route("Address")]
     [ApiController]
-    //[Authorize]
+    [Authorize]
     [Produces("application/json")]
 
     public class AddressController : ControllerBase

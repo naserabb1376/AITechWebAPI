@@ -19,7 +19,7 @@ namespace AITechWebAPI.Controllers
 {
     [Route("Parent")]
     [ApiController]
-    //[Authorize]
+    [Authorize]
     [Produces("application/json")]
 
     public class ParentController : ControllerBase

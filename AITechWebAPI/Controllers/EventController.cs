@@ -21,7 +21,7 @@ namespace AITechWebAPI.Controllers
 {
     [Route("Event")]
     [ApiController]
-    //[Authorize]
+    [Authorize]
     [Produces("application/json")]
 
     public class EventController : ControllerBase
