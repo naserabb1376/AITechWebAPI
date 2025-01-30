@@ -19,7 +19,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Include="DataSetting.json" />
+    <None Include="DataSetting.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 
   <ItemGroup>
