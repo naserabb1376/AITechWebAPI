@@ -1,7 +1,6 @@
-﻿using Domain;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 
-namespace NobatPlusAPI.Models.Authenticate
+namespace AITechWebAPI.Models.Authenticate
 {
     public class CheckCodeRequestBody
     {

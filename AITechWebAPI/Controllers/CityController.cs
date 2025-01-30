@@ -19,7 +19,7 @@ namespace AITechWebAPI.Controllers
 {
     [Route("City")]
     [ApiController]
-    //[Authorize]
+    [Authorize]
     [Produces("application/json")]
 
     public class CityController : ControllerBase

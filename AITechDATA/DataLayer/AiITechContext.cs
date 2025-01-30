@@ -190,7 +190,7 @@ namespace AITechDATA.DataLayer
    .HasOne(x => x.Parent)
    .WithMany(x => x.Children)
    .HasForeignKey(x => x.ParentId)
-   .OnDelete(DeleteBehavior.Cascade);
+   .OnDelete(DeleteBehavior.NoAction);
 
             modelBuilder.Entity<Parent>()
 .HasOne(x => x.StudentDetails)

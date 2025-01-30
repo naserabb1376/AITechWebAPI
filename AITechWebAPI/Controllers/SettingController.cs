@@ -15,6 +15,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 using AITechWebAPI.Models.News;
+using AITechDATA.CustomResponses;
 
 namespace AITechWebAPI.Controllers
 {
@@ -35,7 +36,7 @@ namespace AITechWebAPI.Controllers
         }
 
         [HttpPost("GetAllSettings_Base")]
-        public async Task<ActionResult<ListResultObject<Setting>>> GetAllSettings_Base(GetSettingListRequestBody requestBody)
+        public async Task<ActionResult<SettingListCustomResponse<Setting>>> GetAllSettings_Base(GetSettingListRequestBody requestBody)
         {
             if (!ModelState.IsValid)
             {
@@ -50,7 +51,7 @@ namespace AITechWebAPI.Controllers
         }
 
         [HttpPost("GetSettingById_Base")]
-        public async Task<ActionResult<RowResultObject<Setting>>> GetSettingById_Base(GetRowRequestBody requestBody)
+        public async Task<ActionResult<SettingRowCustomResponse<Setting>>> GetSettingById_Base(GetRowRequestBody requestBody)
         {
             if (!ModelState.IsValid)
             {
