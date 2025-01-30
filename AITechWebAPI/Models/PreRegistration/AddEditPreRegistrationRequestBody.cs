@@ -24,9 +24,6 @@ namespace AITechWebAPI.Models.PreRegistration
 
         public string PhoneNumber { get; set; }
 
-        [Display(Name = "کلمات کلیدی سئو")]
-        public string? Keywords { get; set; } = "";
-
         [Display(Name = "کد گروه")]
         [Required(ErrorMessage = "لطفا {0} را وارد کنید")]
         [Range(1, long.MaxValue, ErrorMessage = "مقدار {0} باید بزرگتر از 0 باشد")]
