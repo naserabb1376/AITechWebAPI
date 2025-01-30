@@ -20,7 +20,7 @@ namespace AITechWebAPI.Controllers
 {
     [Route("PaymentHistory")]
     [ApiController]
-    //[Authorize]
+    [Authorize]
     [Produces("application/json")]
 
     public class PaymentHistoryController : ControllerBase

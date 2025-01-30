@@ -21,7 +21,7 @@ namespace AITechWebAPI.Controllers
 {
     [Route("Setting")]
     [ApiController]
-    //[Authorize]
+    [Authorize]
     [Produces("application/json")]
 
     public class SettingController : ControllerBase

@@ -19,7 +19,7 @@ namespace AITechWebAPI.Controllers
 {
     [Route("FileUpload")]
     [ApiController]
-    //[Authorize]
+    [Authorize]
     [Produces("application/json")]
 
     public class FileUploadController : ControllerBase

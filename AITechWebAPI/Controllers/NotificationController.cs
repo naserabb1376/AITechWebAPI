@@ -20,7 +20,7 @@ namespace AITechWebAPI.Controllers
 {
     [Route("Notification")]
     [ApiController]
-    //[Authorize]
+    [Authorize]
     [Produces("application/json")]
 
     public class NotificationController : ControllerBase

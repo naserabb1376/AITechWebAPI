@@ -20,7 +20,7 @@ namespace AITechWebAPI.Controllers
 {
     [Route("Ticket")]
     [ApiController]
-    //[Authorize]
+    [Authorize]
     [Produces("application/json")]
 
     public class TicketController : ControllerBase

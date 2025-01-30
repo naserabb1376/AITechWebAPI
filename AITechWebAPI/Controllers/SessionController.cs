@@ -19,7 +19,7 @@ namespace AITechWebAPI.Controllers
 {
     [Route("Session")]
     [ApiController]
-    //[Authorize]
+    [Authorize]
     [Produces("application/json")]
 
     public class SessionController : ControllerBase

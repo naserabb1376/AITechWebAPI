@@ -19,7 +19,7 @@ namespace AITechWebAPI.Controllers
 {
     [Route("Role")]
     [ApiController]
-    //[Authorize]
+    [Authorize]
     [Produces("application/json")]
 
     public class RoleController : ControllerBase

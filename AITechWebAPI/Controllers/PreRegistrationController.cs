@@ -19,7 +19,7 @@ namespace AITechWebAPI.Controllers
 {
     [Route("PreRegistration")]
     [ApiController]
-    //[Authorize]
+    [Authorize]
     [Produces("application/json")]
 
     public class PreRegistrationController : ControllerBase

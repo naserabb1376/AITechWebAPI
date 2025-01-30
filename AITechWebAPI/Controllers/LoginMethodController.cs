@@ -19,7 +19,7 @@ namespace AITechWebAPI.Controllers
 {
     [Route("LoginMethod")]
     [ApiController]
-    //[Authorize]
+    [Authorize]
     [Produces("application/json")]
 
     public class LoginMethodController : ControllerBase

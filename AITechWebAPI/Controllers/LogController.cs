@@ -19,7 +19,7 @@ namespace AITechWebAPI.Controllers
 {
     [Route("Log")]
     [ApiController]
-    //[Authorize]
+    [Authorize]
     [Produces("application/json")]
 
     public class LogController : ControllerBase

@@ -19,7 +19,7 @@ namespace AITechWebAPI.Controllers
 {
     [Route("StudentDetails")]
     [ApiController]
-    //[Authorize]
+    [Authorize]
     [Produces("application/json")]
 
     public class StudentDetailsController : ControllerBase

@@ -19,7 +19,7 @@ namespace AITechWebAPI.Controllers
 {
     [Route("Image")]
     [ApiController]
-    //[Authorize]
+    [Authorize]
     [Produces("application/json")]
 
     public class ImageController : ControllerBase
