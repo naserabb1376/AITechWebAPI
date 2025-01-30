@@ -1,10 +1,7 @@
-﻿using Domain;
-using Domains;
-using Microsoft.AspNetCore.Authentication;
+﻿using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
-using NobatPlusAPI.Models.Authenticate;
 using AITechWebAPI.Tools;
 using AITechDATA.DataLayer.Repositories;
 using AITechDATA.Domain;
@@ -16,6 +13,7 @@ using System.Text;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Azure.Core;
 using Repositories;
+using AITechWebAPI.Models.Authenticate;
 
 namespace AITechWebAPI.Controllers
 {
@@ -63,7 +61,8 @@ namespace AITechWebAPI.Controllers
                             result.ErrorMessage = "نام کاربری (شماره تماس) نامعتبر است";
                             return BadRequest(result);
                         }
-                        bool validCode = await ToolBox.CheckCode(authenticationRequestBody.UserName, authenticationRequestBody.Password);
+                        var storedVerifyCode = HttpContext.Session.GetString("VerifyCode") ?? "";
+                        bool validCode = await ToolBox.CheckCode(authenticationRequestBody.UserName, authenticationRequestBody.Password,storedVerifyCode);
                         if (validCode)
                         {
                             authenticateResult = await _userRep.AuthenticateAsync(authenticationRequestBody.UserName, authenticationRequestBody.Password, authenticationRequestBody.LoginType);
@@ -107,20 +106,40 @@ namespace AITechWebAPI.Controllers
                         {
                             RefreshToken = refreshToken, // بازگرداندن رفرش توکن
                             AccessToken = accessToken, // بازگرداندن اکسس توکن
-                            PersonId = authenticateResult.Result.ID,
+                            HserId = authenticateResult.Result.ID,
                             FullName = authenticateResult.Result.FullName,
                         };
 
-                        #region AddLog
-                        Log log = new Log()
+                        LoginMethod loginMethod = new LoginMethod()
                         {
                             CreateDate = DateTime.Now.ToShamsi(),
                             UpdateDate = DateTime.Now.ToShamsi(),
-                            LogTime = DateTime.Now.ToShamsi(),
-                            ActionName = this.ControllerContext.RouteData.Values["action"].ToString(),
+                            UserId = authenticateResult.Result.ID,
+                            ExpirationDate= DateTime.Now.ToShamsi().AddHours(1),
+                            Method = authenticationRequestBody.LoginType == 1 ? "UserName & Password" : "UserName & VerifyCode",
+                            Token = accessToken,
                         };
-                        await _logRep.AddLogAsync(log);
-                        #endregion
+
+                        var saveLogin = await _loginRep.AddLoginMethodAsync(loginMethod);
+                        if (saveLogin.Status)
+                        {
+                            #region AddLog
+                            Log log = new Log()
+                            {
+                                CreateDate = DateTime.Now.ToShamsi(),
+                                UpdateDate = DateTime.Now.ToShamsi(),
+                                LogTime = DateTime.Now.ToShamsi(),
+                                ActionName = this.ControllerContext.RouteData.Values["action"].ToString(),
+                            };
+                            await _logRep.AddLogAsync(log);
+                            #endregion
+
+                        }
+                        else
+                        {
+                            result.Status = saveLogin.Status;
+                            result.ErrorMessage = saveLogin.ErrorMessage;
+                        }
 
                         return Ok(result);
                     }
@@ -167,28 +186,28 @@ namespace AITechWebAPI.Controllers
 
             if (expireTokenResult.Status)
             {
-                var login = await _loginRep.GetLoginByIdAsync(refreshTokenRecord.Result.UserId, 2);
+                var user = await _userRep.GetUserByIdAsync(refreshTokenRecord.Result.UserId);
                 var refreshToken = ToolBox.GenerateToken(); // تولید رفرش توکن
-                var accessToken = ToolBox.GenerateAccessToken(login.Result); // تولید رفرش توکن
+                var accessToken = ToolBox.GenerateAccessToken(user.Result); // تولید رفرش توکن
                 var refreshTokenExpiryDate = DateTime.Now.ToShamsi().AddDays(30); // تنظیم تاریخ انقضای رفرش توکن برای 30 روز
 
 
-                var newrefreshTokenRecord = new RefreshToken
+                var newrefreshTokenRecord = new Token
                 {
-                    UserId = login.Result.PersonID,
-                    Token = refreshToken, // ذخیره رفرش توکن
+                    UserId = user.Result.ID,
+                    TokenValue = refreshToken, // ذخیره رفرش توکن
                     Type = "RefreshToken", // نوع: RefreshToken
                     Status = true,
                     CreatedDate = DateTime.Now.ToShamsi(),
                     ExpiryDate = refreshTokenExpiryDate // تاریخ انقضا
                 };
 
-                var saverefreshToken = await _tokenRep.AddRefreshTokenAsync(newrefreshTokenRecord);
+                var saverefreshToken = await _tokenRep.AddTokenAsync(newrefreshTokenRecord);
 
                 if (saverefreshToken.Status)
                 {
-                    result.Status = login.Status;
-                    result.ErrorMessage = login.ErrorMessage;
+                    result.Status = user.Status;
+                    result.ErrorMessage = user.ErrorMessage;
                     result.Result = new RefreshTokenResultBody()
                     {
                         RefreshToken = refreshToken, // بازگرداندن رفرش توکن
@@ -227,38 +246,21 @@ namespace AITechWebAPI.Controllers
             }
 
             BitResultObject result = new BitResultObject();
-            var validUserName = await _loginRep.ExistLoginAsync(signupRequestBody.UserName,2);
+            var validUserName = await _userRep.ExistUserAsync(signupRequestBody.UserName,"username");
 
             if (validUserName.Status)
             {
                 result.Status = !validUserName.Status;
-                result.ErrorMessage = "نام کاربری تکراری است";
+                result.ErrorMessage = "نام کاربری (شماره موبایل) تکراری است";
                 return BadRequest(result);
             }
 
-            var validPhoneNumber = await _loginRep.ExistLoginAsync(signupRequestBody.PhoneNumber, 3);
+         
+            var validEmail = await _userRep.ExistUserAsync(signupRequestBody.Email, "email");
 
-            if (validPhoneNumber.Status)
+            if (validEmail.Status)
             {
-                result.Status = !validPhoneNumber.Status;
-                result.ErrorMessage = "شماره تماس تکراری است";
-                return BadRequest(result);
-            }
-
-            var validNaCode = await _loginRep.ExistLoginAsync(signupRequestBody.NaCode, 4);
-
-            if (validNaCode.Status)
-            {
-                result.Status = !validNaCode.Status;
-                result.ErrorMessage = "کد ملی تکراری است";
-                return BadRequest(result);
-            }
-
-            var validEmail = await _loginRep.ExistLoginAsync(signupRequestBody.Email, 5);
-
-            if (validNaCode.Status)
-            {
-                result.Status = !validNaCode.Status;
+                result.Status = !validEmail.Status;
                 result.ErrorMessage = "پست الکترونیک تکراری است";
                 return BadRequest(result);
             }
@@ -270,7 +272,6 @@ namespace AITechWebAPI.Controllers
                 AddressLocationVerticalPoint = signupRequestBody.AddressLocationVerticalPoint,
                 AddressPostalCode = signupRequestBody.AddressPostalCode,
                 AddressStreet = signupRequestBody.AddressStreet,
-                Description = signupRequestBody.AddressDescription,
                 CreateDate = DateTime.Now.ToShamsi(),
                 UpdateDate = DateTime.Now.ToShamsi(),
                 
@@ -280,95 +281,45 @@ namespace AITechWebAPI.Controllers
 
             if (result.Status)
             {
-                Person person = new Person()
+                User user = new User()
                 {
-                    FirstName = signupRequestBody.FirstName,
-                    LastName = signupRequestBody.LastName,
-                    NaCode = signupRequestBody.NaCode,
+                    FullName = signupRequestBody.FullName,
+                    Username = signupRequestBody.UserName,
+                    RoleId = signupRequestBody.RoleId,
                     Email = signupRequestBody.Email,
-                    PhoneNumber = signupRequestBody.PhoneNumber,
-                    DateOfBirth = signupRequestBody.DateOfBirth?.StringToDate(),
+                    PasswordHash = signupRequestBody.Password.ToHash(),
                     CreateDate = DateTime.Now.ToShamsi(),
                     UpdateDate = DateTime.Now.ToShamsi(),
-                    AddressID = address.ID,
-                    Description = signupRequestBody.PersonDescription,
+                    AddressId = address.ID,
                 };
-                result = await _personRep.AddPersonAsync(person);
+                if(user.RoleId == 1) // user is student
+                {
+                    StudentDetails studentDetails = new StudentDetails()
+                    {
+                        CreateDate = DateTime.Now.ToShamsi(),
+                        UpdateDate = DateTime.Now.ToShamsi(),
+                    };
+                    user.StudentDetails = studentDetails;
+                }
+                result = await _userRep.AddUserAsync(user);
 
                 if (result.Status)
                 {
-                    Customer customer = new Customer()
+                    #region AddLog
+
+                    Log log = new Log()
                     {
-                        PersonID = person.ID,
                         CreateDate = DateTime.Now.ToShamsi(),
-                        UpdateDate= DateTime.Now.ToShamsi(),
-                        Description = signupRequestBody.CustomerDescription,
+                        UpdateDate = DateTime.Now.ToShamsi(),
+                        LogTime = DateTime.Now.ToShamsi(),
+                        ActionName = this.ControllerContext.RouteData.Values["action"].ToString(),
+
                     };
-                    result = await _customerRep.AddCustomerAsync(customer);
+                    await _logRep.AddLogAsync(log);
 
-                    if (result.Status)
-                    {
-                        Register register = new Register()
-                        {
-                            CreateDate = DateTime.Now.ToShamsi(),
-                            PersonID = person.ID,
-                            RegistrationDate = DateTime.Now.ToShamsi(),
-                            UpdateDate = DateTime.Now.ToShamsi(),
-                            Description= signupRequestBody.RegisterDescription,
-                        };
-                        result = await _registerRep.AddRegisterAsync(register);
-                        if (result.Status)
-                        {
-                            Login login = new Login()
-                            {
-                                Username = signupRequestBody.UserName,
-                                PasswordHash = signupRequestBody.Password.ToHash(),
-                                PersonID = person.ID,
-                                CreateDate = DateTime.Now.ToShamsi(),
-                                LastLoginDate = DateTime.Now.ToShamsi(),
-                                UpdateDate = DateTime.Now.ToShamsi(),
-                                Description = signupRequestBody.LoginDescription,
-                            };
-                            result = await _loginRep.AddLoginAsync(login);
-                            if (result.Status && signupRequestBody.IsStylist)
-                            {
-                                Stylist stylist = new Stylist()
-                                {
-                                    JobTypeID = signupRequestBody.JobTypeID,
-                                    YearsOfExperience = signupRequestBody.YearsOfExperience,
-                                    Specialty = signupRequestBody.Specialty,
-                                    StylistParentID = signupRequestBody.StylistParentID,
-                                    PersonID = person.ID,
-                                    CreateDate = DateTime.Now.ToShamsi(),
-                                    UpdateDate = DateTime.Now.ToShamsi(),
-                                    Description = login.Description,
-                                };
-                                result = await _stylistRep.AddStylistAsync(stylist);
-                            }
-                            if (result.Status)
-                            {
+                    #endregion
 
-                                #region AddLog
-
-                                Log log = new Log()
-                                {
-                                    CreateDate = DateTime.Now.ToShamsi(),
-                                    UpdateDate = DateTime.Now.ToShamsi(),
-                                    LogTime = DateTime.Now.ToShamsi(),
-                                    ActionName = this.ControllerContext.RouteData.Values["action"].ToString(),
-
-                                };
-                                await _logRep.AddLogAsync(log);
-
-                                #endregion
-
-                            }
-
-                            result.ID = person.ID;
-
-                            return Ok(result);
-                        }
-                    }
+                    return Ok(result);
                 }
             }
             return BadRequest(result);
@@ -384,13 +335,13 @@ namespace AITechWebAPI.Controllers
 
             BitResultObject result = new BitResultObject();
 
-            var validPhoneNumber = await _loginRep.ExistLoginAsync(sendCodeRequestBody.PhoneNumber, 3);
+            var validPhoneNumber = await _userRep.ExistUserAsync(sendCodeRequestBody.PhoneNumber, "username");
             if (sendCodeRequestBody.Exists)
             {
                 if (!validPhoneNumber.Status && string.IsNullOrEmpty(validPhoneNumber.ErrorMessage))
                 {
                     result.Status = validPhoneNumber.Status;
-                    result.ErrorMessage = "شماره تماس نامعتبر است";
+                    result.ErrorMessage = "نام کاربری (شماره موبایل) نامعتبر است";
                     return BadRequest(result);
                 }
             }
@@ -400,13 +351,15 @@ namespace AITechWebAPI.Controllers
                 if (validPhoneNumber.Status)
                 {
                     result.Status = !validPhoneNumber.Status;
-                    result.ErrorMessage = "شماره تماس تکراری است";
+                    result.ErrorMessage = "نام کاربری (شماره موبایل) تکراری است";
                     return BadRequest(result);
                 }
             }
 
+            var sendCodeResult = await ToolBox.SendCode(sendCodeRequestBody.PhoneNumber);
 
-            result.Status =  await ToolBox.SendCode(sendCodeRequestBody.PhoneNumber);
+            result.Status = sendCodeResult.SendStatus;
+            HttpContext.Session.SetString("VerifyCode", sendCodeResult.Code);
 
             if (result.Status)
             {
@@ -428,13 +381,13 @@ namespace AITechWebAPI.Controllers
 
             BitResultObject result = new BitResultObject();
 
-            var validPhoneNumber = await _loginRep.ExistLoginAsync(checkCodeRequestBody.PhoneNumber, 3);
+            var validPhoneNumber = await _userRep.ExistUserAsync(checkCodeRequestBody.PhoneNumber, "username");
             if (checkCodeRequestBody.Exists)
             {
                 if (!validPhoneNumber.Status && string.IsNullOrEmpty(validPhoneNumber.ErrorMessage))
                 {
                     result.Status = validPhoneNumber.Status;
-                    result.ErrorMessage = "شماره تماس نامعتبر است";
+                    result.ErrorMessage = "نام کاربری (شماره موبایل) نامعتبر است";
                     return BadRequest(result);
                 }
             }
@@ -444,13 +397,13 @@ namespace AITechWebAPI.Controllers
                 if (validPhoneNumber.Status)
                 {
                     result.Status = !validPhoneNumber.Status;
-                    result.ErrorMessage = "شماره تماس تکراری است";
+                    result.ErrorMessage = "نام کاربری (شماره موبایل) تکراری است";
                     return BadRequest(result);
                 }
             }
 
-
-            result.Status = await ToolBox.CheckCode(checkCodeRequestBody.PhoneNumber,checkCodeRequestBody.VerifyCode);
+            var storedVerifyCode = HttpContext.Session.GetString("VerifyCode") ?? "";
+            result.Status = await ToolBox.CheckCode(checkCodeRequestBody.PhoneNumber,checkCodeRequestBody.VerifyCode, storedVerifyCode);
 
             if (result.Status)
             {
@@ -483,7 +436,7 @@ namespace AITechWebAPI.Controllers
 
             if (!string.IsNullOrEmpty(requestBody.PhoneNumber))
             {
-                var validPhoneNumber = await _loginRep.ExistLoginAsync(requestBody.PhoneNumber, 3);
+                var validPhoneNumber = await _userRep.ExistUserAsync(requestBody.PhoneNumber, "username");
                 if (!validPhoneNumber.Status && string.IsNullOrEmpty(validPhoneNumber.ErrorMessage))
                 {
                     result.Status = validPhoneNumber.Status;
@@ -491,7 +444,10 @@ namespace AITechWebAPI.Controllers
                     return BadRequest(result);
                 }
 
-                result.Status = await ToolBox.SendCode(requestBody.PhoneNumber);
+                var sendCodeResult = await ToolBox.SendCode(requestBody.PhoneNumber);
+
+                result.Status = sendCodeResult.SendStatus;
+                HttpContext.Session.SetString("VerifyCode", sendCodeResult.Code);
 
                 if (result.Status)
                 {
@@ -503,32 +459,32 @@ namespace AITechWebAPI.Controllers
             {
                 var resetTokenExpiryDate = DateTime.Now.ToShamsi().AddHours(2);
 
-                var existLogin = await _loginRep.ExistLoginAsync(requestBody.Email, 5);
+                var existLogin = await _userRep.ExistUserAsync(requestBody.Email, "email");
 
                 if (existLogin.Status)
                 {
-                    var login = await _loginRep.GetLoginByIdAsync(existLogin.ID, 1);
-                    var resetToken = ToolBox.GenerateToken(login.Result.ID); // تولید رفرش توکن
+                    var user = await _userRep.GetUserByIdAsync(existLogin.ID);
+                    var resetToken = ToolBox.GenerateToken(user.Result.ID); // تولید رفرش توکن
 
-                    if (login.Status)
+                    if (user.Status)
                     {
 
-                        var newresetTokenRecord = new RefreshToken
+                        var newresetTokenRecord = new Token
                         {
-                            UserId = login.Result.PersonID,
-                            Token = resetToken, // ذخیره رفرش توکن
+                            UserId = user.Result.ID,
+                            TokenValue = resetToken, // ذخیره رفرش توکن
                             Type = "ResetPassword", // نوع: ResetPassword
                             Status = true,
                             CreatedDate = DateTime.Now.ToShamsi(),
                             ExpiryDate = resetTokenExpiryDate // تاریخ انقضا
                         };
 
-                        var saverefreshToken = await _tokenRep.AddRefreshTokenAsync(newresetTokenRecord);
+                        var saverefreshToken = await _tokenRep.AddTokenAsync(newresetTokenRecord);
 
                         if (saverefreshToken.Status)
                         {
 
-                            var fullName = $"{login.Result.Person.FirstName} {login.Result.Person.LastName}";
+                            var fullName = user.Result.FullName;
                             var messageText = ToolBox.MakeResetPasswordMessage(fullName, resetToken);
                             bool sentState = ToolBox.SendEmail(requestBody.Email, "بازنشانی کلمه عبور", messageText);
 
@@ -567,8 +523,8 @@ namespace AITechWebAPI.Controllers
                     }
                     else
                     {
-                        result.Status = login.Status;
-                        result.ErrorMessage = login.ErrorMessage;
+                        result.Status = user.Status;
+                        result.ErrorMessage = user.ErrorMessage;
                     }
                 }
                 else
@@ -599,7 +555,7 @@ namespace AITechWebAPI.Controllers
 
             if (!string.IsNullOrEmpty(requestBody.VerifyCode))
             {
-                var validPhoneNumber = await _loginRep.ExistLoginAsync(requestBody.PhoneNumber, 3);
+                var validPhoneNumber = await _userRep.ExistUserAsync(requestBody.PhoneNumber, "username");
                 if (!validPhoneNumber.Status && string.IsNullOrEmpty(validPhoneNumber.ErrorMessage))
                 {
                     result.Status = validPhoneNumber.Status;
@@ -607,26 +563,28 @@ namespace AITechWebAPI.Controllers
                     return BadRequest(result);
                 }
 
-                result.Status = await ToolBox.CheckCode(requestBody.PhoneNumber, requestBody.VerifyCode);
+                var storedVerifyCode = HttpContext.Session.GetString("VerifyCode") ?? "";
+                result.Status = await ToolBox.CheckCode(requestBody.PhoneNumber, requestBody.VerifyCode, storedVerifyCode);
+
 
                 if (result.Status)
                 {
 
-                    var existLogin = await _loginRep.ExistLoginAsync(requestBody.PhoneNumber, 3);
+                    var existLogin = await _userRep.ExistUserAsync(requestBody.PhoneNumber, "username");
 
                     if (existLogin.Status)
                     {
-                        var login = await _loginRep.GetLoginByIdAsync(existLogin.ID, 1);
+                        var user = await _userRep.GetUserByIdAsync(existLogin.ID);
 
-                        if (login.Status)
+                        if (user.Status)
                         {
-                            login.Result.PasswordHash = requestBody.NewPassword.ToHash();
+                            user.Result.PasswordHash = requestBody.NewPassword.ToHash();
 
-                            var saveLogin = await _loginRep.EditLoginAsync(login.Result);
+                            var updateuser = await _userRep.EditUserAsync(user.Result);
 
-                            if (saveLogin.Status)
+                            if (updateuser.Status)
                             {
-                                result.Status = saveLogin.Status;
+                                result.Status = updateuser.Status;
                                 result.ErrorMessage = $"تغییر کلمه عبور با موفقیت انجام شد";
 
                                 #region AddLog
@@ -646,8 +604,8 @@ namespace AITechWebAPI.Controllers
 
                         else
                         {
-                            result.Status = login.Status;
-                            result.ErrorMessage = login.ErrorMessage;
+                            result.Status = user.Status;
+                            result.ErrorMessage = user.ErrorMessage;
                             return BadRequest(result);
                         }
 
@@ -667,23 +625,23 @@ namespace AITechWebAPI.Controllers
             }
             else if (!string.IsNullOrEmpty(requestBody.Token))
             {
-                long loginId = long.Parse(requestBody.Token.Split('-')[0]);
+                long userId = long.Parse(requestBody.Token.Split('-')[0]);
 
-                var existLogin = await _loginRep.ExistLoginAsync(loginId.ToString(), 1);
+                var existLogin = await _userRep.ExistUserAsync(userId.ToString(), "id");
 
-                if (loginId > 0 && existLogin.Status)
+                if (userId > 0 && existLogin.Status)
                 {
-                    var login = await _loginRep.GetLoginByIdAsync(loginId, 1);
+                    var user = await _userRep.GetUserByIdAsync(userId);
 
-                    if (login.Status)
+                    if (user.Status)
                     {
-                        login.Result.PasswordHash = requestBody.NewPassword.ToHash();
+                        user.Result.PasswordHash = requestBody.NewPassword.ToHash();
 
-                        var saveLogin = await _loginRep.EditLoginAsync(login.Result);
+                        var updateduser = await _userRep.EditUserAsync(user.Result);
 
-                        if (saveLogin.Status)
+                        if (updateduser.Status)
                         {
-                            result.Status = saveLogin.Status;
+                            result.Status = updateduser.Status;
                             result.ErrorMessage = $"تغییر کلمه عبور با موفقیت انجام شد";
 
                             #region AddLog
@@ -701,14 +659,14 @@ namespace AITechWebAPI.Controllers
                         }
                         else
                         {
-                            result.Status = saveLogin.Status;
-                            result.ErrorMessage = saveLogin.ErrorMessage;
+                            result.Status = updateduser.Status;
+                            result.ErrorMessage = updateduser.ErrorMessage;
                         }
                     }
                     else
                     {
-                        result.Status = login.Status;
-                        result.ErrorMessage = login.ErrorMessage;
+                        result.Status = user.Status;
+                        result.ErrorMessage = user.ErrorMessage;
                     }
                 }
 

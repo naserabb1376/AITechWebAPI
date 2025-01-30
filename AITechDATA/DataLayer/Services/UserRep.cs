@@ -68,19 +68,19 @@ namespace AITechDATA.DataLayer.Services
                     case "id":
                     default:
                         {
-                           var theUser = await _context.Users.AsNoTracking().FirstOrDefaultAsync(x=> x.ID == long.Parse(fieldValue));
+                           var theUser = await _context.Users.AsNoTracking().FirstOrDefaultAsync(x=> x.ID == long.Parse(fieldValue)) ?? new User();
                             userId = theUser.ID;
                             break;
                         }
                     case "username":
                         {
-                            var theUser = await _context.Users.AsNoTracking().FirstOrDefaultAsync(x => x.Username == fieldValue);
+                            var theUser = await _context.Users.AsNoTracking().FirstOrDefaultAsync(x => x.Username == fieldValue) ?? new User();
                             userId = theUser.ID;
                             break;
                         }
                     case "email":
                         {
-                            var theUser = await _context.Users.AsNoTracking().FirstOrDefaultAsync(x => x.Email == fieldValue);
+                            var theUser = await _context.Users.AsNoTracking().FirstOrDefaultAsync(x => x.Email == fieldValue) ?? new User();
                             userId = theUser.ID;
                             break;
                         }

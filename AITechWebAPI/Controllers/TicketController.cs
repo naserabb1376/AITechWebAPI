@@ -14,6 +14,7 @@ using AITechDATA.Tools;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+using AITechDATA.CustomResponses;
 
 namespace AITechWebAPI.Controllers
 {
@@ -34,7 +35,7 @@ namespace AITechWebAPI.Controllers
         }
 
         [HttpPost("GetAllTickets_Base")]
-        public async Task<ActionResult<ListResultObject<Ticket>>> GetAllTickets_Base(GetTicketListRequestBody requestBody)
+        public async Task<ActionResult<TicketListCustomResponse<Ticket>>> GetAllTickets_Base(GetTicketListRequestBody requestBody)
         {
             if (!ModelState.IsValid)
             {
@@ -49,7 +50,7 @@ namespace AITechWebAPI.Controllers
         }
 
         [HttpPost("GetTicketById_Base")]
-        public async Task<ActionResult<RowResultObject<Ticket>>> GetTicketById_Base(GetRowRequestBody requestBody)
+        public async Task<ActionResult<TicketRowCustomResponse<Ticket>>> GetTicketById_Base(GetRowRequestBody requestBody)
         {
             if (!ModelState.IsValid)
             {

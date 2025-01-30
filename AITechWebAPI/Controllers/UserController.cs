@@ -80,9 +80,6 @@ namespace AITechWebAPI.Controllers
             return BadRequest(result);
         }
 
-
-
-
         [HttpPost("AddUser_Base")]
         public async Task<ActionResult<BitResultObject>> AddUser_Base(AddEditUserRequestBody requestBody)
         {
@@ -96,7 +93,7 @@ namespace AITechWebAPI.Controllers
                 UpdateDate = DateTime.Now.ToShamsi(),
                 ID = requestBody.ID,
                 Email = requestBody.Email,
-                Username = requestBody.Username,
+                Username = requestBody.UserName,
                 AddressId = requestBody.AdressId,
                 FullName = requestBody.FullName,
                 PasswordHash = requestBody.Password.ToHash(),
@@ -147,7 +144,7 @@ namespace AITechWebAPI.Controllers
                 UpdateDate = DateTime.Now.ToShamsi(),
                 ID = requestBody.ID,
                 Email = requestBody.Email,
-                Username = requestBody.Username,
+                Username = requestBody.UserName,
                 AddressId = requestBody.AdressId,
                 FullName = requestBody.FullName,
                 PasswordHash = requestBody.Password.ToHash(),
@@ -210,7 +207,7 @@ namespace AITechWebAPI.Controllers
                     UpdateDate = DateTime.Now.ToShamsi(),
                     ID = requestBody.ID,
                     Email = requestBody.Email,
-                    Username = requestBody.Username,
+                    Username = requestBody.UserName,
                     AddressId = address.ID,
                     FullName = requestBody.FullName,
                     PasswordHash = requestBody.Password.ToHash(),
@@ -281,7 +278,7 @@ namespace AITechWebAPI.Controllers
                     UpdateDate = DateTime.Now.ToShamsi(),
                     ID = requestBody.ID,
                     Email = requestBody.Email,
-                    Username = requestBody.Username,
+                    Username = requestBody.UserName,
                     AddressId = address.ID,
                     FullName = requestBody.FullName,
                     PasswordHash = requestBody.Password.ToHash(),

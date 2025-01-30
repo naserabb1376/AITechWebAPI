@@ -1,7 +1,7 @@
-﻿using NobatPlusAPI.Tools;
+﻿using AITechWebAPI.Tools;
 using System.ComponentModel.DataAnnotations;
 
-namespace NobatPlusAPI.Models.Authenticate
+namespace AITechWebAPI.Models.Authenticate
 {
     public class RefreshTokenResultBody
     {

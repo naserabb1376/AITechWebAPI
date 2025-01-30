@@ -11,6 +11,6 @@ namespace AITechDATA.Domain
     {
         public long UserId { get; set; } // کلید خارجی به User
         public User User { get; set; } // ارتباط با User
-        public ICollection<Parent> Parents { get; set; } // والدین دانش‌آموز
+        public ICollection<Parent> Parents { get; set; } = new List<Parent>(); // والدین دانش‌آموز
     }
 }

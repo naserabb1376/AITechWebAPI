@@ -23,19 +23,31 @@ namespace AITechWebAPI.Tools
           .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true);
             Configuration = builder.Build();
         }
-        public async static Task<bool> SendCode(string mobileNumber)
+        public async static Task<VerifyCodeResult> SendCode(string mobileNumber)
         {
+            var result = new VerifyCodeResult();
+            string theCode = "";
             string AppName = Configuration["Jwt:Issuer"];
             string UserName = Configuration["VerifyCode:PanelUserName"];
             string Password = Configuration["VerifyCode:PanelPassword"];
+            bool GenerateVerifyCode = bool.Parse(Configuration["VerifyCode:GenerateVerifyCode"]);
 
             bool send = false;
             try
             {
-                AutoSendCodeResponse x = null;
+                AutoSendCodeResponse autoSendCode = null;
+                SendMessageWithCodeResponse sendMessageWithCode = null;
                 using (FastSendSoapClient client = new FastSendSoapClient(FastSendSoapClient.EndpointConfiguration.FastSendSoap))
                 {
-                    x = await client.AutoSendCodeAsync(UserName, Password, mobileNumber, AppName);
+                    if (GenerateVerifyCode)
+                    {
+                       theCode = GenerateVerifyCodeManualy();
+                       sendMessageWithCode = await client.SendMessageWithCodeAsync(UserName, Password, mobileNumber, theCode);
+                    }
+                    else
+                    {
+                        autoSendCode = await client.AutoSendCodeAsync(UserName, Password, mobileNumber, AppName);
+                    }
                     send = true;
                 }
             }
@@ -43,20 +55,29 @@ namespace AITechWebAPI.Tools
             {
                 send = false;
             }
-            return send;
+            result.SendStatus = send;
+            result.Code = theCode ?? "";
+            return result;
         }
 
-        public async static Task<bool> CheckCode(string mobileNumber, string code)
+        public async static Task<bool> CheckCode(string mobileNumber, string code,string savedCode)
         {
             string UserName = Configuration["VerifyCode:PanelUserName"];
             string Password = Configuration["VerifyCode:PanelPassword"];
             bool currect = false;
             try
             {
-                using (FastSendSoapClient client = new FastSendSoapClient(FastSendSoapClient.EndpointConfiguration.FastSendSoap))
+                if (!string.IsNullOrEmpty(savedCode))
                 {
-                    CheckSendCodeResponse response = await client.CheckSendCodeAsync(UserName, Password, mobileNumber, code);
-                    currect = response.Body.CheckSendCodeResult;
+                    currect = savedCode == code;
+                }
+                else
+                {
+                    using (FastSendSoapClient client = new FastSendSoapClient(FastSendSoapClient.EndpointConfiguration.FastSendSoap))
+                    {
+                        CheckSendCodeResponse response = await client.CheckSendCodeAsync(UserName, Password, mobileNumber, code);
+                        currect = response.Body.CheckSendCodeResult;
+                    }
                 }
             }
             catch (Exception)
@@ -193,6 +214,21 @@ namespace AITechWebAPI.Tools
             sb.AppendLine($"--------------------------------");
             var logFilePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "log.txt");
             File.AppendAllText(Path.Combine(logFilePath), sb.ToString());
+        }
+        private static string GenerateVerifyCodeManualy()
+        {
+            string VerifyCode = "";
+            Random random = new Random();
+            int minCode = 111111;
+            int maxCode = 999999;
+            VerifyCode = random.Next(minCode, maxCode).ToString();
+            return VerifyCode;
+        }
+
+        public class VerifyCodeResult
+        {
+            public string Code { get; set; }
+            public bool SendStatus { get; set; }
         }
 
     }

@@ -21,9 +21,9 @@ namespace AITechWebAPI.Models.LoginMethod
 
         [Display(Name = "کلمه عبور")]
         [Required(ErrorMessage = "لطفا {0} را وارد کنید")]
-        //[MaxLength(20)]
-        //[DataType(DataType.Password)] //Hide Characters
-        //[RegularExpression(@"^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{6,20}$", ErrorMessage = "کلمه عبور باید شامل حرف و عدد باشد")] //check exist number & alphabet chars in password field
+        [MaxLength(20)]
+        [DataType(DataType.Password)] //Hide Characters
+        [RegularExpression(@"^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{6,20}$", ErrorMessage = "کلمه عبور باید شامل حرف و عدد باشد")] //check exist number & alphabet chars in password field
         public string Password { get; set; }
 
         [Display(Name = "تاریخ انقضا")]
