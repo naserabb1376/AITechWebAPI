@@ -64,7 +64,7 @@ namespace AITechWebAPI.Controllers
             }
             return BadRequest(result);
         }
-
+        [AllowAnonymous]
         [HttpPost("ExistUser_Base")]
         public async Task<ActionResult<BitResultObject>> ExistUser_Base(ExistUserRequestBody requestBody)
         {
