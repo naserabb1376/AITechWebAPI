@@ -10,12 +10,13 @@ namespace AITechDATA.Domain
     {
         public string FullName { get; set; }
         public string Email { get; set; }
+        public string NationalCode { get; set; }
         public string Username { get; set; }
         public string PasswordHash { get; set; } // هش رمز عبور
         public long RoleId { get; set; } // کلید خارجی به Role
         public Role Role { get; set; } // ارتباط با Role
-        public long AddressId { get; set; } // کلید خارجی به Address
-        public Address Address { get; set; } // ارتباط با Address
+        public long? AddressId { get; set; } // کلید خارجی به Address
+        public Address? Address { get; set; } // ارتباط با Address
         public ICollection<TeacherResume> TeacherResumes { get; set; } // رزومه‌های مرتبط با استاد
         //public string ParentInfo { get; set; } // اطلاعات والدین برای دانش‌آموزان
         public ICollection<PaymentHistory> PaymentHistories { get; set; } // ارتباط یک به چند با PaymentHistory

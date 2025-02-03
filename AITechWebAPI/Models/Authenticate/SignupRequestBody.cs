@@ -1,4 +1,6 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using AITechWebAPI.Models.Address;
+using AITechWebAPI.Validations;
+using System.ComponentModel.DataAnnotations;
 
 namespace AITechWebAPI.Models.Authenticate
 {
@@ -32,20 +34,12 @@ namespace AITechWebAPI.Models.Authenticate
         [Display(Name = "پست الکترونیک")]
         public string Email { get; set; }
 
-        [Display(Name = "شهر یا استان")]
-        [Required(ErrorMessage = "لطفا {0} را وارد کنید")]
-        public long CityID { get; set; }
-
-        [Display(Name = "خیابان")]
-        [Required(ErrorMessage = "لطفا {0} را وارد کنید")]
-        public string AddressStreet { get; set; }
-
-        [Display(Name = "کد پستی")]
+        [Display(Name = "کد ملی")]
         [RegularExpression(@"^([0-9]{10})$", ErrorMessage = "مقدار {0} باید 10 رقمی و فقط شامل اعداد باشد")]
         [MaxLength(10)]
         [Required(ErrorMessage = "لطفا {0} را وارد کنید")]
-        public string AddressPostalCode { get; set; }
-        public string? AddressLocationHorizentalPoint { get; set; }
-        public string? AddressLocationVerticalPoint { get; set; }
+        public string NationalCode { get; set; }
+
+        public AddEditAddressRequestBody? Address { get; set; }
     }
 }

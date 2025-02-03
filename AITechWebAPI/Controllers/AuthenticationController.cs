@@ -246,6 +246,9 @@ namespace AITechWebAPI.Controllers
             }
 
             BitResultObject result = new BitResultObject();
+
+            Address address = new Address();
+
             var validUserName = await _userRep.ExistUserAsync(signupRequestBody.UserName,"username");
 
             if (validUserName.Status)
@@ -265,19 +268,31 @@ namespace AITechWebAPI.Controllers
                 return BadRequest(result);
             }
 
-            Address address = new Address()
-            {
-                CityID = signupRequestBody.CityID,
-                AddressLocationHorizentalPoint = signupRequestBody.AddressLocationHorizentalPoint,
-                AddressLocationVerticalPoint = signupRequestBody.AddressLocationVerticalPoint,
-                AddressPostalCode = signupRequestBody.AddressPostalCode,
-                AddressStreet = signupRequestBody.AddressStreet,
-                CreateDate = DateTime.Now.ToShamsi(),
-                UpdateDate = DateTime.Now.ToShamsi(),
-                
-            };
+            var validNationalCode = await _userRep.ExistUserAsync(signupRequestBody.NationalCode, "nationalcode");
 
-            result = await _addressRep.AddAddressAsync(address);
+            if (validNationalCode.Status)
+            {
+                result.Status = !validNationalCode.Status;
+                result.ErrorMessage = "کد ملی تکراری است";
+                return BadRequest(result);
+            }
+
+            if (signupRequestBody.Address != null)
+            {
+                address = new Address()
+                {
+                    CityID = signupRequestBody.Address.CityID,
+                    AddressLocationHorizentalPoint = signupRequestBody.Address.AddressLocationHorizentalPoint,
+                    AddressLocationVerticalPoint = signupRequestBody.Address.AddressLocationVerticalPoint,
+                    AddressPostalCode = signupRequestBody.Address.AddressPostalCode,
+                    AddressStreet = signupRequestBody.Address.AddressStreet,
+                    CreateDate = DateTime.Now.ToShamsi(),
+                    UpdateDate = DateTime.Now.ToShamsi(),
+
+                };
+
+                result = await _addressRep.AddAddressAsync(address);
+            }
 
             if (result.Status)
             {
@@ -287,10 +302,11 @@ namespace AITechWebAPI.Controllers
                     Username = signupRequestBody.UserName,
                     RoleId = signupRequestBody.RoleId,
                     Email = signupRequestBody.Email,
+                    NationalCode = signupRequestBody.NationalCode,
                     PasswordHash = signupRequestBody.Password.ToHash(),
                     CreateDate = DateTime.Now.ToShamsi(),
                     UpdateDate = DateTime.Now.ToShamsi(),
-                    AddressId = address.ID,
+                    AddressId = (address != null && address.ID > 0) ? address.ID : null,
                 };
                 if(user.RoleId == 1) // user is student
                 {

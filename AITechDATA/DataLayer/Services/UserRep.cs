@@ -84,6 +84,12 @@ namespace AITechDATA.DataLayer.Services
                             userId = theUser.ID;
                             break;
                         }
+                    case "nationalcode":
+                        {
+                            var theUser = await _context.Users.AsNoTracking().FirstOrDefaultAsync(x => x.NationalCode == fieldValue) ?? new User();
+                            userId = theUser.ID;
+                            break;
+                        }
                 }
                 result.ID = userId;
                 result.Status = userId > 0;
