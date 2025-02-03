@@ -10,8 +10,8 @@ namespace AITechWebAPI.Models.User
 
         [Display(Name = "آدرس")]
         //[Required(ErrorMessage = "لطفا {0} را وارد کنید")]
-        [Range(0, long.MaxValue, ErrorMessage = "مقدار {0} باید بزرگتر از 0 باشد")]
-        public long AdressId { get; set; }
+        [Range(1, long.MaxValue, ErrorMessage = "مقدار {0} باید بزرگتر از 0 باشد")]
+        public long? AdressId { get; set; }
 
         [Display(Name = "نقش")]
         [Required(ErrorMessage = "لطفا {0} را وارد کنید")]
