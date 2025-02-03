@@ -1,4 +1,6 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using AITechWebAPI.Models.Address;
+using AITechWebAPI.Validations;
+using System.ComponentModel.DataAnnotations;
 
 namespace AITechWebAPI.Models.User
 {
@@ -7,8 +9,8 @@ namespace AITechWebAPI.Models.User
         public long ID { get; set; } = 0;
 
         [Display(Name = "آدرس")]
-        [Required(ErrorMessage = "لطفا {0} را وارد کنید")]
-        [Range(1, long.MaxValue, ErrorMessage = "مقدار {0} باید بزرگتر از 0 باشد")]
+        //[Required(ErrorMessage = "لطفا {0} را وارد کنید")]
+        [Range(0, long.MaxValue, ErrorMessage = "مقدار {0} باید بزرگتر از 0 باشد")]
         public long AdressId { get; set; }
 
         [Display(Name = "نقش")]
@@ -36,13 +38,12 @@ namespace AITechWebAPI.Models.User
         //[MaxLength(11)]
         //public string PhoneNumber { get; set; }
 
-        //[Display(Name = "کد ملی")]
-        //[RegularExpression(@"^([0-9]{10})$", ErrorMessage = "مقدار {0} باید 10 رقمی و فقط شامل اعداد باشد")]
-        //[MaxLength(10)]
+        [Display(Name = "کد ملی")]
+        [ValidateOptional(@"^([0-9]{10})$", ErrorMessage = "مقدار {0} باید 10 رقمی و فقط شامل اعداد باشد")]
+        [MaxLength(10)]
         //[Required(ErrorMessage = "لطفا {0} را وارد کنید")]
-        //public string NaCode { get; set; }
-        //public string? DateOfBirth { get; set; }
-        //public string? Description { get; set; }
+        public string? NationalCode { get; set; }
+
 
         [Display(Name = "نام کاربری")]
         [RegularExpression(@"^([0-9]{11})$", ErrorMessage = "مقدار {0} باید 11 رقمی و فقط شامل اعداد باشد")]
@@ -99,22 +100,13 @@ namespace AITechWebAPI.Models.User
         [Required(ErrorMessage = "لطفا {0} را وارد کنید")]
         public string Password { get; set; }
 
-        [Display(Name = "شهر یا استان")]
-        [Required(ErrorMessage = "لطفا {0} را وارد کنید")]
-        public long CityID { get; set; }
-
-        [Display(Name = "خیابان")]
-        [Required(ErrorMessage = "لطفا {0} را وارد کنید")]
-        public string AddressStreet { get; set; }
-
-        [Display(Name = "کد پستی")]
-        [RegularExpression(@"^([0-9]{10})$", ErrorMessage = "مقدار {0} باید 10 رقمی و فقط شامل اعداد باشد")]
+        [Display(Name = "کد ملی")]
+        [ValidateOptional(@"^([0-9]{10})$", ErrorMessage = "مقدار {0} باید 10 رقمی و فقط شامل اعداد باشد")]
         [MaxLength(10)]
-        [Required(ErrorMessage = "لطفا {0} را وارد کنید")]
-        public string AddressPostalCode { get; set; }
-        public string? AddressLocationHorizentalPoint { get; set; }
-        public string? AddressLocationVerticalPoint { get; set; }
-        public string? AddressDescription { get; set; }
+        //[Required(ErrorMessage = "لطفا {0} را وارد کنید")]
+        public string? NationalCode { get; set; }
+
+        public AddEditAddressRequestBody? Address { get; set; }
 
         [Display(Name = "نقش")]
         [Required(ErrorMessage = "لطفا {0} را وارد کنید")]

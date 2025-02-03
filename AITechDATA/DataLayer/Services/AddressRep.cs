@@ -135,7 +135,8 @@ namespace AITechDATA.DataLayer.Services
                 .Include(x => x.Address)
                 .AsNoTracking()
                 .SingleOrDefaultAsync(x => x.ID == UserId);
-                result.Result = User?.Address;
+                result.Result = User?.Address ?? new Address();
+                result.Status = result.Result.ID > 0;
             }
             catch (Exception ex)
             {
