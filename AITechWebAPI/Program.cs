@@ -50,7 +50,7 @@ namespace AITechWebAPI
                         builder.AllowAnyOrigin()
                                .AllowAnyMethod()
                                .AllowAnyHeader()
-                               .WithExposedHeaders("Set-Cookie","refreshToken");
+                               .WithExposedHeaders("Set-Cookie");
 
                     });
                 }
@@ -61,7 +61,7 @@ namespace AITechWebAPI
                            .AllowCredentials()
                            .AllowAnyHeader()
                            .AllowAnyMethod()
-                             .WithExposedHeaders("Set-Cookie", "refreshToken"));
+                           .WithExposedHeaders("Set-Cookie"));
 
                 }
             });

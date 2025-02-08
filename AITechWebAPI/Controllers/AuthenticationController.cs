@@ -104,7 +104,7 @@ namespace AITechWebAPI.Controllers
                         result.ErrorMessage = authenticateResult.ErrorMessage;
                         result.Result = new AuthenticationResultBody()
                         {
-                            RefreshToken = /*refreshToken*/ "", // بازگرداندن رفرش توکن
+                            RefreshToken = refreshToken, // بازگرداندن رفرش توکن
                             AccessToken = accessToken, // بازگرداندن اکسس توکن
                             HserId = authenticateResult.Result.ID,
                             FullName = authenticateResult.Result.FullName,
@@ -134,23 +134,7 @@ namespace AITechWebAPI.Controllers
                             await _logRep.AddLogAsync(log);
                             #endregion
 
-                            // ✅ ارسال refreshToken جدید در HttpOnly Cookie
-                            Response.Cookies.Append("refreshToken", refreshToken, new CookieOptions
-                            {
-                                HttpOnly = true,
-                                Secure = true, // برای HTTPS
-                                SameSite = SameSiteMode.None,
-                                Expires = refreshTokenExpiryDate,
-                            });
-
-
-                            //Response.Cookies.Append("accessToken", refreshToken, new CookieOptions
-                            //{
-                            //    HttpOnly = true,
-                            //    Secure = true, // برای HTTPS
-                            //    SameSite = SameSiteMode.Strict,
-                            //    Expires = refreshTokenExpiryDate
-                            //});
+                           
 
                             return Ok(result);
                         }
@@ -183,99 +167,19 @@ namespace AITechWebAPI.Controllers
         }
 
 
-        //[HttpPost("RefreshToken")]
-        //public async Task<ActionResult<RowResultObject<RefreshTokenResultBody>>> RefreshToken(RefreshTokenRequestBody requestBody)
-        //{
-        //    RowResultObject<RefreshTokenResultBody> result = new RowResultObject<RefreshTokenResultBody>();
-
-        //    if (!ModelState.IsValid)
-        //    {
-        //        return BadRequest(requestBody);
-        //    }
-
-        //    var refreshTokenRecord = await _tokenRep.FindTokenAsync(requestBody.RefreshToken, "RefreshToken");
-
-        //    if (!refreshTokenRecord.Status && refreshTokenRecord.Result == null)
-        //    {
-        //        result.ErrorMessage = "رفرش توکن نامعتبر است";
-        //        result.Status = false;
-        //        return BadRequest(result);
-        //    }
-
-        //    var expireTokenResult = await _tokenRep.MakeTokenExpireAsync(refreshTokenRecord.Result.ID);
-
-        //    if (expireTokenResult.Status)
-        //    {
-        //        var user = await _userRep.GetUserByIdAsync(refreshTokenRecord.Result.UserId);
-        //        var refreshToken = ToolBox.GenerateToken(); // تولید رفرش توکن
-        //        var accessToken = ToolBox.GenerateAccessToken(user.Result); // تولید رفرش توکن
-        //        var refreshTokenExpiryDate = DateTime.Now.ToShamsi().AddDays(30); // تنظیم تاریخ انقضای رفرش توکن برای 30 روز
-
-
-        //        var newrefreshTokenRecord = new Token
-        //        {
-        //            UserId = user.Result.ID,
-        //            TokenValue = refreshToken, // ذخیره رفرش توکن
-        //            Type = "RefreshToken", // نوع: RefreshToken
-        //            Status = true,
-        //            CreatedDate = DateTime.Now.ToShamsi(),
-        //            ExpiryDate = refreshTokenExpiryDate // تاریخ انقضا
-        //        };
-
-        //        var saverefreshToken = await _tokenRep.AddTokenAsync(newrefreshTokenRecord);
-
-        //        if (saverefreshToken.Status)
-        //        {
-        //            result.Status = user.Status;
-        //            result.ErrorMessage = user.ErrorMessage;
-        //            result.Result = new RefreshTokenResultBody()
-        //            {
-        //                RefreshToken = refreshToken, // بازگرداندن رفرش توکن
-        //                AccessToken = accessToken, // بازگرداندن اکسس توکن
-        //            };
-
-        //            #region AddLog
-        //            Log log = new Log()
-        //            {
-        //                CreateDate = DateTime.Now.ToShamsi(),
-        //                UpdateDate = DateTime.Now.ToShamsi(),
-        //                LogTime = DateTime.Now.ToShamsi(),
-        //                ActionName = this.ControllerContext.RouteData.Values["action"].ToString(),
-        //            };
-        //            await _logRep.AddLogAsync(log);
-        //            #endregion
-
-        //            return Ok(result);
-        //        }
-        //    }
-        //    else
-        //    {
-        //        result.Status = expireTokenResult.Status;
-        //        result.ErrorMessage = expireTokenResult.ErrorMessage;
-        //    }
-        //    return BadRequest(result);
-        //}
-
-
         [HttpPost("RefreshToken")]
-        public async Task<ActionResult<RowResultObject<RefreshTokenResultBody>>> RefreshToken()
+        public async Task<ActionResult<RowResultObject<RefreshTokenResultBody>>> RefreshToken(RefreshTokenRequestBody requestBody)
         {
             RowResultObject<RefreshTokenResultBody> result = new RowResultObject<RefreshTokenResultBody>();
 
-            // ✅ دریافت refreshToken از cookies به جای Request Body
-
-            string refreshToken = Request.Cookies["refreshToken"].ToString() ?? "";
-
-            if (string.IsNullOrEmpty(refreshToken))
+            if (!ModelState.IsValid)
             {
-                result.ErrorMessage = "رفرش توکن یافت نشد";
-                result.Status = false;
-                return BadRequest(result);
+                return BadRequest(requestBody);
             }
 
-            var refreshTokenRecord = await _tokenRep.FindTokenAsync(refreshToken, "RefreshToken");
+            var refreshTokenRecord = await _tokenRep.FindTokenAsync(requestBody.RefreshToken, "RefreshToken");
 
-            if (!refreshTokenRecord.Status || refreshTokenRecord.Result == null)
+            if (!refreshTokenRecord.Status && refreshTokenRecord.Result == null)
             {
                 result.ErrorMessage = "رفرش توکن نامعتبر است";
                 result.Status = false;
@@ -287,40 +191,43 @@ namespace AITechWebAPI.Controllers
             if (expireTokenResult.Status)
             {
                 var user = await _userRep.GetUserByIdAsync(refreshTokenRecord.Result.UserId);
-                var newRefreshToken = ToolBox.GenerateToken();
-                var accessToken = ToolBox.GenerateAccessToken(user.Result);
-                var refreshTokenExpiryDate = DateTime.Now.AddDays(30);
+                var refreshToken = ToolBox.GenerateToken(); // تولید رفرش توکن
+                var accessToken = ToolBox.GenerateAccessToken(user.Result); // تولید رفرش توکن
+                var refreshTokenExpiryDate = DateTime.Now.ToShamsi().AddDays(30); // تنظیم تاریخ انقضای رفرش توکن برای 30 روز
 
-                var newRefreshTokenRecord = new Token
+
+                var newrefreshTokenRecord = new Token
                 {
                     UserId = user.Result.ID,
-                    TokenValue = newRefreshToken,
-                    Type = "RefreshToken",
+                    TokenValue = refreshToken, // ذخیره رفرش توکن
+                    Type = "RefreshToken", // نوع: RefreshToken
                     Status = true,
-                    CreatedDate = DateTime.Now,
-                    ExpiryDate = refreshTokenExpiryDate
+                    CreatedDate = DateTime.Now.ToShamsi(),
+                    ExpiryDate = refreshTokenExpiryDate // تاریخ انقضا
                 };
 
-                var saveRefreshToken = await _tokenRep.AddTokenAsync(newRefreshTokenRecord);
+                var saverefreshToken = await _tokenRep.AddTokenAsync(newrefreshTokenRecord);
 
-                if (saveRefreshToken.Status)
+                if (saverefreshToken.Status)
                 {
                     result.Status = user.Status;
                     result.ErrorMessage = user.ErrorMessage;
                     result.Result = new RefreshTokenResultBody()
                     {
-                        RefreshToken = /*newRefreshToken*/ "",
-                        AccessToken = accessToken,
+                        RefreshToken = refreshToken, // بازگرداندن رفرش توکن
+                        AccessToken = accessToken, // بازگرداندن اکسس توکن
                     };
 
-                    // ✅ ارسال refreshToken جدید در HttpOnly Cookie
-                    Response.Cookies.Append("refreshToken", newRefreshToken, new CookieOptions
+                    #region AddLog
+                    Log log = new Log()
                     {
-                        HttpOnly = true,
-                        Secure = true, // برای HTTPS
-                        SameSite = SameSiteMode.None,
-                        Expires = refreshTokenExpiryDate,
-                    });
+                        CreateDate = DateTime.Now.ToShamsi(),
+                        UpdateDate = DateTime.Now.ToShamsi(),
+                        LogTime = DateTime.Now.ToShamsi(),
+                        ActionName = this.ControllerContext.RouteData.Values["action"].ToString(),
+                    };
+                    await _logRep.AddLogAsync(log);
+                    #endregion
 
                     return Ok(result);
                 }
@@ -332,6 +239,9 @@ namespace AITechWebAPI.Controllers
             }
             return BadRequest(result);
         }
+
+
+
 
         [HttpPost("Signup")]
         public async Task<ActionResult<BitResultObject>> Signup(SignupRequestBody signupRequestBody)
@@ -814,18 +724,15 @@ namespace AITechWebAPI.Controllers
         }
 
         [HttpPost("LogOut")]
-        public async Task<ActionResult<BitResultObject>> LogOut(/*RefreshTokenRequestBody requestBody*/)
+        public async Task<ActionResult<BitResultObject>> LogOut(RefreshTokenRequestBody requestBody)
         {
-            //if (!ModelState.IsValid)
-            //{
-            //    return BadRequest(requestBody);
-            //}
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(requestBody);
+            }
             BitResultObject result = new BitResultObject() { Status = true,ErrorMessage =""};
 
-            string CookierefreshToken = Request.Cookies["refreshToken"].ToString() ?? "";
-
-            // var refreshTokenRecord = await _tokenRep.FindTokenAsync(requestBody.RefreshToken, "RefreshToken");
-            var refreshTokenRecord = await _tokenRep.FindTokenAsync(CookierefreshToken, "RefreshToken");
+             var refreshTokenRecord = await _tokenRep.FindTokenAsync(requestBody.RefreshToken, "RefreshToken");
 
             if (refreshTokenRecord.Status && refreshTokenRecord.Result != null)
             {
