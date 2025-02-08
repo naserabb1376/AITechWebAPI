@@ -139,8 +139,8 @@ namespace AITechWebAPI.Controllers
                             {
                                 HttpOnly = true,
                                 Secure = true, // برای HTTPS
-                                SameSite = SameSiteMode.Strict,
-                                Expires = refreshTokenExpiryDate
+                                SameSite = SameSiteMode.None,
+                                Expires = refreshTokenExpiryDate,
                             });
 
 
@@ -318,8 +318,8 @@ namespace AITechWebAPI.Controllers
                     {
                         HttpOnly = true,
                         Secure = true, // برای HTTPS
-                        SameSite = SameSiteMode.Strict,
-                        Expires = refreshTokenExpiryDate
+                        SameSite = SameSiteMode.None,
+                        Expires = refreshTokenExpiryDate,
                     });
 
                     return Ok(result);
