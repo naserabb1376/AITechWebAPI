@@ -104,7 +104,7 @@ namespace AITechWebAPI.Controllers
                         result.ErrorMessage = authenticateResult.ErrorMessage;
                         result.Result = new AuthenticationResultBody()
                         {
-                            RefreshToken = refreshToken, // بازگرداندن رفرش توکن
+                            RefreshToken = /*refreshToken*/ "", // بازگرداندن رفرش توکن
                             AccessToken = accessToken, // بازگرداندن اکسس توکن
                             HserId = authenticateResult.Result.ID,
                             FullName = authenticateResult.Result.FullName,
@@ -144,13 +144,13 @@ namespace AITechWebAPI.Controllers
                             });
 
 
-                            Response.Cookies.Append("accessToken", refreshToken, new CookieOptions
-                            {
-                                HttpOnly = true,
-                                Secure = true, // برای HTTPS
-                                SameSite = SameSiteMode.Strict,
-                                Expires = refreshTokenExpiryDate
-                            });
+                            //Response.Cookies.Append("accessToken", refreshToken, new CookieOptions
+                            //{
+                            //    HttpOnly = true,
+                            //    Secure = true, // برای HTTPS
+                            //    SameSite = SameSiteMode.Strict,
+                            //    Expires = refreshTokenExpiryDate
+                            //});
 
                             return Ok(result);
                         }
@@ -309,7 +309,7 @@ namespace AITechWebAPI.Controllers
                     result.ErrorMessage = user.ErrorMessage;
                     result.Result = new RefreshTokenResultBody()
                     {
-                        RefreshToken = newRefreshToken,
+                        RefreshToken = /*newRefreshToken*/ "",
                         AccessToken = accessToken,
                     };
 
