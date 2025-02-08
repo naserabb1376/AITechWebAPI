@@ -14,6 +14,7 @@ using System.Security.Claims;
 using System.Text;
 using AITechWebAPI.Models.User;
 using AITechDATA.CustomResponses;
+using System.Net;
 
 namespace AITechWebAPI.Controllers
 {
@@ -64,7 +65,7 @@ namespace AITechWebAPI.Controllers
             }
             return BadRequest(result);
         }
-
+        [AllowAnonymous]
         [HttpPost("ExistUser_Base")]
         public async Task<ActionResult<BitResultObject>> ExistUser_Base(ExistUserRequestBody requestBody)
         {
@@ -93,8 +94,9 @@ namespace AITechWebAPI.Controllers
                 UpdateDate = DateTime.Now.ToShamsi(),
                 ID = requestBody.ID,
                 Email = requestBody.Email,
+                NationalCode = requestBody.NationalCode ?? "",
                 Username = requestBody.UserName,
-                AddressId = requestBody.AdressId,
+                AddressId = (requestBody.AdressId > 0) ? requestBody.AdressId : null,
                 FullName = requestBody.FullName,
                 PasswordHash = requestBody.Password.ToHash(),
                 RoleId = requestBody.RoleId,
@@ -144,8 +146,9 @@ namespace AITechWebAPI.Controllers
                 UpdateDate = DateTime.Now.ToShamsi(),
                 ID = requestBody.ID,
                 Email = requestBody.Email,
+                NationalCode = requestBody.NationalCode?? "",
                 Username = requestBody.UserName,
-                AddressId = requestBody.AdressId,
+                AddressId = (requestBody.AdressId > 0) ? requestBody.AdressId : null,
                 FullName = requestBody.FullName,
                 PasswordHash = requestBody.Password.ToHash(),
                 RoleId = requestBody.RoleId,
@@ -184,22 +187,27 @@ namespace AITechWebAPI.Controllers
                 return BadRequest(requestBody);
             }
 
-            Address address = new Address()
-            {
-                CityID = requestBody.CityID,
-                AddressLocationHorizentalPoint = requestBody.AddressLocationHorizentalPoint,
-                AddressLocationVerticalPoint = requestBody.AddressLocationVerticalPoint,
-                AddressPostalCode = requestBody.AddressPostalCode,
-                AddressStreet = requestBody.AddressStreet,
-                // Description = requestBody.AddressDescription,
-                CreateDate = DateTime.Now.ToShamsi(),
-                UpdateDate = DateTime.Now.ToShamsi(),
+            Address address = new Address();
 
-            };
+           if (requestBody.Address != null)
+            {
+                address = new Address()
+                {
+                    CityID = requestBody.Address.CityID,
+                    AddressLocationHorizentalPoint = requestBody.Address.AddressLocationHorizentalPoint,
+                    AddressLocationVerticalPoint = requestBody.Address.AddressLocationVerticalPoint,
+                    AddressPostalCode = requestBody.Address.AddressPostalCode,
+                    AddressStreet = requestBody.Address.AddressStreet,
+                    // Description = requestBody.AddressDescription,
+                    CreateDate = DateTime.Now.ToShamsi(),
+                    UpdateDate = DateTime.Now.ToShamsi(),
+
+                };
+                result = await _addressRep.AddAddressAsync(address);
+            }
 
             if (result.Status)
             {
-                result = await _addressRep.AddAddressAsync(address);
 
                 User User = new User()
                 {
@@ -207,8 +215,9 @@ namespace AITechWebAPI.Controllers
                     UpdateDate = DateTime.Now.ToShamsi(),
                     ID = requestBody.ID,
                     Email = requestBody.Email,
+                    NationalCode = requestBody.NationalCode ?? "",
                     Username = requestBody.UserName,
-                    AddressId = address.ID,
+                    AddressId = (address != null && address.ID > 0) ? address.ID : null,
                     FullName = requestBody.FullName,
                     PasswordHash = requestBody.Password.ToHash(),
                     RoleId = requestBody.RoleId,
@@ -248,38 +257,48 @@ namespace AITechWebAPI.Controllers
                 return BadRequest(requestBody);
             }
             var theRow = await _UserRep.GetUserByIdAsync(requestBody.ID);
+            if (theRow.Result.Address== null)
+            {
+                theRow.Result.Address = new Address();
+            }
             if (!theRow.Status)
             {
                 result.Status = theRow.Status;
                 result.ErrorMessage = theRow.ErrorMessage;
             }
 
-            Address address = new Address()
-            {
-                CityID = requestBody.CityID,
-                ID = theRow.Result.AddressId,
-                AddressLocationHorizentalPoint = requestBody.AddressLocationHorizentalPoint,
-                AddressLocationVerticalPoint = requestBody.AddressLocationVerticalPoint,
-                AddressPostalCode = requestBody.AddressPostalCode,
-                AddressStreet = requestBody.AddressStreet,
-                //Description = requestBody.AddressDescription,
-                CreateDate = theRow.Result.Address.CreateDate,
-                UpdateDate = DateTime.Now.ToShamsi(),
 
-            };
+            Address address = new Address();
+
+            if (requestBody.Address != null)
+            {
+                address = new Address()
+                {
+                    ID = theRow.Result.Address.ID,
+                    CityID = requestBody.Address.CityID,
+                    AddressLocationHorizentalPoint = requestBody.Address.AddressLocationHorizentalPoint,
+                    AddressLocationVerticalPoint = requestBody.Address.AddressLocationVerticalPoint,
+                    AddressPostalCode = requestBody.Address.AddressPostalCode,
+                    AddressStreet = requestBody.Address.AddressStreet,
+                    // Description = requestBody.AddressDescription,
+                    CreateDate = DateTime.Now.ToShamsi(),
+                    UpdateDate = DateTime.Now.ToShamsi(),
+
+                };
+                result = await _addressRep.AddAddressAsync(address);
+            }
 
             if (result.Status)
             {
-                result = await _addressRep.EditAddressAsync(address);
-
                 User User = new User()
                 {
                     CreateDate = theRow.Result.CreateDate,
                     UpdateDate = DateTime.Now.ToShamsi(),
                     ID = requestBody.ID,
                     Email = requestBody.Email,
+                    NationalCode = requestBody.NationalCode ?? "",
                     Username = requestBody.UserName,
-                    AddressId = address.ID,
+                    AddressId = (address != null && address.ID > 0) ? address.ID : null,
                     FullName = requestBody.FullName,
                     PasswordHash = requestBody.Password.ToHash(),
                     RoleId = requestBody.RoleId,

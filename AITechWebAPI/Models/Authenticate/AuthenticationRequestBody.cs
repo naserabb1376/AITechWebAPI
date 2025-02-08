@@ -1,4 +1,4 @@
-﻿using AITechWebAPI.Tools;
+﻿using AITechWebAPI.Validations;
 using System.ComponentModel.DataAnnotations;
 
 namespace AITechWebAPI.Models.Authenticate

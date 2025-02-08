@@ -1,5 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
-namespace AITechWebAPI.Tools
+namespace AITechWebAPI.Validations
 {
     public class ConditionalRegularExpressionAttribute : ValidationAttribute
     {
