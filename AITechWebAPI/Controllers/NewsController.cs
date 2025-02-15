@@ -35,6 +35,7 @@ namespace AITechWebAPI.Controllers
            _logRep = logRep;
         }
 
+        [AllowAnonymous]
         [HttpPost("GetAllNews_Base")]
         public async Task<ActionResult<NewsListCustomResponse<News>>> GetAllNews_Base(GetNewsListRequestBody requestBody)
         {
@@ -50,6 +51,7 @@ namespace AITechWebAPI.Controllers
             return BadRequest(result);
         }
 
+        [AllowAnonymous]
         [HttpPost("GetNewsById_Base")]
         public async Task<ActionResult<NewsRowCustomResponse<News>>> GetNewsById_Base(GetRowRequestBody requestBody)
         {
