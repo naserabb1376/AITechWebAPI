@@ -35,6 +35,7 @@ namespace AITechWebAPI.Controllers
            _logRep = logRep;
         }
 
+        [AllowAnonymous]
         [HttpPost("GetAllEvents_Base")]
         public async Task<ActionResult<EventListCustomResponse<Event>>> GetAllEvents_Base(GetEventListRequestBody requestBody)
         {
@@ -50,6 +51,7 @@ namespace AITechWebAPI.Controllers
             return BadRequest(result);
         }
 
+        [AllowAnonymous]
         [HttpPost("GetEventById_Base")]
         public async Task<ActionResult<EventRowCustomResponse<Event>>> GetEventById_Base(GetRowRequestBody requestBody)
         {

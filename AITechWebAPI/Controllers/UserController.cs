@@ -51,6 +51,23 @@ namespace AITechWebAPI.Controllers
             return BadRequest(result);
         }
 
+        [AllowAnonymous]
+        [HttpPost("GetAllTeachers_Base")]
+        public async Task<ActionResult<UserListCustomResponse<User>>> GetAllTeachers_Base(GetUserListRequestBody requestBody)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(requestBody);
+            }
+            var result = await _UserRep.GetAllUsersAsync(requestBody.GroupId, requestBody.CourseId, requestBody.SessionAssignmentId, requestBody.SessionId, requestBody.AddressId,2, requestBody.PageIndex, requestBody.PageSize, requestBody.SearchText, requestBody.SortQuery);
+            if (result.Status)
+            {
+                return Ok(result);
+            }
+            return BadRequest(result);
+        }
+
+        [AllowAnonymous]
         [HttpPost("GetUserById_Base")]
         public async Task<ActionResult<UserRowCustomResponse<User>>> GetUserById_Base(GetRowRequestBody requestBody)
         {

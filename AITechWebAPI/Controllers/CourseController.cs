@@ -35,6 +35,7 @@ namespace AITechWebAPI.Controllers
            _logRep = logRep;
         }
 
+        [AllowAnonymous]
         [HttpPost("GetAllCourses_Base")]
         public async Task<ActionResult<CourseListCustomResponse<Course>>> GetAllCourses_Base(GetCourseListRequestBody requestBody)
         {
@@ -51,6 +52,7 @@ namespace AITechWebAPI.Controllers
         }
 
         [HttpPost("GetCourseById_Base")]
+        [AllowAnonymous]
         public async Task<ActionResult<CourseRowCustomResponse<Course>>> GetCourseById_Base(GetRowRequestBody requestBody)
         {
             if (!ModelState.IsValid)

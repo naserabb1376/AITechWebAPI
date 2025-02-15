@@ -35,6 +35,7 @@ namespace AITechWebAPI.Controllers
            _logRep = logRep;
         }
 
+        [AllowAnonymous]
         [HttpPost("GetAllSettings_Base")]
         public async Task<ActionResult<SettingListCustomResponse<Setting>>> GetAllSettings_Base(GetSettingListRequestBody requestBody)
         {
@@ -50,6 +51,7 @@ namespace AITechWebAPI.Controllers
             return BadRequest(result);
         }
 
+        [AllowAnonymous]
         [HttpPost("GetSettingById_Base")]
         public async Task<ActionResult<SettingRowCustomResponse<Setting>>> GetSettingById_Base(GetRowRequestBody requestBody)
         {
