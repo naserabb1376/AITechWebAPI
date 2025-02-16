@@ -232,7 +232,7 @@ namespace AITechWebAPI.Tools
             if (string.IsNullOrEmpty(versionNo))
             {
                 string nowDate = DateTime.Now.ToShamsi().DateToString().Split(' ')[0];
-                versionNo = nowDate.Substring(3).Replace("/", ".");
+                versionNo = nowDate.Substring(3).Replace("0","").Replace("/", ".");
             }
             return versionNo;
         }
