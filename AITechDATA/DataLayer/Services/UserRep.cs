@@ -68,7 +68,7 @@ namespace AITechDATA.DataLayer.Services
                     case "id":
                     default:
                         {
-                           var theUser = await _context.Users.AsNoTracking().FirstOrDefaultAsync(x=> x.ID == long.Parse(fieldValue)) ?? new User();
+                            var theUser = await _context.Users.AsNoTracking().FirstOrDefaultAsync(x => x.ID == long.Parse(fieldValue)) ?? new User();
                             userId = theUser.ID;
                             break;
                         }
@@ -143,12 +143,12 @@ namespace AITechDATA.DataLayer.Services
                         {
                             result.Status = await _context.Users
                .AsNoTracking()
-               .AnyAsync(x =>x.Username == userName);
+               .AnyAsync(x => x.Username == userName);
                             if (result.Status)
                             {
                                 var loginRow = await _context.Users
                .AsNoTracking()
-               .SingleOrDefaultAsync(x => x.Username== userName);
+               .SingleOrDefaultAsync(x => x.Username == userName);
                                 if (loginRow != null)
                                 {
                                     result.Result = loginRow;
@@ -178,7 +178,7 @@ namespace AITechDATA.DataLayer.Services
             return result;
         }
 
-        public async Task<UserListCustomResponse<User>> GetAllUsersAsync(long groupId=0,long courseId=0,long sessionAssignmentId = 0, long sessionId = 0, long AddressId = 0, long RoleId = 0, int pageIndex = 1, int pageSize = 20, string searchText = "", string sortQuery = "")
+        public async Task<UserListCustomResponse<User>> GetAllUsersAsync(long groupId = 0, long courseId = 0, long sessionAssignmentId = 0, long sessionId = 0, long AddressId = 0, long RoleId = 0, int pageIndex = 1, int pageSize = 20, string searchText = "", string sortQuery = "")
         {
             UserListCustomResponse<User> results = new UserListCustomResponse<User>();
             try
@@ -186,48 +186,48 @@ namespace AITechDATA.DataLayer.Services
                 IQueryable<User> query;
                 if (groupId > 0)
                 {
-                     query = _context.UserGroups.Where(x=> x.GroupId == groupId).Select(x=> x.User)
-                    .AsNoTracking()
-                    .Where(x =>
-                        (AddressId > 0 && x.AddressId == AddressId) ||
-                        (RoleId > 0 && x.RoleId == RoleId) ||
-                        ((!string.IsNullOrEmpty(x.FullName) && x.FullName.Contains(searchText)) ||
-                        (!string.IsNullOrEmpty(x.Email) && x.Email.Contains(searchText)) ||
-                        (!string.IsNullOrEmpty(x.Username) && x.Username.Contains(searchText)))
-                    );
-                }
-
-                else if (courseId > 0)
-                {
-                     query = _context.UserCourses.Where(x => x.CourseId == courseId).Select(x => x.User)
-                    .AsNoTracking()
-                    .Where(x =>
-                        (AddressId > 0 && x.AddressId == AddressId) ||
-                        (RoleId > 0 && x.RoleId == RoleId) ||
-                        ((!string.IsNullOrEmpty(x.FullName) && x.FullName.Contains(searchText)) ||
-                        (!string.IsNullOrEmpty(x.Email) && x.Email.Contains(searchText)) ||
-                        (!string.IsNullOrEmpty(x.Username) && x.Username.Contains(searchText)))
-                    );
-                }
-                else if (courseId > 0)
-                {
-                    query = _context.Assignments.Where(x => x.SessionAssignmentId == sessionAssignmentId).Select(x => x.User)
+                    query = _context.UserGroups.Where(x => x.GroupId == groupId).Select(x => x.User)
                    .AsNoTracking()
                    .Where(x =>
-                       (AddressId > 0 && x.AddressId == AddressId) ||
-                       (RoleId > 0 && x.RoleId == RoleId) ||
+                         ((AddressId > 0 ? x.AddressId == AddressId : true) &&
+                      (RoleId > 0 ? x.RoleId == RoleId : true)) &&
                        ((!string.IsNullOrEmpty(x.FullName) && x.FullName.Contains(searchText)) ||
                        (!string.IsNullOrEmpty(x.Email) && x.Email.Contains(searchText)) ||
                        (!string.IsNullOrEmpty(x.Username) && x.Username.Contains(searchText)))
                    );
                 }
-                if (sessionId > 0)
+
+                if (courseId > 0)
+                {
+                    query = _context.UserCourses.Where(x => x.CourseId == courseId).Select(x => x.User)
+                   .AsNoTracking()
+                   .Where(x =>
+                        ((AddressId > 0 ? x.AddressId == AddressId : true) &&
+                      (RoleId > 0 ? x.RoleId == RoleId : true)) &&
+                       ((!string.IsNullOrEmpty(x.FullName) && x.FullName.Contains(searchText)) ||
+                       (!string.IsNullOrEmpty(x.Email) && x.Email.Contains(searchText)) ||
+                       (!string.IsNullOrEmpty(x.Username) && x.Username.Contains(searchText)))
+                   );
+                }
+                if (sessionAssignmentId > 0)
+                {
+                    query = _context.Assignments.Where(x => x.SessionAssignmentId == sessionAssignmentId).Select(x => x.User)
+                   .AsNoTracking()
+                   .Where(x =>
+                      ((AddressId > 0 ? x.AddressId == AddressId : true) &&
+                      (RoleId > 0 ? x.RoleId == RoleId : true)) &&
+                       ((!string.IsNullOrEmpty(x.FullName) && x.FullName.Contains(searchText)) ||
+                       (!string.IsNullOrEmpty(x.Email) && x.Email.Contains(searchText)) ||
+                       (!string.IsNullOrEmpty(x.Username) && x.Username.Contains(searchText)))
+                   );
+                }
+                if(sessionId > 0)
                 {
                     query = _context.Attendances.Where(x => x.SessionId == sessionId).Select(x => x.User)
                    .AsNoTracking()
                    .Where(x =>
-                       (AddressId > 0 && x.AddressId == AddressId) ||
-                       (RoleId > 0 && x.RoleId == RoleId) ||
+                         ((AddressId > 0 ? x.AddressId == AddressId : true) &&
+                      (RoleId > 0 ? x.RoleId == RoleId : true)) &&
                        ((!string.IsNullOrEmpty(x.FullName) && x.FullName.Contains(searchText)) ||
                        (!string.IsNullOrEmpty(x.Email) && x.Email.Contains(searchText)) ||
                        (!string.IsNullOrEmpty(x.Username) && x.Username.Contains(searchText)))
@@ -235,15 +235,15 @@ namespace AITechDATA.DataLayer.Services
                 }
                 else
                 {
-                     query = _context.Users
-                 .AsNoTracking()
-                 .Where(x =>
-                     (AddressId > 0 && x.AddressId == AddressId) ||
-                     (RoleId > 0 && x.RoleId == RoleId) ||
-                     ((!string.IsNullOrEmpty(x.FullName) && x.FullName.Contains(searchText)) ||
-                     (!string.IsNullOrEmpty(x.Email) && x.Email.Contains(searchText)) ||
-                     (!string.IsNullOrEmpty(x.Username) && x.Username.Contains(searchText)))
-                 );
+                    query = _context.Users
+                .AsNoTracking()
+                .Where(x =>
+                     ((AddressId > 0 ? x.AddressId == AddressId : true) &&
+                      (RoleId > 0 ? x.RoleId == RoleId : true)) &&
+                    ((!string.IsNullOrEmpty(x.FullName) && x.FullName.Contains(searchText)) ||
+                    (!string.IsNullOrEmpty(x.Email) && x.Email.Contains(searchText)) ||
+                    (!string.IsNullOrEmpty(x.Username) && x.Username.Contains(searchText)))
+                );
                 }
 
                 results.TotalCount = query.Count();

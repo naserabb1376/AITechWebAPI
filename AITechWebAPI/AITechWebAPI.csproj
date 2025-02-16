@@ -41,10 +41,4 @@
     <ProjectReference Include="..\AITechDATA\AITechDATA.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Reference Include="AITechDATA">
-      <HintPath>..\AITechDATA\bin\Release\net8.0\AITechDATA.dll</HintPath>
-    </Reference>
-  </ItemGroup>
-
 </Project>
