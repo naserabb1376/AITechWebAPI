@@ -34,6 +34,7 @@ namespace AITechWebAPI.Controllers
         }
 
         [HttpPost("GetAllCategories_Base")]
+        [AllowAnonymous]
         public async Task<ActionResult<ListResultObject<Category>>> GetAllCategories_Base(GetCategoryListRequestBody requestBody)
         {
             if (!ModelState.IsValid)
@@ -49,6 +50,7 @@ namespace AITechWebAPI.Controllers
         }
 
         [HttpPost("GetCategoryById_Base")]
+        [AllowAnonymous]
         public async Task<ActionResult<RowResultObject<Category>>> GetCategoryById_Base(GetRowRequestBody requestBody)
         {
             if (!ModelState.IsValid)
