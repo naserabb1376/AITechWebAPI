@@ -78,25 +78,7 @@ namespace AITechDATA.Tools
             return query.OrderBy(sortingString.ToString());
         }
 
-        public static string ToShamsi(this string value) // use this word for use the method for all DateTime variables in project
-        {
-            var date = value.Split(' ')[0].Split('/');
-            var time = value.Split(' ')[1].Split(':');
-            DateTime dateTime = new DateTime(Convert.ToInt32(date[0]), Convert.ToInt32(date[1]), Convert.ToInt32(date[2]), Convert.ToInt32(time[0]), Convert.ToInt32(time[1]), Convert.ToInt32(time[2]));
-            PersianCalendar persianCalendar = new PersianCalendar();
-            string shamsiDate = $"{persianCalendar.GetYear(dateTime)}/{persianCalendar.GetMonth(dateTime)}/{persianCalendar.GetDayOfMonth(dateTime)} {persianCalendar.GetHour(dateTime)}:{persianCalendar.GetMinute(dateTime)}:{persianCalendar.GetSecond(dateTime)}";
-            return shamsiDate;
-        }
-
-        public static DateTime ToShamsi(this DateTime value) // use this word for use the method for all DateTime variables in project
-        {
-            var strDate = $"{value.Year}/{value.Month}/{value.Day} {value.Hour}:{value.Minute}:{value.Second}";
-            var strshamsi = ToShamsi(strDate);
-            var date = strshamsi.Split(' ')[0].Split('/');
-            var time = strshamsi.Split(' ')[1].Split(':');
-            DateTime shamsiDate = new DateTime(Convert.ToInt32(date[0]), Convert.ToInt32(date[1]), Convert.ToInt32(date[2]), Convert.ToInt32(time[0]), Convert.ToInt32(time[1]), Convert.ToInt32(time[2]));
-            return shamsiDate;
-        }
+       
 
         public static string FixPrice(this decimal value)
         {
@@ -178,6 +160,26 @@ namespace AITechDATA.Tools
             return summary;
         }
 
+        public static string ToShamsi(this string value) // use this word for use the method for all DateTime variables in project
+        {
+            var date = value.Split(' ')[0].Split('/');
+            var time = value.Split(' ')[1].Split(':');
+            DateTime dateTime = new DateTime(Convert.ToInt32(date[0]), Convert.ToInt32(date[1]), Convert.ToInt32(date[2]), Convert.ToInt32(time[0]), Convert.ToInt32(time[1]), Convert.ToInt32(time[2]));
+            PersianCalendar persianCalendar = new PersianCalendar();
+            string shamsiDate = $"{persianCalendar.GetYear(dateTime)}/{persianCalendar.GetMonth(dateTime)}/{persianCalendar.GetDayOfMonth(dateTime)} {persianCalendar.GetHour(dateTime)}:{persianCalendar.GetMinute(dateTime)}:{persianCalendar.GetSecond(dateTime)}";
+            return shamsiDate;
+        }
+
+        public static DateTime ToShamsi(this DateTime value) // use this word for use the method for all DateTime variables in project
+        {
+            var strDate = $"{value.Year}/{value.Month}/{value.Day} {value.Hour}:{value.Minute}:{value.Second}";
+            var strshamsi = ToShamsi(strDate);
+            var date = strshamsi.Split(' ')[0].Split('/');
+            var time = strshamsi.Split(' ')[1].Split(':');
+            DateTime shamsiDate = new DateTime(Convert.ToInt32(date[0]), Convert.ToInt32(date[1]), Convert.ToInt32(date[2]), Convert.ToInt32(time[0]), Convert.ToInt32(time[1]), Convert.ToInt32(time[2]));
+            return shamsiDate;
+        }
+
         public static DateTime StringToDate(this string stringDateTime)
         {
             if (string.IsNullOrEmpty(stringDateTime)) return DateTime.Now.ToShamsi();
@@ -188,10 +190,9 @@ namespace AITechDATA.Tools
             return date;
         }
 
-        public static string DateToString(this DateTime? date)
+        public static string DateToString(this DateTime date)
         {
-            if (date == null) return "";
-            string stringDate = $"{date?.Year}/{date?.Month}/{date?.Day} {date?.Hour}:{date?.Minute}";
+            string stringDate = $"{date.Year}/{date.Month}/{date.Day} {date.Hour}:{date.Minute}";
             return stringDate;
         }
 

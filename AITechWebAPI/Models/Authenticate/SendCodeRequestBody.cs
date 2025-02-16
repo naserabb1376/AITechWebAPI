@@ -12,4 +12,10 @@ namespace AITechWebAPI.Models.Authenticate
         public bool Exists { get; set; }
 
     }
+
+    public class VerifyCodeResult
+    {
+        public string Code { get; set; }
+        public bool SendStatus { get; set; }
+    }
 }

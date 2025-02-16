@@ -9,6 +9,7 @@ using System.Security.Cryptography;
 using System.Text;
 using VerifyCodeSMSService;
 using AITechDATA.Tools;
+using AITechWebAPI.Models.Authenticate;
 
 namespace AITechWebAPI.Tools
 {
@@ -225,10 +226,15 @@ namespace AITechWebAPI.Tools
             return VerifyCode;
         }
 
-        public class VerifyCodeResult
+        public static string CalculateAppVersionNo()
         {
-            public string Code { get; set; }
-            public bool SendStatus { get; set; }
+            string versionNo = Configuration["AppVersionNo"].ToString();
+            if (string.IsNullOrEmpty(versionNo))
+            {
+                string nowDate = DateTime.Now.ToShamsi().DateToString().Split(' ')[0];
+                versionNo = nowDate.Substring(3).Replace("/", ".");
+            }
+            return versionNo;
         }
 
     }
