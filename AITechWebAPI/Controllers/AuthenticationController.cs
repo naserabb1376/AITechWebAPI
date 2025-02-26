@@ -106,8 +106,7 @@ namespace AITechWebAPI.Controllers
                         {
                             RefreshToken = refreshToken, // بازگرداندن رفرش توکن
                             AccessToken = accessToken, // بازگرداندن اکسس توکن
-                            HserId = authenticateResult.Result.ID,
-                            FullName = authenticateResult.Result.FullName,
+                            User = authenticateResult.Result,
                         };
 
                         LoginMethod loginMethod = new LoginMethod()
