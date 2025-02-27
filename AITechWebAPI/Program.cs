@@ -41,10 +41,11 @@ namespace AITechWebAPI
                 });
             }
 
+
             builder.Services.AddCors(options =>
             {
 
-                if (corsPolicy == "AllowAll")
+                if (corsPolicy.ToLower().Contains("allowall"))
                 {
                     options.AddPolicy(corsPolicy, builder =>
                     {
@@ -58,11 +59,11 @@ namespace AITechWebAPI
                 else
                 {
                     options.AddPolicy(corsPolicy, builder =>
-                    builder.WithOrigins(allowedOrigins) // ????? ???? localhost ? ????? ?????
+                    builder.WithOrigins(allowedOrigins) // اضافه کردن localhost و آی‌پی لوکال
                            .AllowCredentials()
                            .AllowAnyHeader()
                            .AllowAnyMethod()
-                           .WithExposedHeaders("Set-Cookie"));
+                             .WithExposedHeaders("Set-Cookie"));
 
                 }
             });
