@@ -58,14 +58,24 @@ namespace AITechDATA.DataLayer.Services
             return result;
         }
 
-        public async Task<BitResultObject> ExistSettingAsync(long settingId)
+        public async Task<BitResultObject> ExistSettingRowAsync(long settingId = 0, string settingKey = "")
         {
             BitResultObject result = new BitResultObject();
             try
             {
-                result.Status = await _context.Settings
-                    .AsNoTracking()
-                    .AnyAsync(x => x.ID == settingId);
+                if (!string.IsNullOrEmpty(settingKey))
+                {
+                    result.Status = await _context.Settings
+    .AsNoTracking()
+    .AnyAsync(x => x.Key == settingKey);
+                }
+                else
+                {
+                    result.Status = await _context.Settings
+    .AsNoTracking()
+    .AnyAsync(x => x.ID == settingId);
+
+                }
                 result.ID = settingId;
             }
             catch (Exception ex)
@@ -114,17 +124,29 @@ namespace AITechDATA.DataLayer.Services
             return results;
         }
 
-        public async Task<SettingRowCustomResponse<Setting>> GetSettingByIdAsync(long settingId)
+        public async Task<SettingRowCustomResponse<Setting>> GetSettingRowAsync(long settingId = 0, string settingKey = "")
         {
             SettingRowCustomResponse<Setting> result = new SettingRowCustomResponse<Setting>();
             try
             {
-                result.Result = await _context.Settings
-                    .AsNoTracking()
-                    .Include(x => x.Parent)
-                    .Include(x => x.Children)
-                    .SingleOrDefaultAsync(x => x.ID == settingId);
+                if (!string.IsNullOrEmpty(settingKey))
+                {
+                    result.Result = await _context.Settings
+    .AsNoTracking()
+    .Include(x => x.Parent)
+    .Include(x => x.Children)
+    .SingleOrDefaultAsync(x => x.Key.ToLower() == settingKey.ToLower());
+                }
+                else
+                {
+                    result.Result = await _context.Settings
+    .AsNoTracking()
+    .Include(x => x.Parent)
+    .Include(x => x.Children)
+    .SingleOrDefaultAsync(x => x.ID == settingId);
 
+
+                }
                 if (result.Result != null)
                 {
                     result.ResultImages = new Dictionary<Setting, List<Image>?>
@@ -169,7 +191,7 @@ namespace AITechDATA.DataLayer.Services
             BitResultObject result = new BitResultObject();
             try
             {
-                var setting = await GetSettingByIdAsync(settingId);
+                var setting = await GetSettingRowAsync(settingId);
                 result = await RemoveSettingAsync(setting.Result);
             }
             catch (Exception ex)

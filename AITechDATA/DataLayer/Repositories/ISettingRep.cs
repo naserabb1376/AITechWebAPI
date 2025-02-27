@@ -13,7 +13,7 @@ namespace AITechDATA.DataLayer.Repositories
     {
         Task<SettingListCustomResponse<Setting>> GetAllSettingsAsync(long ParentId = 0,string key="", int pageIndex = 1, int pageSize = 20, string searchText = "", string sortQuery = "");
 
-        Task<SettingRowCustomResponse<Setting>> GetSettingByIdAsync(long settingId);
+        Task<SettingRowCustomResponse<Setting>> GetSettingRowAsync(long settingId=0,string settingKey="");
 
         Task<BitResultObject> AddSettingAsync(Setting setting);
 
@@ -23,6 +23,6 @@ namespace AITechDATA.DataLayer.Repositories
 
         Task<BitResultObject> RemoveSettingAsync(long settingId);
 
-        Task<BitResultObject> ExistSettingAsync(long settingId);
+        Task<BitResultObject> ExistSettingRowAsync(long settingId = 0, string settingKey = "");
     }
 }

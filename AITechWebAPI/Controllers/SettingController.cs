@@ -53,13 +53,13 @@ namespace AITechWebAPI.Controllers
 
         [AllowAnonymous]
         [HttpPost("GetSettingById_Base")]
-        public async Task<ActionResult<SettingRowCustomResponse<Setting>>> GetSettingById_Base(GetRowRequestBody requestBody)
+        public async Task<ActionResult<SettingRowCustomResponse<Setting>>> GetSettingById_Base(GetSettingRowRequestBody requestBody)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(requestBody);
             }
-            var result = await _SettingRep.GetSettingByIdAsync(requestBody.ID);
+            var result = await _SettingRep.GetSettingRowAsync(requestBody.ID,requestBody.Key);
             if (result.Status)
             {
                 return Ok(result);
@@ -68,13 +68,13 @@ namespace AITechWebAPI.Controllers
         }
 
         [HttpPost("ExistSetting_Base")]
-        public async Task<ActionResult<BitResultObject>> ExistSetting_Base(GetRowRequestBody requestBody)
+        public async Task<ActionResult<BitResultObject>> ExistSetting_Base(GetSettingRowRequestBody requestBody)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(requestBody);
             }
-            var result = await _SettingRep.ExistSettingAsync(requestBody.ID);
+            var result = await _SettingRep.ExistSettingRowAsync(requestBody.ID,requestBody.Key);
             if (string.IsNullOrEmpty(result.ErrorMessage))
             {
                 return Ok(result);
@@ -128,7 +128,7 @@ namespace AITechWebAPI.Controllers
             {
                 return BadRequest(requestBody);
             }
-            var theRow = await _SettingRep.GetSettingByIdAsync(requestBody.ID);
+            var theRow = await _SettingRep.GetSettingRowAsync(requestBody.ID);
             if (!theRow.Status)
             {
                 result.Status = theRow.Status;
