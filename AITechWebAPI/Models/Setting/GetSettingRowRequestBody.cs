@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace AITechWebAPI.Models.Setting
 {
-    public class GetSettingRowRequestBody : GetListRequestBody
+    public class GetSettingRowRequestBody
     {
         [Display(Name = "کد")]
         public long ID { get; set; } = 0;

@@ -66,7 +66,6 @@ namespace AITechWebAPI.Controllers
 
 
         [HttpPost("ExistPreRegistration_Base")]
-        [AllowAnonymous]
         public async Task<ActionResult<BitResultObject>> ExistPreRegistration_Base(GetRowRequestBody requestBody)
         {
             if (!ModelState.IsValid)

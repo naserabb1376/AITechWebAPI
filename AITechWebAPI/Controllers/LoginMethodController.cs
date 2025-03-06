@@ -66,7 +66,6 @@ namespace AITechWebAPI.Controllers
 
 
         [HttpPost("ExistLoginMethod_Base")]
-        [AllowAnonymous]
         public async Task<ActionResult<BitResultObject>> ExistLoginMethod_Base(GetRowRequestBody requestBody)
         {
             if (!ModelState.IsValid)
