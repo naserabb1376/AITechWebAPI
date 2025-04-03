@@ -81,7 +81,7 @@ namespace AITechDATA.DataLayer.Services
             return result;
         }
 
-        public async Task<ListResultObject<Image>> GetAllImagesAsync(string entityType = "", long foreignKey = 0, int pageIndex = 1, int pageSize = 20, string searchText = "",string sortQuery ="")
+        public async Task<ListResultObject<Image>> GetAllImagesAsync(string entityType = "", long foreignKey = 0, long creatorId = 0, int pageIndex = 1, int pageSize = 20, string searchText = "",string sortQuery ="")
         {
             ListResultObject<Image> results = new ListResultObject<Image>();
             try
@@ -91,6 +91,7 @@ namespace AITechDATA.DataLayer.Services
                     .Where(x =>
                         (
                     (foreignKey > 0 && x.ForeignKeyId == foreignKey) ||
+                    (creatorId > 0 && x.CreatorId == creatorId) ||
                     (!string.IsNullOrEmpty(entityType) && x.EntityType == entityType)
                         ) ||
                        ((!string.IsNullOrEmpty(x.FileName) && x.FileName.Contains(searchText)) ||
@@ -120,6 +121,48 @@ namespace AITechDATA.DataLayer.Services
                 result.Result = await _context.Images
                     .AsNoTracking()
                     .SingleOrDefaultAsync(x => x.ID == imageId);
+            }
+            catch (Exception ex)
+            {
+                result.Status = false;
+                result.ErrorMessage = $"{ex.Message} - {ex.InnerException?.Message}";
+            }
+            return result;
+        }
+
+        public async Task<RowResultObject<Image>> GetImageForShowAsync(long imageId = 0, long foreignKeyId = 0, string entityType = "", long userId = 0, long roleId = 0)
+        {
+            RowResultObject<Image> result = new RowResultObject<Image>();
+            IQueryable<Image> query =  _context.Images.AsNoTracking();
+            try
+            {
+                if (imageId >  0)
+                {
+                    query = query.Where(x => x.ID == imageId);
+                }
+                else
+                {
+                    if (!string.IsNullOrEmpty(entityType))
+                    {
+                        query = query.Where(x => x.EntityType == entityType);
+                    }
+                    if (foreignKeyId > 0)
+                    {
+                        query = query.Where(x => x.ForeignKeyId == foreignKeyId);
+                    }
+                }
+
+                var theRow = await query.FirstOrDefaultAsync();
+               if (theRow.Description.ToLower() != "public" && ( roleId != 3 && theRow.CreatorId != userId))
+                {
+                    result.Status = false;
+                    result.ErrorMessage = $"The User Has No Access To This Image";
+                }
+                else
+                {
+                    result.Status = true;
+                    result.Result = theRow;
+                }
             }
             catch (Exception ex)
             {
@@ -183,5 +226,7 @@ namespace AITechDATA.DataLayer.Services
             }
             return result;
         }
+
+     
     }
 }

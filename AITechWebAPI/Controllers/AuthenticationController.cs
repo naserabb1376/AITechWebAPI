@@ -122,6 +122,7 @@ namespace AITechWebAPI.Controllers
                         var saveLogin = await _loginRep.AddLoginMethodAsync(loginMethod);
                         if (saveLogin.Status)
                         {
+
                             #region AddLog
                             Log log = new Log()
                             {
@@ -216,6 +217,7 @@ namespace AITechWebAPI.Controllers
                         RefreshToken = refreshToken, // بازگرداندن رفرش توکن
                         AccessToken = accessToken, // بازگرداندن اکسس توکن
                     };
+
 
                     #region AddLog
                     Log log = new Log()

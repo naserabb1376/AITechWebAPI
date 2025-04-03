@@ -1,8 +1,8 @@
-﻿
-using AITechDATA.DataLayer.Repositories;
+﻿using AITechDATA.DataLayer.Repositories;
 using AITechDATA.DataLayer.Services;
 using AITechWebAPI.Tools;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
@@ -158,6 +158,9 @@ namespace AITechWebAPI
 
             #endregion ImportDbServices
 
+
+
+
             builder.Services.AddAuthentication(options =>
             {
                 options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -198,6 +201,7 @@ namespace AITechWebAPI
 
             //}
             app.UseHttpsRedirection();
+
 
             app.UseCors(corsPolicy);
 

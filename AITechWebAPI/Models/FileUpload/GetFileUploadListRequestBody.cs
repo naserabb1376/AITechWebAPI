@@ -8,5 +8,8 @@ namespace AITechWebAPI.Models.FileUpload
 
         [Display(Name = "کد تمرین")]
         public long AssignmentId { get; set; } = 0;
+
+        [Display(Name = "کاربر ایجاد کننده")]
+        public long CreatorId { get; set; } = 0;
     }
 }
