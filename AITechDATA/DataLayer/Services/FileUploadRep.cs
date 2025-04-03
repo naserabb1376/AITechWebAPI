@@ -8,6 +8,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace AITechDATA.DataLayer.Services
 {
@@ -74,7 +76,7 @@ namespace AITechDATA.DataLayer.Services
             return result;
         }
 
-        public async Task<ListResultObject<FileUpload>> GetAllFileUploadsAsync(long assignmentId = 0,int pageIndex = 1, int pageSize = 20, string searchText = "",string sortQuery ="")
+        public async Task<ListResultObject<FileUpload>> GetAllFileUploadsAsync(long assignmentId = 0,long creatorId=0,int pageIndex = 1, int pageSize = 20, string searchText = "",string sortQuery ="")
         {
             ListResultObject<FileUpload> results = new ListResultObject<FileUpload>();
             try
@@ -82,7 +84,8 @@ namespace AITechDATA.DataLayer.Services
                 var query = _context.FileUploads
                     .AsNoTracking()
                     .Where(x => 
-                            (assignmentId > 0 && x.AssignmentId == assignmentId)
+                            ((assignmentId > 0 && x.AssignmentId == assignmentId) ||
+                            (creatorId > 0 && x.CreatorId == creatorId))
 
                        || ((!string.IsNullOrEmpty(x.FileName) && x.FileName.Contains(searchText)) ||
                         (!string.IsNullOrEmpty(x.FilePath) && x.FilePath.Contains(searchText)) ||
@@ -102,6 +105,41 @@ namespace AITechDATA.DataLayer.Services
                 results.ErrorMessage = $"{ex.Message} - {ex.InnerException?.Message}";
             }
             return results;
+        }
+
+        public async Task<RowResultObject<FileUpload>> GetFileForDownloadAsync(long fileUploadId = 0, long foreignKeyId = 0, long userId = 0, long roleId = 0)
+        {
+            RowResultObject<FileUpload> result = new RowResultObject<FileUpload>();
+            IQueryable<FileUpload> query = _context.FileUploads.AsNoTracking();
+            try
+            {
+                if (fileUploadId > 0)
+                {
+                    query = query.Where(x => x.ID == fileUploadId);
+                }
+                else if(foreignKeyId > 0)
+                {
+                    query = query.Where(x => x.AssignmentId == foreignKeyId);
+                }
+
+                var theRow = await query.FirstOrDefaultAsync();
+                if (theRow.Description.ToLower() != "public" && ((roleId != 3 || roleId != 2) && theRow.CreatorId != userId))
+                {
+                    result.Status = false;
+                    result.ErrorMessage = $"The User Has No Access To This File";
+                }
+                else
+                {
+                    result.Status = true;
+                    result.Result = theRow;
+                }
+            }
+            catch (Exception ex)
+            {
+                result.Status = false;
+                result.ErrorMessage = $"{ex.Message} - {ex.InnerException?.Message}";
+            }
+            return result;
         }
 
         public async Task<RowResultObject<FileUpload>> GetFileUploadByIdAsync(long fileUploadId)

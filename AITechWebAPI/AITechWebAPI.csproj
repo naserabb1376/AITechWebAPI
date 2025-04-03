@@ -41,4 +41,72 @@
     <ProjectReference Include="..\AITechDATA\AITechDATA.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="FileCenter\Address\Files\Public\" />
+    <Folder Include="FileCenter\Address\Images\Public\" />
+    <Folder Include="FileCenter\AdminReport\Files\Public\" />
+    <Folder Include="FileCenter\AdminReport\Images\Public\" />
+    <Folder Include="FileCenter\Assignment\Files\Public\" />
+    <Folder Include="FileCenter\Assignment\Images\Public\" />
+    <Folder Include="FileCenter\Attendance\Files\Public\" />
+    <Folder Include="FileCenter\Attendance\Images\Public\" />
+    <Folder Include="FileCenter\Authentication\Files\Public\" />
+    <Folder Include="FileCenter\Authentication\Images\Public\" />
+    <Folder Include="FileCenter\Category\Files\Public\" />
+    <Folder Include="FileCenter\Category\Images\Public\" />
+    <Folder Include="FileCenter\City\Files\Public\" />
+    <Folder Include="FileCenter\City\Images\Public\" />
+    <Folder Include="FileCenter\Course\Files\Public\" />
+    <Folder Include="FileCenter\Course\Images\Public\" />
+    <Folder Include="FileCenter\Event\Files\Public\" />
+    <Folder Include="FileCenter\Event\Images\Public\" />
+    <Folder Include="FileCenter\FileUpload\Files\Public\" />
+    <Folder Include="FileCenter\FileUpload\Images\Public\" />
+    <Folder Include="FileCenter\Group\Files\Public\" />
+    <Folder Include="FileCenter\Group\Images\Public\" />
+    <Folder Include="FileCenter\Image\Files\Public\" />
+    <Folder Include="FileCenter\Image\Images\Public\" />
+    <Folder Include="FileCenter\LoginMethod\Files\Public\" />
+    <Folder Include="FileCenter\LoginMethod\Images\Public\" />
+    <Folder Include="FileCenter\Logss\Files\Public\" />
+    <Folder Include="FileCenter\Logss\Images\Public\" />
+    <Folder Include="FileCenter\News\Files\Public\" />
+    <Folder Include="FileCenter\News\Images\Public\" />
+    <Folder Include="FileCenter\Notification\Files\Public\" />
+    <Folder Include="FileCenter\Notification\Images\Public\" />
+    <Folder Include="FileCenter\Parent\Files\Public\" />
+    <Folder Include="FileCenter\Parent\Images\Public\" />
+    <Folder Include="FileCenter\PaymentHistory\Files\Public\" />
+    <Folder Include="FileCenter\PaymentHistory\Images\Public\" />
+    <Folder Include="FileCenter\PermissionRole\Files\Public\" />
+    <Folder Include="FileCenter\PermissionRole\Images\Public\" />
+    <Folder Include="FileCenter\Permission\Files\Public\" />
+    <Folder Include="FileCenter\Permission\Images\Public\" />
+    <Folder Include="FileCenter\PreRegistration\Files\Public\" />
+    <Folder Include="FileCenter\PreRegistration\Images\Public\" />
+    <Folder Include="FileCenter\Role\Files\Public\" />
+    <Folder Include="FileCenter\Role\Images\Public\" />
+    <Folder Include="FileCenter\SessionAssignmnt\Files\Public\" />
+    <Folder Include="FileCenter\SessionAssignmnt\Images\Public\" />
+    <Folder Include="FileCenter\Session\Files\Public\" />
+    <Folder Include="FileCenter\Session\Images\Public\" />
+    <Folder Include="FileCenter\Setting\Files\Public\" />
+    <Folder Include="FileCenter\Setting\Images\Public\" />
+    <Folder Include="FileCenter\StudentDetails\Files\Public\" />
+    <Folder Include="FileCenter\StudentDetails\Images\Public\" />
+    <Folder Include="FileCenter\TeacherResume\Files\Public\" />
+    <Folder Include="FileCenter\TeacherResume\Images\Public\" />
+    <Folder Include="FileCenter\TicketMessage\Files\Public\" />
+    <Folder Include="FileCenter\TicketMessage\Images\Public\" />
+    <Folder Include="FileCenter\Ticket\Files\Public\" />
+    <Folder Include="FileCenter\Ticket\Images\Public\" />
+    <Folder Include="FileCenter\UserCourse\Files\Public\" />
+    <Folder Include="FileCenter\UserCourse\Images\Public\" />
+    <Folder Include="FileCenter\UserGroup\Files\Public\" />
+    <Folder Include="FileCenter\UserGroup\Images\Public\" />
+    <Folder Include="FileCenter\User\Files\Public\" />
+    <Folder Include="FileCenter\User\Images\Public\" />
+    <Folder Include="wwwroot\" />
+  </ItemGroup>
+
 </Project>

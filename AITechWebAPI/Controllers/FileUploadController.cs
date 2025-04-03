@@ -40,7 +40,7 @@ namespace AITechWebAPI.Controllers
             {
                 return BadRequest(requestBody);
             }
-            var result = await _FileUploadRep.GetAllFileUploadsAsync(requestBody.AssignmentId,requestBody.PageIndex,requestBody.PageSize,requestBody.SearchText,requestBody.SortQuery);
+            var result = await _FileUploadRep.GetAllFileUploadsAsync(requestBody.AssignmentId,requestBody.CreatorId,requestBody.PageIndex,requestBody.PageSize,requestBody.SearchText,requestBody.SortQuery);
             if (result.Status)
             {
                 return Ok(result);
@@ -93,6 +93,8 @@ namespace AITechWebAPI.Controllers
                 ContentType = requestBody.ContentType,
                 FileName = requestBody.FileName,
                 FilePath = requestBody.FilePath,
+                CreatorId = requestBody.CreatorId ?? 0,
+                Description = requestBody.Description ?? "",
             };
             var result = await _FileUploadRep.AddFileUploadAsync(FileUpload);
             if (result.Status)
@@ -141,6 +143,8 @@ namespace AITechWebAPI.Controllers
                 ContentType = requestBody.ContentType,
                 FileName = requestBody.FileName,
                 FilePath = requestBody.FilePath,
+                CreatorId = requestBody.CreatorId ?? 0,
+                Description = requestBody.Description ?? "",
             };
             result = await _FileUploadRep.EditFileUploadAsync(FileUpload);
             if (result.Status)

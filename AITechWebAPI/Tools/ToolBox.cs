@@ -102,7 +102,8 @@ namespace AITechWebAPI.Tools
             new Claim(JwtRegisteredClaimNames.Sub, login.Username),
                 new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
             new Claim("userId", login.ID.ToString()),
-            new Claim("FullName", login.FullName)
+            new Claim("FullName", login.FullName),
+            new Claim("Role", login.RoleId.ToString())
             };
 
             var token = new JwtSecurityToken(

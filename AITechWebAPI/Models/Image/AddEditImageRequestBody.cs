@@ -17,6 +17,9 @@ namespace AITechWebAPI.Models.Image
         [Display(Name = "شرح تصویر")]
         public string? Description { get; set; }
 
+        [Display(Name = "کاربر ایجاد کننده")]
+        public long? CreatorId { get; set; }
+
         [Display(Name = "کلید خارجی")]
         [Required(ErrorMessage = "لطفا {0} را وارد کنید")]
         [Range(1, long.MaxValue, ErrorMessage = "مقدار {0} باید بزرگتر از 0 باشد")]

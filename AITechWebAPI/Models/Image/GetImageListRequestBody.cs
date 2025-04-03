@@ -10,5 +10,8 @@ namespace AITechWebAPI.Models.Image
 
         [Display(Name = "نام شی")]
         public string EntityType { get; set; } = "";
+
+        [Display(Name = "کاربر ایجاد کننده")]
+        public long CreatorId { get; set; } = 0;
     }
 }

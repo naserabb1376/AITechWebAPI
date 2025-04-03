@@ -40,7 +40,7 @@ namespace AITechWebAPI.Controllers
             {
                 return BadRequest(requestBody);
             }
-            var result = await _ImageRep.GetAllImagesAsync(requestBody.EntityType,requestBody.ForeignKeyId,requestBody.PageIndex,requestBody.PageSize,requestBody.SearchText,requestBody.SortQuery);
+            var result = await _ImageRep.GetAllImagesAsync(requestBody.EntityType,requestBody.ForeignKeyId,requestBody.CreatorId,requestBody.PageIndex,requestBody.PageSize,requestBody.SearchText,requestBody.SortQuery);
             if (result.Status)
             {
                 return Ok(result);
@@ -91,6 +91,7 @@ namespace AITechWebAPI.Controllers
                 CreateDate = DateTime.Now.ToShamsi(),
                 UpdateDate = DateTime.Now.ToShamsi(),
                 Description = x.Description ?? "",
+                CreatorId = x.CreatorId ?? 0,
                 EntityType = x.EntityType,
                 FileName = x.FileName,
                 FilePath = x.FilePath,
@@ -150,7 +151,9 @@ namespace AITechWebAPI.Controllers
                     FileName = body.FileName,
                     FilePath = body.FilePath,
                     ForeignKeyId = body.ForeignKeyId,
-                    Description = body.Description ??""
+                    Description = body.Description ??"",
+                    CreatorId = body.CreatorId ?? 0,
+
                 };
 
                 Images.Add(Image);
