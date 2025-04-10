@@ -3,10 +3,7 @@ using AITechDATA.ResultObjects;
 using Microsoft.EntityFrameworkCore;
 using AITechDATA.Tools;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+
 using AITechDATA.Domain;
 
 namespace AITechDATA.DataLayer.Services
@@ -74,7 +71,7 @@ namespace AITechDATA.DataLayer.Services
             return result;
         }
 
-        public async Task<ListResultObject<Group>> GetAllGroupsAsync(long courseId=0,string groupStatus = "", int pageIndex = 1, int pageSize = 20, string searchText = "",string sortQuery ="")
+        public async Task<ListResultObject<Group>> GetAllGroupsAsync(long courseId = 0, string groupStatus = "", int pageIndex = 1, int pageSize = 20, string searchText = "", string sortQuery = "")
         {
             ListResultObject<Group> results = new ListResultObject<Group>();
             try
@@ -82,12 +79,12 @@ namespace AITechDATA.DataLayer.Services
                 var query = _context.Groups
                     .AsNoTracking()
                     .Where(x =>
-                       ( 
-                       (courseId > 0 && x.CourseId == courseId)
-                       || (!string.IsNullOrEmpty(groupStatus) && x.Status == (GroupStatus)Enum.Parse(typeof(GroupStatus), groupStatus))
-                       )
+                        (
+                            (courseId > 0 && x.CourseId == courseId)
+                            || (!string.IsNullOrEmpty(groupStatus) && x.Status == (GroupStatus)Enum.Parse(typeof(GroupStatus), groupStatus))
+                        )
                         || ((!string.IsNullOrEmpty(x.Name) && x.Name.Contains(searchText)) ||
-                        (x.Teacher.FullName.Contains(searchText)))
+                            (x.Teacher.FullName.Contains(searchText)))
                     );
 
                 results.TotalCount = query.Count();
@@ -129,6 +126,39 @@ namespace AITechDATA.DataLayer.Services
                 result.ErrorMessage = $"{ex.Message} - {ex.InnerException?.Message}";
             }
             return result;
+        }
+
+        public async Task<ListResultObject<Group>> GetGroupByUserIdAsync(long UserId, string groupStatus = "", int pageIndex = 1, int pageSize = 20, string searchText = "", string sortQuery = "")
+        {
+            ListResultObject<Group> results = new ListResultObject<Group>();
+            try
+            {
+                var query =
+                _context.UserGroups
+                    .AsNoTracking()
+                    .Where(x => (x.UserId == UserId) & ((!string.IsNullOrEmpty(groupStatus) && x.Group.Status == (GroupStatus)Enum.Parse(typeof(GroupStatus), groupStatus))
+                               )
+                               || ((!string.IsNullOrEmpty(x.Group.Name) && x.Group.Name.Contains(searchText)) ||
+                                   (x.Group.Teacher.FullName.Contains(searchText))))
+                    .Select(x => x.Group);
+
+                results.TotalCount = query.Count();
+                results.PageCount = DbTools.GetPageCount(results.TotalCount, pageSize);
+                results.Results = await query.OrderByDescending(x => x.CreateDate)
+                    .SortBy(sortQuery).ToPaging(pageIndex, pageSize)
+                    .Include(x => x.Course)
+                    .Include(x => x.Teacher)
+                    .Include(x => x.Sessions)
+                    .Include(x => x.PreRegistrations)
+                    .Include(x => x.Students)
+                    .ToListAsync();
+            }
+            catch (Exception ex)
+            {
+                results.Status = false;
+                results.ErrorMessage = $"{ex.Message} - {ex.InnerException?.Message}";
+            }
+            return results;
         }
 
         public async Task<BitResultObject> RemoveGroupAsync(Group group)
