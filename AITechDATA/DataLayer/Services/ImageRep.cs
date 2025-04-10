@@ -26,7 +26,7 @@ namespace AITechDATA.DataLayer.Services
             BitResultObject result = new BitResultObject();
             try
             {
-               await _context.Images.AddRangeAsync(images);
+                await _context.Images.AddRangeAsync(images);
                 await _context.SaveChangesAsync();
                 result.ID = images.FirstOrDefault().ID;
                 foreach (var image in images)
@@ -81,7 +81,7 @@ namespace AITechDATA.DataLayer.Services
             return result;
         }
 
-        public async Task<ListResultObject<Image>> GetAllImagesAsync(string entityType = "", long foreignKey = 0, long creatorId = 0, int pageIndex = 1, int pageSize = 20, string searchText = "",string sortQuery ="")
+        public async Task<ListResultObject<Image>> GetAllImagesAsync(string entityType = "", long foreignKey = 0, long creatorId = 0, int pageIndex = 1, int pageSize = 20, string searchText = "", string sortQuery = "")
         {
             ListResultObject<Image> results = new ListResultObject<Image>();
             try
@@ -133,10 +133,10 @@ namespace AITechDATA.DataLayer.Services
         public async Task<RowResultObject<Image>> GetImageForShowAsync(long imageId = 0, long foreignKeyId = 0, string entityType = "", long userId = 0, long roleId = 0)
         {
             RowResultObject<Image> result = new RowResultObject<Image>();
-            IQueryable<Image> query =  _context.Images.AsNoTracking();
+            IQueryable<Image> query = _context.Images.AsNoTracking();
             try
             {
-                if (imageId >  0)
+                if (imageId > 0)
                 {
                     query = query.Where(x => x.ID == imageId);
                 }
@@ -151,9 +151,9 @@ namespace AITechDATA.DataLayer.Services
                         query = query.Where(x => x.ForeignKeyId == foreignKeyId);
                     }
                 }
+                var theRow = await query.OrderByDescending(x => x.ID).FirstOrDefaultAsync();
 
-                var theRow = await query.FirstOrDefaultAsync();
-               if (theRow.Description.ToLower() != "public" && ( roleId != 3 && theRow.CreatorId != userId))
+                if (theRow.Description.ToLower() != "public" && (roleId != 3 && theRow.CreatorId != userId))
                 {
                     result.Status = false;
                     result.ErrorMessage = $"The User Has No Access To This Image";
@@ -226,7 +226,5 @@ namespace AITechDATA.DataLayer.Services
             }
             return result;
         }
-
-     
     }
 }

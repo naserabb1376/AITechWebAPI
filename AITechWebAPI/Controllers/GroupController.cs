@@ -21,16 +21,15 @@ namespace AITechWebAPI.Controllers
     [ApiController]
     [Authorize]
     [Produces("application/json")]
-
     public class GroupController : ControllerBase
     {
-        IGroupRep _GroupRep;
-        ILogRep _logRep;
+        private IGroupRep _GroupRep;
+        private ILogRep _logRep;
 
-        public GroupController(IGroupRep GroupRep,ILogRep logRep)
+        public GroupController(IGroupRep GroupRep, ILogRep logRep)
         {
-           _GroupRep = GroupRep;
-           _logRep = logRep;
+            _GroupRep = GroupRep;
+            _logRep = logRep;
         }
 
         [HttpPost("GetAllGroups_Base")]
@@ -40,7 +39,7 @@ namespace AITechWebAPI.Controllers
             {
                 return BadRequest(requestBody);
             }
-            var result = await _GroupRep.GetAllGroupsAsync(requestBody.CourseId,requestBody.GroupStatus,requestBody.PageIndex,requestBody.PageSize,requestBody.SearchText,requestBody.SortQuery);
+            var result = await _GroupRep.GetAllGroupsAsync(requestBody.CourseId, requestBody.GroupStatus, requestBody.PageIndex, requestBody.PageSize, requestBody.SearchText, requestBody.SortQuery);
             if (result.Status)
             {
                 return Ok(result);
@@ -56,6 +55,21 @@ namespace AITechWebAPI.Controllers
                 return BadRequest(requestBody);
             }
             var result = await _GroupRep.GetGroupByIdAsync(requestBody.ID);
+            if (result.Status)
+            {
+                return Ok(result);
+            }
+            return BadRequest(result);
+        }
+
+        [HttpPost("GetGroupsByUserID")]
+        public async Task<ActionResult<ListResultObject<Group>>> GetGroupsByUserID(GetGroupListRequestBody requestBody)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(requestBody);
+            }
+            var result = await _GroupRep.GetGroupByUserIdAsync(requestBody.UserId, requestBody.GroupStatus, requestBody.PageIndex, requestBody.PageSize, requestBody.SearchText, requestBody.SortQuery);
             if (result.Status)
             {
                 return Ok(result);
@@ -109,12 +123,10 @@ namespace AITechWebAPI.Controllers
                     UpdateDate = DateTime.Now.ToShamsi(),
                     LogTime = DateTime.Now.ToShamsi(),
                     ActionName = this.ControllerContext.RouteData.Values["action"].ToString(),
-
                 };
                 await _logRep.AddLogAsync(log);
 
-                #endregion
-
+                #endregion AddLog
 
                 return Ok(result);
             }
@@ -153,7 +165,6 @@ namespace AITechWebAPI.Controllers
             result = await _GroupRep.EditGroupAsync(Group);
             if (result.Status)
             {
-
                 #region AddLog
 
                 Log log = new Log()
@@ -162,11 +173,10 @@ namespace AITechWebAPI.Controllers
                     UpdateDate = DateTime.Now.ToShamsi(),
                     LogTime = DateTime.Now.ToShamsi(),
                     ActionName = this.ControllerContext.RouteData.Values["action"].ToString(),
-
                 };
                 await _logRep.AddLogAsync(log);
 
-                #endregion
+                #endregion AddLog
 
                 return Ok(result);
             }
@@ -183,7 +193,6 @@ namespace AITechWebAPI.Controllers
             var result = await _GroupRep.RemoveGroupAsync(requestBody.ID);
             if (result.Status)
             {
-
                 #region AddLog
 
                 Log log = new Log()
@@ -192,11 +201,10 @@ namespace AITechWebAPI.Controllers
                     UpdateDate = DateTime.Now.ToShamsi(),
                     LogTime = DateTime.Now.ToShamsi(),
                     ActionName = this.ControllerContext.RouteData.Values["action"].ToString(),
-
                 };
                 await _logRep.AddLogAsync(log);
 
-                #endregion
+                #endregion AddLog
 
                 return Ok(result);
             }
