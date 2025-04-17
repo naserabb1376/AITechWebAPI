@@ -44,6 +44,7 @@ namespace AITechDATA.DataLayer
         public DbSet<TicketMessage> TicketMessages { get; set; }
         public DbSet<User> Users { get; set; }
         public DbSet<Token> Tokens { get; set; }
+        public DbSet<Content> Contents { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
@@ -65,11 +66,11 @@ namespace AITechDATA.DataLayer
                 .HasForeignKey(g => g.TeacherId)
                 .OnDelete(DeleteBehavior.Restrict); // یا DeleteBehavior.NoAction
 
-            modelBuilder.Entity<FileUpload>()
-               .HasOne(x => x.Assignment)
-               .WithMany(x => x.Files)
-               .HasForeignKey(x => x.AssignmentId)
-               .OnDelete(DeleteBehavior.Cascade);
+            //modelBuilder.Entity<FileUpload>()
+            //.HasOne(x => x.Assignment)
+            //.WithMany(x => x.Files)
+            //.HasForeignKey(x => x.AssignmentId)
+            //.OnDelete(DeleteBehavior.Cascade);
 
             modelBuilder.Entity<Course>()
              .HasOne(x => x.Category)
@@ -130,7 +131,6 @@ namespace AITechDATA.DataLayer
           .WithMany(x => x.Assignments)
           .HasForeignKey(x => x.SessionAssignmentId)
           .OnDelete(DeleteBehavior.Cascade);
-
 
             modelBuilder.Entity<Attendance>()
           .HasOne(x => x.User)
@@ -239,7 +239,6 @@ namespace AITechDATA.DataLayer
 .WithMany(x => x.Notifications)
 .HasForeignKey(x => x.UserId)
 .OnDelete(DeleteBehavior.Cascade);
-
         }
     }
 }

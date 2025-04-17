@@ -74,13 +74,13 @@ namespace AITechDATA.DataLayer.Services
             return result;
         }
 
-        public async Task<ListResultObject<Permission>> GetAllPermissionsAsync(long roleId = 0, int pageIndex = 1, int pageSize = 20, string searchText = "",string sortQuery ="")
+        public async Task<ListResultObject<Permission>> GetAllPermissionsAsync(long roleId = 0, int pageIndex = 1, int pageSize = 20, string searchText = "", string sortQuery = "")
         {
             ListResultObject<Permission> results = new ListResultObject<Permission>();
             try
             {
                 IQueryable<Permission> query;
-                 if (roleId > 0)
+                if (roleId > 0)
                 {
                     query = _context.PermissionRoles.Where(x => x.RoleId == roleId).Select(x => x.Permission)
                    .AsNoTracking()
@@ -89,21 +89,21 @@ namespace AITechDATA.DataLayer.Services
                        (!string.IsNullOrEmpty(x.Description) && x.Description.Contains(searchText))
                    );
                 }
-                 else
+                else
                 {
-                     query = _context.Permissions
-                   .AsNoTracking()
-                   .Where(x =>
-                       (!string.IsNullOrEmpty(x.Name) && x.Name.Contains(searchText)) ||
-                       (!string.IsNullOrEmpty(x.Description) && x.Description.Contains(searchText))
-                   );
+                    query = _context.Permissions
+                  .AsNoTracking()
+                  .Where(x =>
+                      (!string.IsNullOrEmpty(x.Name) && x.Name.Contains(searchText)) ||
+                      (!string.IsNullOrEmpty(x.Description) && x.Description.Contains(searchText))
+                  );
                 }
 
                 results.TotalCount = query.Count();
                 results.PageCount = DbTools.GetPageCount(results.TotalCount, pageSize);
                 results.Results = await query.OrderByDescending(x => x.CreateDate)
                      .SortBy(sortQuery).ToPaging(pageIndex, pageSize)
-                    .Include(x => x.PermissionRoles)
+                    //.Include(x => x.PermissionRoles)
                     .ToListAsync();
             }
             catch (Exception ex)

@@ -134,23 +134,22 @@ namespace AITechDATA.DataLayer.Services
             try
             {
                 var query =
-                _context.UserGroups
-                    .AsNoTracking()
-                    .Where(x => (x.UserId == UserId) & ((!string.IsNullOrEmpty(groupStatus) && x.Group.Status == (GroupStatus)Enum.Parse(typeof(GroupStatus), groupStatus))
-                               )
-                               || ((!string.IsNullOrEmpty(x.Group.Name) && x.Group.Name.Contains(searchText)) ||
-                                   (x.Group.Teacher.FullName.Contains(searchText))))
-                    .Select(x => x.Group);
+                    _context.UserGroups
+                        .AsNoTracking()
+                        .Where(x => (x.UserId == UserId) &
+                                    ((!string.IsNullOrEmpty(groupStatus) && x.Group.Status ==
+                                            (GroupStatus)Enum.Parse(typeof(GroupStatus), groupStatus))
+                                    )
+                                    || ((!string.IsNullOrEmpty(x.Group.Name) && x.Group.Name.Contains(searchText) ||
+                                         x.Group.DayOfWeek.Contains(searchText)) ||
+                                        (x.Group.Teacher.FullName.Contains(searchText))))
+                        .Select(x => x.Group).Include(x => x.Teacher.FullName);
 
                 results.TotalCount = query.Count();
                 results.PageCount = DbTools.GetPageCount(results.TotalCount, pageSize);
                 results.Results = await query.OrderByDescending(x => x.CreateDate)
                     .SortBy(sortQuery).ToPaging(pageIndex, pageSize)
-                    .Include(x => x.Course)
-                    .Include(x => x.Teacher)
-                    .Include(x => x.Sessions)
-                    .Include(x => x.PreRegistrations)
-                    .Include(x => x.Students)
+
                     .ToListAsync();
             }
             catch (Exception ex)

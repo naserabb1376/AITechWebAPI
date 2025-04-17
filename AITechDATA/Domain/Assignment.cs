@@ -16,6 +16,6 @@ namespace AITechDATA.Domain
         public long SessionAssignmentId { get; set; } // کلید خارجی به SessionAssignment
         public SessionAssignment SessionAssignment { get; set; } // ارتباط با SessionAssignment
         public DateTime SubmissionDate { get; set; } // تاریخ ارسال تمرین
-        public ICollection<FileUpload> Files { get; set; } // فایل‌های ارسال شده توسط دانش‌آموز
+        //public ICollection<FileUpload> Files { get; set; } // فایل‌های ارسال شده توسط دانش‌آموز
     }
 }

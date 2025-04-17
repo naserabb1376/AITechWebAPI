@@ -46,7 +46,7 @@ namespace AITechDATA.DataLayer.Services
             BitResultObject result = new BitResultObject();
             try
             {
-                 _context.Assignments.UpdateRange(assignments);
+                _context.Assignments.UpdateRange(assignments);
                 await _context.SaveChangesAsync();
                 result.ID = assignments.FirstOrDefault().ID;
                 foreach (var assignment in assignments)
@@ -80,7 +80,7 @@ namespace AITechDATA.DataLayer.Services
             return result;
         }
 
-        public async Task<ListResultObject<Assignment>> GetAllAssignmentsAsync(long UserId = 0,long sessionAssignmentId = 0, int pageIndex = 1, int pageSize = 20, string searchText = "", string sortQuery = "")
+        public async Task<ListResultObject<Assignment>> GetAllAssignmentsAsync(long UserId = 0, long sessionAssignmentId = 0, int pageIndex = 1, int pageSize = 20, string searchText = "", string sortQuery = "")
         {
             ListResultObject<Assignment> results = new ListResultObject<Assignment>();
             try
@@ -88,7 +88,7 @@ namespace AITechDATA.DataLayer.Services
                 var query = _context.Assignments
                     .AsNoTracking()
                     .Where(x =>
-                         (sessionAssignmentId > 0 && x.SessionAssignmentId == sessionAssignmentId) 
+                         (sessionAssignmentId > 0 && x.SessionAssignmentId == sessionAssignmentId)
                          || (UserId > 0 && x.UserId == UserId)
                        || ((!string.IsNullOrEmpty(x.Title) && x.Title.Contains(searchText)) ||
                         (!string.IsNullOrEmpty(x.Description) && x.Description.Contains(searchText)))
@@ -117,7 +117,7 @@ namespace AITechDATA.DataLayer.Services
                     .AsNoTracking()
                     .Include(x => x.User)
                     .Include(x => x.SessionAssignment)
-                    .Include(x => x.Files)
+                    //.Include(x => x.Files)
                     .SingleOrDefaultAsync(x => x.ID == assignmentId);
             }
             catch (Exception ex)

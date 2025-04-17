@@ -76,17 +76,19 @@ namespace AITechDATA.DataLayer.Services
             return result;
         }
 
-        public async Task<ListResultObject<FileUpload>> GetAllFileUploadsAsync(long assignmentId = 0,long creatorId=0,int pageIndex = 1, int pageSize = 20, string searchText = "",string sortQuery ="")
+        public async Task<ListResultObject<FileUpload>> GetAllFileUploadsAsync(string entityType = "", long ForeignKeyId = 0, long creatorId = 0, int pageIndex = 1, int pageSize = 20, string searchText = "", string sortQuery = "")
         {
             ListResultObject<FileUpload> results = new ListResultObject<FileUpload>();
             try
             {
                 var query = _context.FileUploads
                     .AsNoTracking()
-                    .Where(x => 
-                            ((assignmentId > 0 && x.AssignmentId == assignmentId) ||
-                            (creatorId > 0 && x.CreatorId == creatorId))
+                    .Where(x =>
+                            ((ForeignKeyId > 0 && x.ForeignKeyId == ForeignKeyId) ||
+                            (creatorId > 0 && x.CreatorId == creatorId)
 
+                            ||
+                            (!string.IsNullOrEmpty(entityType) && x.EntityType == entityType))
                        || ((!string.IsNullOrEmpty(x.FileName) && x.FileName.Contains(searchText)) ||
                         (!string.IsNullOrEmpty(x.FilePath) && x.FilePath.Contains(searchText)) ||
                         (!string.IsNullOrEmpty(x.ContentType) && x.ContentType.Contains(searchText)))
@@ -96,7 +98,7 @@ namespace AITechDATA.DataLayer.Services
                 results.PageCount = DbTools.GetPageCount(results.TotalCount, pageSize);
                 results.Results = await query.OrderByDescending(x => x.CreateDate)
                      .SortBy(sortQuery).ToPaging(pageIndex, pageSize)
-                    .Include(x => x.Assignment)
+                    //.Include(x => x.Assignment)
                     .ToListAsync();
             }
             catch (Exception ex)
@@ -107,7 +109,7 @@ namespace AITechDATA.DataLayer.Services
             return results;
         }
 
-        public async Task<RowResultObject<FileUpload>> GetFileForDownloadAsync(long fileUploadId = 0, long foreignKeyId = 0, long userId = 0, long roleId = 0)
+        public async Task<RowResultObject<FileUpload>> GetFileForDownloadAsync(long fileUploadId = 0, long foreignKeyId = 0, string entityType = "", long userId = 0, long roleId = 0)
         {
             RowResultObject<FileUpload> result = new RowResultObject<FileUpload>();
             IQueryable<FileUpload> query = _context.FileUploads.AsNoTracking();
@@ -117,9 +119,16 @@ namespace AITechDATA.DataLayer.Services
                 {
                     query = query.Where(x => x.ID == fileUploadId);
                 }
-                else if(foreignKeyId > 0)
+                else
                 {
-                    query = query.Where(x => x.AssignmentId == foreignKeyId);
+                    if (!string.IsNullOrEmpty(entityType))
+                    {
+                        query = query.Where(x => x.EntityType == entityType);
+                    }
+                    if (foreignKeyId > 0)
+                    {
+                        query = query.Where(x => x.ForeignKeyId == foreignKeyId);
+                    }
                 }
 
                 var theRow = await query.FirstOrDefaultAsync();
@@ -149,7 +158,7 @@ namespace AITechDATA.DataLayer.Services
             {
                 result.Result = await _context.FileUploads
                     .AsNoTracking()
-                    .Include(x => x.Assignment)
+                    //.Include(x => x.Assignment)
                     .SingleOrDefaultAsync(x => x.ID == fileUploadId);
             }
             catch (Exception ex)

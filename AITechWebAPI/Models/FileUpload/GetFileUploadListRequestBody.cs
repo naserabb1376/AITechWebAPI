@@ -5,9 +5,11 @@ namespace AITechWebAPI.Models.FileUpload
 {
     public class GetFileUploadListRequestBody : GetListRequestBody
     {
+        [Display(Name = "کد فایل")]
+        public long ForeignKeyId { get; set; } = 0;
 
-        [Display(Name = "کد تمرین")]
-        public long AssignmentId { get; set; } = 0;
+        [Display(Name = "نام شی")]
+        public string entityType { get; set; }
 
         [Display(Name = "کاربر ایجاد کننده")]
         public long CreatorId { get; set; } = 0;
