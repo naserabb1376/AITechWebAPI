@@ -70,7 +70,7 @@ public class FileCenterController : ControllerBase
                     UpdateDate = DateTime.Now.ToShamsi(),
                     FileName = fileName,
                     FilePath = fullPath,
-                    AssignmentId = rowId,
+                    ForeignKeyId = rowId,
                     ContentType = GetContentType(fullPath),
                     Description = isPublic ? "Public" : "Private",
                     CreatorId = long.Parse(userId),
@@ -130,7 +130,7 @@ public class FileCenterController : ControllerBase
             }
             else if (fileType.ToLower() == "files")
             {
-                var theFile = await _fileUploadRep.GetFileForDownloadAsync(rowId, foreignkeyId, userId, roleId);
+                var theFile = await _fileUploadRep.GetFileForDownloadAsync(rowId, foreignkeyId, entityName, userId, roleId);
                 if (theFile != null) filePath = theFile.Result.FilePath;
             }
             else return BadRequest("Invalid File Category!");
@@ -155,7 +155,6 @@ public class FileCenterController : ControllerBase
         {
             return BadRequest($"{ex.Message} - {ex.InnerException?.Message}");
         }
-
     }
 
     private string GetContentType(string path)

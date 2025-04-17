@@ -4,6 +4,7 @@ using AITechDATA.DataLayer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace AITechDATA.Migrations
 {
     [DbContext(typeof(AiITechContext))]
-    partial class AiITechContextModelSnapshot : ModelSnapshot
+    [Migration("20250417132337_editedatabase")]
+    partial class editedatabase
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -220,41 +223,6 @@ namespace AITechDATA.Migrations
                     b.HasKey("ID");
 
                     b.ToTable("Cities");
-                });
-
-            modelBuilder.Entity("AITechDATA.Domain.Content", b =>
-                {
-                    b.Property<long>("ID")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("ID"));
-
-                    b.Property<DateTime?>("CreateDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("Description")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("EntityType")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<long>("ForeignKeyId")
-                        .HasColumnType("bigint");
-
-                    b.Property<bool>("HaveImage")
-                        .HasColumnType("bit");
-
-                    b.Property<int?>("Priority")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime?>("UpdateDate")
-                        .HasColumnType("datetime2");
-
-                    b.HasKey("ID");
-
-                    b.ToTable("Contents");
                 });
 
             modelBuilder.Entity("AITechDATA.Domain.Course", b =>

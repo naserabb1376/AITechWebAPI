@@ -4,6 +4,7 @@ using AITechDATA.DataLayer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,13 +12,15 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace AITechDATA.Migrations
 {
     [DbContext(typeof(AiITechContext))]
-    partial class AiITechContextModelSnapshot : ModelSnapshot
+    [Migration("20250414100554_permissionen")]
+    partial class permissionen
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "9.0.0")
+                .HasAnnotation("ProductVersion", "8.0.11")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
@@ -222,41 +225,6 @@ namespace AITechDATA.Migrations
                     b.ToTable("Cities");
                 });
 
-            modelBuilder.Entity("AITechDATA.Domain.Content", b =>
-                {
-                    b.Property<long>("ID")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("ID"));
-
-                    b.Property<DateTime?>("CreateDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("Description")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("EntityType")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<long>("ForeignKeyId")
-                        .HasColumnType("bigint");
-
-                    b.Property<bool>("HaveImage")
-                        .HasColumnType("bit");
-
-                    b.Property<int?>("Priority")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime?>("UpdateDate")
-                        .HasColumnType("datetime2");
-
-                    b.HasKey("ID");
-
-                    b.ToTable("Contents");
-                });
-
             modelBuilder.Entity("AITechDATA.Domain.Course", b =>
                 {
                     b.Property<long>("ID")
@@ -336,6 +304,9 @@ namespace AITechDATA.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("ID"));
 
+                    b.Property<long>("AssignmentId")
+                        .HasColumnType("bigint");
+
                     b.Property<string>("ContentType")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -350,10 +321,6 @@ namespace AITechDATA.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("EntityType")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<string>("FileName")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -362,13 +329,12 @@ namespace AITechDATA.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<long>("ForeignKeyId")
-                        .HasColumnType("bigint");
-
                     b.Property<DateTime?>("UpdateDate")
                         .HasColumnType("datetime2");
 
                     b.HasKey("ID");
+
+                    b.HasIndex("AssignmentId");
 
                     b.ToTable("FileUploads");
                 });
@@ -454,9 +420,6 @@ namespace AITechDATA.Migrations
 
                     b.Property<long>("ForeignKeyId")
                         .HasColumnType("bigint");
-
-                    b.Property<int?>("Priority")
-                        .HasColumnType("int");
 
                     b.Property<DateTime?>("UpdateDate")
                         .HasColumnType("datetime2");
@@ -1259,6 +1222,17 @@ namespace AITechDATA.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("AITechDATA.Domain.FileUpload", b =>
+                {
+                    b.HasOne("AITechDATA.Domain.Assignment", "Assignment")
+                        .WithMany("Files")
+                        .HasForeignKey("AssignmentId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Assignment");
+                });
+
             modelBuilder.Entity("AITechDATA.Domain.Group", b =>
                 {
                     b.HasOne("AITechDATA.Domain.Course", "Course")
@@ -1507,6 +1481,11 @@ namespace AITechDATA.Migrations
                     b.Navigation("Group");
 
                     b.Navigation("User");
+                });
+
+            modelBuilder.Entity("AITechDATA.Domain.Assignment", b =>
+                {
+                    b.Navigation("Files");
                 });
 
             modelBuilder.Entity("AITechDATA.Domain.Category", b =>

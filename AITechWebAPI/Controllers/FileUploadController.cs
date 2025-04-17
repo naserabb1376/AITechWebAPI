@@ -21,16 +21,15 @@ namespace AITechWebAPI.Controllers
     [ApiController]
     [Authorize]
     [Produces("application/json")]
-
     public class FileUploadController : ControllerBase
     {
-        IFileUploadRep _FileUploadRep;
-        ILogRep _logRep;
+        private IFileUploadRep _FileUploadRep;
+        private ILogRep _logRep;
 
-        public FileUploadController(IFileUploadRep FileUploadRep,ILogRep logRep)
+        public FileUploadController(IFileUploadRep FileUploadRep, ILogRep logRep)
         {
-           _FileUploadRep = FileUploadRep;
-           _logRep = logRep;
+            _FileUploadRep = FileUploadRep;
+            _logRep = logRep;
         }
 
         [HttpPost("GetAllFileUploads_Base")]
@@ -40,7 +39,7 @@ namespace AITechWebAPI.Controllers
             {
                 return BadRequest(requestBody);
             }
-            var result = await _FileUploadRep.GetAllFileUploadsAsync(requestBody.AssignmentId,requestBody.CreatorId,requestBody.PageIndex,requestBody.PageSize,requestBody.SearchText,requestBody.SortQuery);
+            var result = await _FileUploadRep.GetAllFileUploadsAsync(requestBody.entityType, requestBody.ForeignKeyId, requestBody.CreatorId, requestBody.PageIndex, requestBody.PageSize, requestBody.SearchText, requestBody.SortQuery);
             if (result.Status)
             {
                 return Ok(result);
@@ -89,7 +88,8 @@ namespace AITechWebAPI.Controllers
             {
                 CreateDate = DateTime.Now.ToShamsi(),
                 UpdateDate = DateTime.Now.ToShamsi(),
-                AssignmentId = requestBody.AssignmentId,
+                ForeignKeyId = requestBody.ForeignKeyId,
+                EntityType = requestBody.EntityType,
                 ContentType = requestBody.ContentType,
                 FileName = requestBody.FileName,
                 FilePath = requestBody.FilePath,
@@ -107,12 +107,10 @@ namespace AITechWebAPI.Controllers
                     UpdateDate = DateTime.Now.ToShamsi(),
                     LogTime = DateTime.Now.ToShamsi(),
                     ActionName = this.ControllerContext.RouteData.Values["action"].ToString(),
-
                 };
                 await _logRep.AddLogAsync(log);
 
-                #endregion
-
+                #endregion AddLog
 
                 return Ok(result);
             }
@@ -139,7 +137,8 @@ namespace AITechWebAPI.Controllers
                 CreateDate = theRow.Result.CreateDate,
                 UpdateDate = DateTime.Now.ToShamsi(),
                 ID = requestBody.ID,
-                AssignmentId = requestBody.AssignmentId,
+                ForeignKeyId = requestBody.ForeignKeyId,
+                EntityType = requestBody.EntityType,
                 ContentType = requestBody.ContentType,
                 FileName = requestBody.FileName,
                 FilePath = requestBody.FilePath,
@@ -149,7 +148,6 @@ namespace AITechWebAPI.Controllers
             result = await _FileUploadRep.EditFileUploadAsync(FileUpload);
             if (result.Status)
             {
-
                 #region AddLog
 
                 Log log = new Log()
@@ -158,11 +156,10 @@ namespace AITechWebAPI.Controllers
                     UpdateDate = DateTime.Now.ToShamsi(),
                     LogTime = DateTime.Now.ToShamsi(),
                     ActionName = this.ControllerContext.RouteData.Values["action"].ToString(),
-
                 };
                 await _logRep.AddLogAsync(log);
 
-                #endregion
+                #endregion AddLog
 
                 return Ok(result);
             }
@@ -179,7 +176,6 @@ namespace AITechWebAPI.Controllers
             var result = await _FileUploadRep.RemoveFileUploadAsync(requestBody.ID);
             if (result.Status)
             {
-
                 #region AddLog
 
                 Log log = new Log()
@@ -188,11 +184,10 @@ namespace AITechWebAPI.Controllers
                     UpdateDate = DateTime.Now.ToShamsi(),
                     LogTime = DateTime.Now.ToShamsi(),
                     ActionName = this.ControllerContext.RouteData.Values["action"].ToString(),
-
                 };
                 await _logRep.AddLogAsync(log);
 
-                #endregion
+                #endregion AddLog
 
                 return Ok(result);
             }

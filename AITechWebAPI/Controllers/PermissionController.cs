@@ -21,16 +21,15 @@ namespace AITechWebAPI.Controllers
     [ApiController]
     [Authorize]
     [Produces("application/json")]
-
     public class PermissionController : ControllerBase
     {
-        IPermissionRep _PermissionRep;
-        ILogRep _logRep;
+        private IPermissionRep _PermissionRep;
+        private ILogRep _logRep;
 
-        public PermissionController(IPermissionRep PermissionRep,ILogRep logRep)
+        public PermissionController(IPermissionRep PermissionRep, ILogRep logRep)
         {
-           _PermissionRep = PermissionRep;
-           _logRep = logRep;
+            _PermissionRep = PermissionRep;
+            _logRep = logRep;
         }
 
         [HttpPost("GetAllPermissions_Base")]
@@ -40,7 +39,7 @@ namespace AITechWebAPI.Controllers
             {
                 return BadRequest(requestBody);
             }
-            var result = await _PermissionRep.GetAllPermissionsAsync(requestBody.RoleId,requestBody.PageIndex,requestBody.PageSize,requestBody.SearchText,requestBody.SortQuery);
+            var result = await _PermissionRep.GetAllPermissionsAsync(requestBody.RoleId, requestBody.PageIndex, requestBody.PageSize, requestBody.SearchText, requestBody.SortQuery);
             if (result.Status)
             {
                 return Ok(result);
@@ -89,8 +88,12 @@ namespace AITechWebAPI.Controllers
             {
                 CreateDate = DateTime.Now.ToShamsi(),
                 UpdateDate = DateTime.Now.ToShamsi(),
-                Description = requestBody.Description ??"",          
+                Description = requestBody.Description ?? "",
                 Name = requestBody.Name,
+                Name_EN = requestBody.Name_EN,
+                Icon = requestBody.Icon,
+                Routename = requestBody.Routename,
+                Description_EN = requestBody.Description_EN
             };
             var result = await _PermissionRep.AddPermissionAsync(Permission);
             if (result.Status)
@@ -103,12 +106,10 @@ namespace AITechWebAPI.Controllers
                     UpdateDate = DateTime.Now.ToShamsi(),
                     LogTime = DateTime.Now.ToShamsi(),
                     ActionName = this.ControllerContext.RouteData.Values["action"].ToString(),
-
                 };
                 await _logRep.AddLogAsync(log);
 
-                #endregion
-
+                #endregion AddLog
 
                 return Ok(result);
             }
@@ -137,11 +138,14 @@ namespace AITechWebAPI.Controllers
                 ID = requestBody.ID,
                 Description = requestBody.Description ?? "",
                 Name = requestBody.Name,
+                Name_EN = requestBody.Name_EN,
+                Icon = requestBody.Icon,
+                Routename = requestBody.Routename,
+                Description_EN = requestBody.Description_EN
             };
             result = await _PermissionRep.EditPermissionAsync(Permission);
             if (result.Status)
             {
-
                 #region AddLog
 
                 Log log = new Log()
@@ -150,11 +154,10 @@ namespace AITechWebAPI.Controllers
                     UpdateDate = DateTime.Now.ToShamsi(),
                     LogTime = DateTime.Now.ToShamsi(),
                     ActionName = this.ControllerContext.RouteData.Values["action"].ToString(),
-
                 };
                 await _logRep.AddLogAsync(log);
 
-                #endregion
+                #endregion AddLog
 
                 return Ok(result);
             }
@@ -171,7 +174,6 @@ namespace AITechWebAPI.Controllers
             var result = await _PermissionRep.RemovePermissionAsync(requestBody.ID);
             if (result.Status)
             {
-
                 #region AddLog
 
                 Log log = new Log()
@@ -180,11 +182,10 @@ namespace AITechWebAPI.Controllers
                     UpdateDate = DateTime.Now.ToShamsi(),
                     LogTime = DateTime.Now.ToShamsi(),
                     ActionName = this.ControllerContext.RouteData.Values["action"].ToString(),
-
                 };
                 await _logRep.AddLogAsync(log);
 
-                #endregion
+                #endregion AddLog
 
                 return Ok(result);
             }

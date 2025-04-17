@@ -18,10 +18,18 @@ namespace AITechWebAPI.Models.FileUpload
         [Required(ErrorMessage = "لطفا {0} را وارد کنید")]
         public string ContentType { get; set; }
 
-        [Display(Name = "کد تمرین")]
+        //[Display(Name = "کد تمرین")]
+        //[Required(ErrorMessage = "لطفا {0} را وارد کنید")]
+        //[Range(1, long.MaxValue, ErrorMessage = "مقدار {0} باید بزرگتر از 0 باشد")]
+        //public long AssignmentId { get; set; }
+        [Display(Name = "کلید خارجی")]
         [Required(ErrorMessage = "لطفا {0} را وارد کنید")]
         [Range(1, long.MaxValue, ErrorMessage = "مقدار {0} باید بزرگتر از 0 باشد")]
-        public long AssignmentId { get; set; }
+        public long ForeignKeyId { get; set; }
+
+        [Display(Name = "نام جدول")]
+        [Required(ErrorMessage = "لطفا {0} را وارد کنید")]
+        public string EntityType { get; set; }
 
         [Display(Name = "شرح تصویر")]
         public string? Description { get; set; }
