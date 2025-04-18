@@ -25,5 +25,6 @@ namespace AITechDATA.DataLayer.Repositories
         Task<BitResultObject> RemoveImagesAsync(List<long> imageIds);
 
         Task<BitResultObject> ExistImageAsync(long imageId);
+        Task<long> GetNewRowNumber();
     }
 }

@@ -168,7 +168,6 @@ namespace AITechWebAPI
             })
   .AddJwtBearer(options =>
   {
-      options.RequireHttpsMetadata = false;
       options.SaveToken = true;
       options.TokenValidationParameters = new TokenValidationParameters
       {
@@ -182,6 +181,8 @@ namespace AITechWebAPI
       };
   });
 
+
+            builder.Services.AddAutoMapper(typeof(Program));
 
             var app = builder.Build();
 

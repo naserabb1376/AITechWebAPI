@@ -169,6 +169,12 @@ namespace AITechDATA.DataLayer.Services
             return result;
         }
 
+        public async Task<long> GetNewRowNumber()
+        {
+            long rowNumber = await _context.FileUploads.CountAsync() + 1;
+            return rowNumber;
+        }
+
         public async Task<BitResultObject> RemoveFileUploadAsync(FileUpload fileUpload)
         {
             BitResultObject result = new BitResultObject();

@@ -172,6 +172,12 @@ namespace AITechDATA.DataLayer.Services
             return result;
         }
 
+        public async Task<long> GetNewRowNumber()
+        {
+            long rowNumber = await _context.Images.CountAsync() +1;
+            return rowNumber;
+        }
+
         public async Task<BitResultObject> RemoveImagesAsync(List<Image> images)
         {
             BitResultObject result = new BitResultObject();

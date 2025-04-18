@@ -100,11 +100,11 @@ namespace AITechDATA.DataLayer.Services
                 results.PageCount = DbTools.GetPageCount(results.TotalCount, pageSize);
                 results.Results = await query.OrderByDescending(x => x.CreateDate)
                      .SortBy(sortQuery).ToPaging(pageIndex, pageSize)
-                    .Include(x => x.Course)
-                    .Include(x => x.Teacher)
-                    .Include(x => x.Sessions)
-                    .Include(x => x.PreRegistrations)
-                    .Include(x => x.Students)
+                    //.Include(x => x.Course)
+                    //.Include(x => x.Teacher)
+                    //.Include(x => x.Sessions)
+                    //.Include(x => x.PreRegistrations)
+                    //.Include(x => x.Students)
                     .ToListAsync();
             }
             catch (Exception ex)
