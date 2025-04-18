@@ -28,5 +28,9 @@ namespace AITechWebAPI.Models.Image
         [Display(Name = "نام جدول")]
         [Required(ErrorMessage = "لطفا {0} را وارد کنید")]
         public string EntityType { get; set; }
+
+        [Display(Name = "اولویت")]
+        [Required(ErrorMessage = "لطفا {0} را وارد کنید")]
+        public int? Priority { get; set; }
     }
 }

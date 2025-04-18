@@ -13,5 +13,8 @@ namespace AITechWebAPI.Models.Image
 
         [Display(Name = "کاربر ایجاد کننده")]
         public long CreatorId { get; set; } = 0;
+
+        [Display(Name = "اولویت")]
+        public int? Priority { get; set; } = 0;
     }
 }
