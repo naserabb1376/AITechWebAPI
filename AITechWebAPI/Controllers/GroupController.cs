@@ -14,6 +14,8 @@ using AITechDATA.Tools;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+using AutoMapper;
+using AITechWebAPI.ViewModels;
 
 namespace AITechWebAPI.Controllers
 {
@@ -24,12 +26,14 @@ namespace AITechWebAPI.Controllers
     public class GroupController : ControllerBase
     {
         private IGroupRep _GroupRep;
+        private readonly IMapper _mapper;
         private ILogRep _logRep;
 
-        public GroupController(IGroupRep GroupRep, ILogRep logRep)
+        public GroupController(IGroupRep GroupRep, ILogRep logRep,IMapper mapper)
         {
             _GroupRep = GroupRep;
             _logRep = logRep;
+            _mapper = mapper;
         }
 
         [HttpPost("GetAllGroups_Base")]
@@ -39,9 +43,10 @@ namespace AITechWebAPI.Controllers
             {
                 return BadRequest(requestBody);
             }
-            var result = await _GroupRep.GetAllGroupsAsync(requestBody.CourseId, requestBody.GroupStatus, requestBody.PageIndex, requestBody.PageSize, requestBody.SearchText, requestBody.SortQuery);
+            var result = await _GroupRep.GetAllGroupsAsync(requestBody.UserId,requestBody.CourseId, requestBody.GroupStatus, requestBody.PageIndex, requestBody.PageSize, requestBody.SearchText, requestBody.SortQuery);
             if (result.Status)
             {
+                var T = _mapper.Map<ListResultObject<TeacherGroupVM>>(result);
                 return Ok(result);
             }
             return BadRequest(result);
@@ -62,20 +67,7 @@ namespace AITechWebAPI.Controllers
             return BadRequest(result);
         }
 
-        [HttpPost("GetGroupsByUserID")]
-        public async Task<ActionResult<ListResultObject<Group>>> GetGroupsByUserID(GetGroupListRequestBody requestBody)
-        {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(requestBody);
-            }
-            var result = await _GroupRep.GetGroupByUserIdAsync(requestBody.UserId, requestBody.GroupStatus, requestBody.PageIndex, requestBody.PageSize, requestBody.SearchText, requestBody.SortQuery);
-            if (result.Status)
-            {
-                return Ok(result);
-            }
-            return BadRequest(result);
-        }
+      
 
         [HttpPost("ExistGroup_Base")]
         public async Task<ActionResult<BitResultObject>> ExistGroup_Base(GetRowRequestBody requestBody)

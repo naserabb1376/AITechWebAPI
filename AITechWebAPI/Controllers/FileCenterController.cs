@@ -33,7 +33,7 @@ public class FileCenterController : ControllerBase
             if (file == null || file.Length == 0)
                 return BadRequest("فایلی انتخاب نشده است.");
 
-            var fileName = Path.GetFileName(file.FileName);
+            string fileName = "", fullPath=""; long RowNumber =0;    
             var userId = User?.FindFirst("userId")?.Value;
             if (string.IsNullOrEmpty(userId)) return Unauthorized();
 
@@ -42,11 +42,13 @@ public class FileCenterController : ControllerBase
                 : Path.Combine(_env.ContentRootPath, "FileCenter", entityName, fileType, userId);
 
             Directory.CreateDirectory(savePath);
-            var fullPath = Path.Combine(savePath, fileName);
             long resultId = 0;
 
             if (fileType.ToLower() == "images")
             {
+                RowNumber = await _imageRep.GetNewRowNumber();
+                fileName = $"{entityName}_{RowNumber}_{userId}.{Path.GetExtension(file.FileName)}";
+                fullPath = Path.Combine(savePath, fileName);
                 Image theImage = new()
                 {
                     CreateDate = DateTime.Now.ToShamsi(),
@@ -64,6 +66,10 @@ public class FileCenterController : ControllerBase
             }
             else if (fileType.ToLower() == "files")
             {
+                RowNumber = await _fileUploadRep.GetNewRowNumber();
+                fileName = $"{entityName}_{RowNumber}_{userId}.{Path.GetExtension(file.FileName)}";
+                fullPath = Path.Combine(savePath, fileName);
+
                 FileUpload theFile = new()
                 {
                     CreateDate = DateTime.Now.ToShamsi(),
