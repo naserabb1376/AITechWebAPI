@@ -46,8 +46,8 @@ namespace AITechWebAPI.Controllers
             var result = await _GroupRep.GetAllGroupsAsync(requestBody.UserId,requestBody.CourseId, requestBody.GroupStatus, requestBody.PageIndex, requestBody.PageSize, requestBody.SearchText, requestBody.SortQuery);
             if (result.Status)
             {
-                var T = _mapper.Map<ListResultObject<TeacherGroupVM>>(result);
-                return Ok(result);
+                var resultVM = _mapper.Map<ListResultObject<TeacherGroupVM>>(result);
+                return Ok(resultVM);
             }
             return BadRequest(result);
         }
@@ -62,7 +62,8 @@ namespace AITechWebAPI.Controllers
             var result = await _GroupRep.GetGroupByIdAsync(requestBody.ID);
             if (result.Status)
             {
-                return Ok(result);
+                var resultVM = _mapper.Map<RowResultObject<TeacherGroupVM>>(result);
+                return Ok(resultVM);
             }
             return BadRequest(result);
         }

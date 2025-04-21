@@ -4,6 +4,7 @@ namespace AITechWebAPI.ViewModels
 {
     public class TeacherGroupVM
     {
+        public long ID { get; set; }
         public string Name { get; set; } // نام گروه
         public string DayOfWeek { get; set; } // روز برگزاری (مثلاً شنبه)
         public TimeSpan StartTime { get; set; } // ساعت شروع

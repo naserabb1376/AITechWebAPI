@@ -79,10 +79,16 @@ namespace AITechDATA.DataLayer.Services
             IQueryable<Group> query;
             try
             {
-                query = _context.Groups.AsNoTracking();
+                query = _context.Groups.AsNoTracking()
+                                        .Include(x => x.Course)
+                    .Include(x => x.Teacher)
+                    .Include(x => x.Sessions)
+                    .Include(x => x.PreRegistrations)
+                    .Include(x => x.Students)
+;
                 if (userId > 0)
                 {
-                    query = _context.UserGroups.Where(x => x.UserId == userId).Select(x => x.Group);
+                    query = _context.UserGroups.Where(x => x.UserId == userId).Include(x=> x.Group).ThenInclude(x=> x.Teacher).Select(x => x.Group);
                 }
                 if (courseId > 0)
                 {
@@ -100,11 +106,6 @@ namespace AITechDATA.DataLayer.Services
                 results.PageCount = DbTools.GetPageCount(results.TotalCount, pageSize);
                 results.Results = await query.OrderByDescending(x => x.CreateDate)
                      .SortBy(sortQuery).ToPaging(pageIndex, pageSize)
-                    //.Include(x => x.Course)
-                    //.Include(x => x.Teacher)
-                    //.Include(x => x.Sessions)
-                    //.Include(x => x.PreRegistrations)
-                    //.Include(x => x.Students)
                     .ToListAsync();
             }
             catch (Exception ex)
