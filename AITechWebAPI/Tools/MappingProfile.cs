@@ -13,9 +13,6 @@ namespace AITechWebAPI.Tools
     {
         public MappingProfile()
         {
-            CreateMap<Group, TeacherGroupVM>()
-            .ForMember(dest => dest.FullName, opt => opt.MapFrom(src => src.Teacher.FullName));
-
             CreateMap(typeof(ListResultObject<>), typeof(ListResultObject<>));
             CreateMap(typeof(RowResultObject<>), typeof(RowResultObject<>));
             CreateMap(typeof(BitResultObject), typeof(BitResultObject));
@@ -32,6 +29,9 @@ namespace AITechWebAPI.Tools
             CreateMap(typeof(TicketRowCustomResponse<>), typeof(TicketRowCustomResponse<>));
             CreateMap(typeof(TicketListCustomResponse<>), typeof(TicketListCustomResponse<>));
 
+            CreateMap<Group, TeacherGroupVM>()
+.ForMember(dest => dest.TeacherName, opt => opt.MapFrom(src => src.Teacher.FullName))
+.ForMember(dest => dest.CourseTitle, opt => opt.MapFrom(src => src.Course.Title));
         }
     }
 

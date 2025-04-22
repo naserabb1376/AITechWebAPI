@@ -182,10 +182,15 @@ namespace AITechDATA.Tools
 
         public static DateTime StringToDate(this string stringDateTime)
         {
+            string[] stringTimeArr = new string[3] {"00","00","00" };
+            ;
             if (string.IsNullOrEmpty(stringDateTime)) return DateTime.Now.ToShamsi();
             var arr = stringDateTime.Split(' ');
+            if (arr.Length > 1)
+            {
+             stringTimeArr = arr[1].Split(':');
+            }
             var stringDateArr = arr[0].Split('/');
-            var stringTimeArr = arr[1].Split(':');
             var date = new DateTime(int.Parse(stringDateArr[0]), int.Parse(stringDateArr[1]), int.Parse(stringDateArr[2]), int.Parse(stringTimeArr[0]), int.Parse(stringTimeArr[1]), int.Parse(stringTimeArr[2]),0);
             return date;
         }
@@ -198,6 +203,10 @@ namespace AITechDATA.Tools
 
         public static TimeSpan StringToTimeSpan(this string time)
         {
+            while (time.Split(':').Length < 3)
+            {
+                time += ":00";
+            }
             return TimeSpan.ParseExact(time, @"hh\:mm\:ss", CultureInfo.InvariantCulture);
         }
 

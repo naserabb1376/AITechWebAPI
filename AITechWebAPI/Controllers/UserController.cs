@@ -143,7 +143,7 @@ namespace AITechWebAPI.Controllers
         }
 
         [HttpPut("EditUser_Base")]
-        public async Task<ActionResult<BitResultObject>> EditUser_Base(AddEditUserRequestBody requestBody)
+        public async Task<ActionResult<BitResultObject>> EditUser_Base(EditUserRequestBody requestBody)
         {
             var result = new BitResultObject();
             if (!ModelState.IsValid)
@@ -162,13 +162,13 @@ namespace AITechWebAPI.Controllers
                 CreateDate = theRow.Result.CreateDate,
                 UpdateDate = DateTime.Now.ToShamsi(),
                 ID = requestBody.ID,
-                Email = requestBody.Email,
-                NationalCode = requestBody.NationalCode?? "",
-                Username = requestBody.UserName,
-                AddressId = (requestBody.AdressId > 0) ? requestBody.AdressId : null,
-                FullName = requestBody.FullName,
-                PasswordHash = requestBody.Password.ToHash(),
-                RoleId = requestBody.RoleId,
+                Email = requestBody.Email ?? theRow.Result.Email,
+                NationalCode = requestBody.NationalCode?? theRow.Result.NationalCode,
+                Username = requestBody.UserName ?? theRow.Result.Username,
+                AddressId = (requestBody.AdressId > 0) ? requestBody.AdressId : theRow.Result.AddressId,
+                FullName = requestBody.FullName ?? theRow.Result.FullName,
+                PasswordHash = requestBody.Password?.ToHash() ?? theRow.Result.PasswordHash,
+                RoleId = requestBody.RoleId ?? theRow.Result.RoleId,
                 
             };
             result = await _UserRep.EditUserAsync(User);
@@ -298,7 +298,7 @@ namespace AITechWebAPI.Controllers
                     AddressPostalCode = requestBody.Address.AddressPostalCode,
                     AddressStreet = requestBody.Address.AddressStreet,
                     // Description = requestBody.AddressDescription,
-                    CreateDate = DateTime.Now.ToShamsi(),
+                    CreateDate = theRow.Result.Address.CreateDate,
                     UpdateDate = DateTime.Now.ToShamsi(),
 
                 };
