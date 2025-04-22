@@ -88,7 +88,7 @@ namespace AITechDATA.DataLayer.Services
 ;
                 if (userId > 0)
                 {
-                    query = _context.UserGroups.Where(x => x.UserId == userId).Include(x=> x.Group).ThenInclude(x=> x.Teacher).Select(x => x.Group);
+                    query = _context.UserGroups.Where(x => x.UserId == userId).Include(x=> x.Group).ThenInclude(x=> x.Teacher).Include(x=> x.Group).ThenInclude(x=> x.Course).Select(x => x.Group);
                 }
                 if (courseId > 0)
                 {

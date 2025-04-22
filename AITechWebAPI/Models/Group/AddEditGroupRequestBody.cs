@@ -14,13 +14,21 @@ namespace AITechWebAPI.Models.Group
         [Required(ErrorMessage = "لطفا {0} را وارد کنید")]
         public string DayOfWeek { get; set; }
 
+        [Display(Name = "تاریخ شروع")]
+        [Required(ErrorMessage = "لطفا {0} را وارد کنید")]
+        public string StartDate { get; set; }
+
+        [Display(Name = "تاریخ پایان")]
+        [Required(ErrorMessage = "لطفا {0} را وارد کنید")]
+        public string EndDate { get; set; }
+
         [Display(Name = "ساعت شروع")]
         [Required(ErrorMessage = "لطفا {0} را وارد کنید")]
         public string StartTime { get; set; }
 
         [Display(Name = "ساعت پایان")]
-        [Required(ErrorMessage = "لطفا {0} را وارد کنید")]
-        public string EndTime { get; set; }
+        //[Required(ErrorMessage = "لطفا {0} را وارد کنید")]
+        public string? EndTime { get; set; }
 
         [Display(Name = "وضعیت گروه")]
         [Required(ErrorMessage = "لطفا {0} را وارد کنید")]
