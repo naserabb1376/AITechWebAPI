@@ -182,17 +182,32 @@ namespace AITechDATA.Tools
 
         public static DateTime StringToDate(this string stringDateTime)
         {
-            string[] stringTimeArr = new string[3] {"00","00","00" };
-            ;
-            if (string.IsNullOrEmpty(stringDateTime)) return DateTime.Now.ToShamsi();
+            if (string.IsNullOrWhiteSpace(stringDateTime))
+                throw new ArgumentNullException(nameof(stringDateTime));
+
+            string[] stringTimeArr = { "00", "00", "00" };
             var arr = stringDateTime.Split(' ');
+
             if (arr.Length > 1)
-            {
-             stringTimeArr = arr[1].Split(':');
-            }
+                stringTimeArr = arr[1].Split(':');
+
             var stringDateArr = arr[0].Split('/');
-            var date = new DateTime(int.Parse(stringDateArr[0]), int.Parse(stringDateArr[1]), int.Parse(stringDateArr[2]), int.Parse(stringTimeArr[0]), int.Parse(stringTimeArr[1]), int.Parse(stringTimeArr[2]),0);
-            return date;
+
+            if (stringDateArr.Length != 3)
+                throw new FormatException("Invalid date format.");
+
+            int year = int.Parse(stringDateArr[0]);
+            int month = int.Parse(stringDateArr[1]);
+            int day = int.Parse(stringDateArr[2]);
+
+            int hour = int.Parse(stringTimeArr[0]);
+            int minute = int.Parse(stringTimeArr[1]);
+            int second = int.Parse(stringTimeArr[2]);
+
+            PersianCalendar pc = new PersianCalendar();
+            DateTime result = pc.ToDateTime(year, month, day, hour, minute, second, 0);
+
+            return result;
         }
 
         public static string DateToString(this DateTime date)
