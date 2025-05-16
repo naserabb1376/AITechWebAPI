@@ -37,13 +37,14 @@ namespace AITechWebAPI.Controllers
         }
 
         [HttpPost("GetAllGroups_Base")]
+        [AllowAnonymous]
         public async Task<ActionResult<ListResultObject<Group>>> GetAllGroups_Base(GetGroupListRequestBody requestBody)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(requestBody);
             }
-            var result = await _GroupRep.GetAllGroupsAsync(requestBody.UserId,requestBody.CourseId, requestBody.GroupStatus, requestBody.PageIndex, requestBody.PageSize, requestBody.SearchText, requestBody.SortQuery);
+            var result = await _GroupRep.GetAllGroupsAsync(requestBody.StudentId,requestBody.CourseId,requestBody.TeacherId, requestBody.GroupStatus, requestBody.PageIndex, requestBody.PageSize, requestBody.SearchText, requestBody.SortQuery);
             if (result.Status)
             {
                 var resultVM = _mapper.Map<ListResultObject<TeacherGroupVM>>(result);

@@ -74,39 +74,60 @@ namespace AITechDATA.DataLayer.Services
             return result;
         }
 
-        public async Task<ListResultObject<Session>> GetAllSessionsAsync(long GroupId = 0,long userId=0, int pageIndex = 1, int pageSize = 20, string searchText = "", string sortQuery = "")
+        public async Task<ListResultObject<Session>> GetAllSessionsAsync(
+     long groupId = 0,
+     long userId = 0,
+     int pageIndex = 1,
+     int pageSize = 20,
+     string searchText = "",
+     string sortQuery = "")
         {
-            ListResultObject<Session> results = new ListResultObject<Session>();
+            var results = new ListResultObject<Session>();
             try
             {
                 IQueryable<Session> query;
+
                 if (userId > 0)
                 {
-                    query = _context.Sessions
-                 .AsNoTracking()
-                 .Where(x =>
-                     (GroupId > 0 && x.GroupId == GroupId) ||
-                     x.Group.Name.Contains(searchText) ||
-                     x.SessionDate.ToString().Contains(searchText)
-                 );
+                    query = _context.Attendances
+                        .AsNoTracking()
+                        .Where(x => x.UserId == userId)
+                        .Include(x => x.Session)
+                            .ThenInclude(s => s.Group)
+                        .Include(x => x.Session)
+                            .ThenInclude(s => s.Attendances)
+                        .Include(x => x.Session)
+                            .ThenInclude(s => s.SessionAssignments)
+                        .Select(x => x.Session);
                 }
                 else
                 {
-                    query = _context.Attendances.Where(x=> x.UserId == userId).Select(x=> x.Session)
-                 .AsNoTracking()
-                 .Where(x =>
-                     (GroupId > 0 && x.GroupId == GroupId) ||
-                     x.Group.Name.Contains(searchText) ||
-                     x.SessionDate.ToString().Contains(searchText)
-                 );
+                    query = _context.Sessions
+                        .AsNoTracking()
+                        .Include(x => x.Group)
+                        .Include(x => x.Attendances)
+                        .Include(x => x.SessionAssignments);
                 }
-                results.TotalCount = query.Count();
+
+                if (groupId > 0)
+                {
+                    query = query.Where(x => x.GroupId == groupId);
+                }
+
+                if (!string.IsNullOrWhiteSpace(searchText))
+                {
+                    query = query.Where(x =>
+                        (x.Group != null && x.Group.Name.Contains(searchText)) ||
+                        x.SessionDate.ToString().Contains(searchText));
+                }
+
+                results.TotalCount = await query.CountAsync();
                 results.PageCount = DbTools.GetPageCount(results.TotalCount, pageSize);
-                results.Results = await query.OrderByDescending(x => x.SessionDate)
-                     .SortBy(sortQuery).ToPaging(pageIndex, pageSize)
-                    .Include(x => x.Group)
-                    .Include(x => x.Attendances)
-                    .Include(x => x.SessionAssignments)
+
+                results.Results = await query
+                    .OrderByDescending(x => x.SessionDate)
+                    .SortBy(sortQuery)
+                    .ToPaging(pageIndex, pageSize)
                     .ToListAsync();
             }
             catch (Exception ex)
@@ -114,8 +135,11 @@ namespace AITechDATA.DataLayer.Services
                 results.Status = false;
                 results.ErrorMessage = $"{ex.Message} - {ex.InnerException?.Message}";
             }
+
             return results;
         }
+
+
 
         public async Task<RowResultObject<Session>> GetSessionByIdAsync(long sessionId)
         {

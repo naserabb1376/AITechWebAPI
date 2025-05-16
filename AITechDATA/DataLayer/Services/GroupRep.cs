@@ -73,39 +73,70 @@ namespace AITechDATA.DataLayer.Services
             return result;
         }
 
-        public async Task<ListResultObject<Group>> GetAllGroupsAsync(long userId=0,long courseId = 0, string groupStatus = "", int pageIndex = 1, int pageSize = 20, string searchText = "", string sortQuery = "")
+        public async Task<ListResultObject<Group>> GetAllGroupsAsync(
+            long studentId = 0,
+            long courseId = 0,
+            long teacherId = 0,
+            string groupStatus = "",
+            int pageIndex = 1,
+            int pageSize = 20,
+            string searchText = "",
+            string sortQuery = "")
         {
-            ListResultObject<Group> results = new ListResultObject<Group>();
-            IQueryable<Group> query;
+            var results = new ListResultObject<Group>();
+
             try
             {
-                query = _context.Groups.AsNoTracking()
-                                        .Include(x => x.Course)
+                // شروع کوئری اصلی با includeهای کامل
+                IQueryable<Group> query = _context.Groups
+                    .AsNoTracking()
+                    .Include(x => x.Course)
                     .Include(x => x.Teacher)
                     .Include(x => x.Sessions)
                     .Include(x => x.PreRegistrations)
-                    .Include(x => x.Students)
-;
-                if (userId > 0)
+                    .Include(x => x.Students);
+
+                // اگر studentId داده شده، فقط گروه‌های مرتبط با آن کاربر
+                if (studentId > 0)
                 {
-                    query = _context.UserGroups.Where(x => x.UserId == userId).Include(x=> x.Group).ThenInclude(x=> x.Teacher).Include(x=> x.Group).ThenInclude(x=> x.Course).Select(x => x.Group);
+                    query = _context.UserGroups
+                        .Where(x => x.UserId == studentId)
+                        .Include(x => x.Group).ThenInclude(g => g.Course)
+                        .Include(x => x.Group).ThenInclude(g => g.Teacher)
+                        .Select(x => x.Group)
+                        .AsQueryable();
                 }
+
+                // فیلترهای شرطی
                 if (courseId > 0)
                 {
-                    query = _context.Groups.AsNoTracking().Where(x => x.CourseId == courseId);
+                    query = query.Where(x => x.CourseId == courseId);
                 }
 
-                query = query.Where(x =>
-                    ((!string.IsNullOrEmpty(groupStatus) && x.Status == (GroupStatus)Enum.Parse(typeof(GroupStatus), groupStatus))
-                    )
-                    || ((!string.IsNullOrEmpty(x.Name) && x.Name.Contains(searchText)) ||
-                        (x.Teacher.FullName.Contains(searchText)))
-                );
+                if (teacherId > 0)
+                {
+                    query = query.Where(x => x.TeacherId == teacherId);
+                }
 
-                results.TotalCount = query.Count();
+                if (!string.IsNullOrEmpty(groupStatus) &&
+                    Enum.TryParse<GroupStatus>(groupStatus, out var parsedStatus))
+                {
+                    query = query.Where(x => x.Status == parsedStatus);
+                }
+
+                if (!string.IsNullOrEmpty(searchText))
+                {
+                    query = query.Where(x =>
+                        (!string.IsNullOrEmpty(x.Name) && x.Name.Contains(searchText)) ||
+                        (x.Teacher != null && x.Teacher.FullName.Contains(searchText)));
+                }
+
+                results.TotalCount = await query.CountAsync();
                 results.PageCount = DbTools.GetPageCount(results.TotalCount, pageSize);
-                results.Results = await query.OrderByDescending(x => x.CreateDate)
-                     .SortBy(sortQuery).ToPaging(pageIndex, pageSize)
+                results.Results = await query
+                    .OrderByDescending(x => x.CreateDate)
+                    .SortBy(sortQuery)
+                    .ToPaging(pageIndex, pageSize)
                     .ToListAsync();
             }
             catch (Exception ex)
@@ -113,8 +144,10 @@ namespace AITechDATA.DataLayer.Services
                 results.Status = false;
                 results.ErrorMessage = $"{ex.Message} - {ex.InnerException?.Message}";
             }
+
             return results;
         }
+
 
         public async Task<RowResultObject<Group>> GetGroupByIdAsync(long groupId)
         {
