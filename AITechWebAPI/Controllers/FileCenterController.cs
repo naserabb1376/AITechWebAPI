@@ -47,7 +47,7 @@ public class FileCenterController : ControllerBase
             if (fileType.ToLower() == "images")
             {
                 RowNumber = await _imageRep.GetNewRowNumber();
-                fileName = $"{entityName}_{RowNumber}_{userId}.{Path.GetExtension(file.FileName)}";
+                fileName = $"{entityName}_{RowNumber}_{userId}{Path.GetExtension(file.FileName)}";
                 fullPath = Path.Combine(savePath, fileName);
                 Image theImage = new()
                 {
@@ -67,7 +67,7 @@ public class FileCenterController : ControllerBase
             else if (fileType.ToLower() == "files")
             {
                 RowNumber = await _fileUploadRep.GetNewRowNumber();
-                fileName = $"{entityName}_{RowNumber}_{userId}.{Path.GetExtension(file.FileName)}";
+                fileName = $"{entityName}_{RowNumber}_{userId}{Path.GetExtension(file.FileName)}";
                 fullPath = Path.Combine(savePath, fileName);
 
                 FileUpload theFile = new()
@@ -76,6 +76,7 @@ public class FileCenterController : ControllerBase
                     UpdateDate = DateTime.Now.ToShamsi(),
                     FileName = fileName,
                     FilePath = fullPath,
+                    EntityType= entityName,
                     ForeignKeyId = rowId,
                     ContentType = GetContentType(fullPath),
                     Description = isPublic ? "Public" : "Private",
