@@ -74,7 +74,7 @@ namespace AITechDATA.DataLayer.Services
             return result;
         }
 
-        public async Task<ListResultObject<SessionAssignment>> GetAllSessionAssignmentsAsync(long SessionId = 0,long userId=0, int pageIndex = 1, int pageSize = 20, string searchText = "", string sortQuery = "")
+        public async Task<ListResultObject<SessionAssignment>> GetAllSessionAssignmentsAsync(long SessionId = 0, long userId = 0, int pageIndex = 1, int pageSize = 20, string searchText = "", string sortQuery = "")
         {
             ListResultObject<SessionAssignment> results = new ListResultObject<SessionAssignment>();
             try
@@ -85,19 +85,19 @@ namespace AITechDATA.DataLayer.Services
                     query = _context.SessionAssignments
                    .AsNoTracking()
                    .Where(x =>
-                       (SessionId > 0 && x.SessionId == SessionId) ||
-                       (!string.IsNullOrEmpty(x.Title) && x.Title.Contains(searchText)) ||
-                       (!string.IsNullOrEmpty(x.Description) && x.Description.Contains(searchText))
+                       (SessionId == 0 || x.SessionId == SessionId) &&
+                       ((!string.IsNullOrEmpty(x.Title) && x.Title.Contains(searchText)) ||
+                       (!string.IsNullOrEmpty(x.Description) && x.Description.Contains(searchText)))
                    );
                 }
-               else
+                else
                 {
-                    query = _context.Assignments.Where(x=> x.UserId == userId).Select(x=> x.SessionAssignment)
+                    query = _context.Assignments.Where(x => x.UserId == userId).Select(x => x.SessionAssignment)
                    .AsNoTracking()
                    .Where(x =>
-                       (SessionId > 0 && x.SessionId == SessionId) ||
-                       (!string.IsNullOrEmpty(x.Title) && x.Title.Contains(searchText)) ||
-                       (!string.IsNullOrEmpty(x.Description) && x.Description.Contains(searchText))
+                       (SessionId > 0 && x.SessionId == SessionId) &&
+                       ((!string.IsNullOrEmpty(x.Title) && x.Title.Contains(searchText)) ||
+                       (!string.IsNullOrEmpty(x.Description) && x.Description.Contains(searchText)))
                    );
                 }
                 results.TotalCount = query.Count();

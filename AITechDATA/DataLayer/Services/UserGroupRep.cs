@@ -88,10 +88,10 @@ namespace AITechDATA.DataLayer.Services
                 var query = _context.UserGroups
                     .AsNoTracking()
                     .Where(x =>
-                     (groupId > 0 && x.GroupId == groupId) ||
-                     (userId > 0 && x.UserId == userId) ||
-                       (x.User.FullName.ToString().Contains(searchText) ||
-                        x.Group.Name.ToString().Contains(searchText)
+                     (groupId == 0 || x.GroupId == groupId) &&
+                     (userId == 0 || x.UserId == userId) &&
+                      ((x.User.FullName.ToString().Contains(searchText) ||
+                        x.Group.Name.ToString().Contains(searchText))
                     ));
 
                 results.TotalCount = query.Count();
