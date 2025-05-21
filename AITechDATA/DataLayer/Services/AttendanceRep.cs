@@ -80,7 +80,7 @@ namespace AITechDATA.DataLayer.Services
             return result;
         }
 
-        public async Task<ListResultObject<Attendance>> GetAllAttendancesAsync(long userId = 0, long sessionId = 0, int pageIndex = 1, int pageSize = 20, string searchText = "",string sortQuery ="")
+        public async Task<ListResultObject<Attendance>> GetAllAttendancesAsync(long userId = 0, long sessionId = 0, int pageIndex = 1, int pageSize = 20, string searchText = "", string sortQuery = "")
         {
             ListResultObject<Attendance> results = new ListResultObject<Attendance>();
             try
@@ -88,9 +88,9 @@ namespace AITechDATA.DataLayer.Services
                 var query = _context.Attendances
                     .AsNoTracking()
                     .Where(x =>
-                        ((userId > 0 && x.UserId == userId) || (sessionId > 0 && x.SessionId == sessionId)) ||
-                        (x.User.ID.ToString().Contains(searchText) ||
-                        x.Session.ID.ToString().Contains(searchText)
+                        ((userId == 0 || x.UserId == userId) && (sessionId == 0 || x.SessionId == sessionId)) &&
+                        ((x.User.ID.ToString().Contains(searchText) ||
+                        x.Session.ID.ToString().Contains(searchText))
                     ));
 
                 results.TotalCount = query.Count();
