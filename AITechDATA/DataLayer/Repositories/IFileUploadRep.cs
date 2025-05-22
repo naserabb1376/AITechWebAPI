@@ -23,7 +23,7 @@ namespace AITechDATA.DataLayer.Repositories
         Task<BitResultObject> RemoveFileUploadAsync(FileUpload fileUpload);
 
         Task<BitResultObject> RemoveFileUploadAsync(long fileUploadId);
-
+        Task<BitResultObject> RemoveOldFilesAsync(long foreignKeyId, string entityName);
         Task<BitResultObject> ExistFileUploadAsync(long fileUploadId);
         Task<long> GetNewRowNumber();
     }

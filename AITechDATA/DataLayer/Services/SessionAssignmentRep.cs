@@ -74,38 +74,47 @@ namespace AITechDATA.DataLayer.Services
             return result;
         }
 
-        public async Task<ListResultObject<SessionAssignment>> GetAllSessionAssignmentsAsync(long SessionId = 0, long userId = 0, int pageIndex = 1, int pageSize = 20, string searchText = "", string sortQuery = "")
+        public async Task<ListResultObject<SessionAssignment>> GetAllSessionAssignmentsAsync(
+      long SessionId = 0,
+      long userId = 0,
+      int pageIndex = 1,
+      int pageSize = 20,
+      string searchText = "",
+      string sortQuery = "")
         {
-            ListResultObject<SessionAssignment> results = new ListResultObject<SessionAssignment>();
+            var results = new ListResultObject<SessionAssignment>();
             try
             {
-                IQueryable<SessionAssignment> query;
-                if (userId > 0)
-                {
-                    query = _context.SessionAssignments
-                   .AsNoTracking()
-                   .Where(x =>
-                       (SessionId == 0 || x.SessionId == SessionId) &&
-                       ((!string.IsNullOrEmpty(x.Title) && x.Title.Contains(searchText)) ||
-                       (!string.IsNullOrEmpty(x.Description) && x.Description.Contains(searchText)))
-                   );
-                }
-                else
-                {
-                    query = _context.Assignments.Where(x => x.UserId == userId).Select(x => x.SessionAssignment)
-                   .AsNoTracking()
-                   .Where(x =>
-                       (SessionId > 0 && x.SessionId == SessionId) &&
-                       ((!string.IsNullOrEmpty(x.Title) && x.Title.Contains(searchText)) ||
-                       (!string.IsNullOrEmpty(x.Description) && x.Description.Contains(searchText)))
-                   );
-                }
-                results.TotalCount = query.Count();
-                results.PageCount = DbTools.GetPageCount(results.TotalCount, pageSize);
-                results.Results = await query.OrderByDescending(x => x.DueDate)
-                     .SortBy(sortQuery).ToPaging(pageIndex, pageSize)
+                IQueryable<SessionAssignment> query = _context.SessionAssignments
+                    .AsNoTracking()
                     .Include(x => x.Session)
                     .Include(x => x.Assignments)
+                    .Where(x =>
+                        (SessionId == 0 || x.SessionId == SessionId) &&
+                        (
+                            string.IsNullOrEmpty(searchText) ||
+                            (!string.IsNullOrEmpty(x.Title) && x.Title.Contains(searchText)) ||
+                            (!string.IsNullOrEmpty(x.Description) && x.Description.Contains(searchText))
+                        )
+                    );
+
+                // اگر userId مشخص شده، فقط SessionAssignment‌هایی که حداقل یک Assignment با آن userId دارند
+                if (userId > 0)
+                {
+                    query = query.Where(x => x.Assignments.Any(a => a.UserId == userId));
+                }
+
+                // محاسبه تعداد کل
+                results.TotalCount = await query.CountAsync();
+
+                // محاسبه تعداد صفحات
+                results.PageCount = DbTools.GetPageCount(results.TotalCount, pageSize);
+
+                // اعمال مرتب‌سازی و صفحه‌بندی
+                results.Results = await query
+                    .OrderByDescending(x => x.DueDate) // پیش‌فرض
+                    .SortBy(sortQuery)                 // اگر sortQuery وجود دارد
+                    .ToPaging(pageIndex, pageSize)     // صفحه‌بندی
                     .ToListAsync();
             }
             catch (Exception ex)
@@ -113,8 +122,10 @@ namespace AITechDATA.DataLayer.Services
                 results.Status = false;
                 results.ErrorMessage = $"{ex.Message} - {ex.InnerException?.Message}";
             }
+
             return results;
         }
+
 
         public async Task<RowResultObject<SessionAssignment>> GetSessionAssignmentByIdAsync(long sessionAssignmentId)
         {

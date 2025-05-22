@@ -198,7 +198,28 @@ namespace AITechDATA.DataLayer.Services
             }
             return result;
         }
-
+        public async Task<BitResultObject> RemoveOldImagesAsync(long foreignKeyId, string entityName)
+        {
+            BitResultObject result = new BitResultObject();
+            try
+            {
+                var oldImages = await GetAllImagesAsync(entityName, foreignKeyId, pageSize: 0);
+                foreach (var oldImage in oldImages.Results)
+                {
+                    if (File.Exists(oldImage.FilePath))
+                    {
+                        File.Delete(oldImage.FilePath);
+                    }
+                }
+                var removeResult = await RemoveImagesAsync(oldImages.Results);
+            }
+            catch (Exception ex)
+            {
+                result.Status = false;
+                result.ErrorMessage = $"{ex.Message} - {ex.InnerException?.Message}";
+            }
+            return result;
+        }
         public async Task<BitResultObject> RemoveImagesAsync(List<long> ImageIds)
         {
             BitResultObject result = new BitResultObject();

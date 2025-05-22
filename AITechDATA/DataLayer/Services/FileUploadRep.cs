@@ -132,7 +132,8 @@ namespace AITechDATA.DataLayer.Services
                 }
 
                 var theRow = await query.FirstOrDefaultAsync();
-                if (theRow.Description.ToLower() != "public" && ((roleId != 3 || roleId != 2) && theRow.CreatorId != userId))
+                var theRole= _context.Roles.AsNoTracking().FirstOrDefault(x=> x.ID== roleId);
+                if (theRow.Description.ToLower() != "public" && ((!theRole.Name.Contains("مدیر") && !theRole.Name.Contains("استاد")) && theRow.CreatorId != userId))
                 {
                     result.Status = false;
                     result.ErrorMessage = $"The User Has No Access To This File";
@@ -200,6 +201,29 @@ namespace AITechDATA.DataLayer.Services
             {
                 var fileUpload = await GetFileUploadByIdAsync(fileUploadId);
                 result = await RemoveFileUploadAsync(fileUpload.Result);
+            }
+            catch (Exception ex)
+            {
+                result.Status = false;
+                result.ErrorMessage = $"{ex.Message} - {ex.InnerException?.Message}";
+            }
+            return result;
+        }
+
+        public async Task<BitResultObject> RemoveOldFilesAsync(long foreignKeyId, string entityName)
+        {
+            BitResultObject result = new BitResultObject();
+            try
+            {
+                var oldFiles = await GetAllFileUploadsAsync(entityName, foreignKeyId, pageSize: 0);
+                foreach (var oldFile in oldFiles.Results)
+                {
+                    if (File.Exists(oldFile.FilePath))
+                    {
+                        File.Delete(oldFile.FilePath);
+                    }
+                    var removeResult = await RemoveFileUploadAsync(oldFile);
+                }
             }
             catch (Exception ex)
             {

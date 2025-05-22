@@ -60,6 +60,9 @@ public class FileCenterController : ControllerBase
                     ForeignKeyId = rowId,
                     CreatorId = long.Parse(userId),
                 };
+                var removeoldResult = await _imageRep.RemoveOldImagesAsync(rowId,entityName);
+                if (!removeoldResult.Status) return BadRequest(removeoldResult);
+
                 var saveResult = await _imageRep.AddImagesAsync(new List<Image> { theImage });
                 if (!saveResult.Status) return BadRequest(saveResult);
                 resultId = saveResult.ID;
@@ -82,6 +85,9 @@ public class FileCenterController : ControllerBase
                     Description = isPublic ? "Public" : "Private",
                     CreatorId = long.Parse(userId),
                 };
+                var removeoldResult = await _fileUploadRep.RemoveOldFilesAsync(rowId, entityName);
+                if (!removeoldResult.Status) return BadRequest(removeoldResult);
+
                 var saveResult = await _fileUploadRep.AddFileUploadAsync(theFile);
                 if (!saveResult.Status) return BadRequest(saveResult);
                 resultId = saveResult.ID;
