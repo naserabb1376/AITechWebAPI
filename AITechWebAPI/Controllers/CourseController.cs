@@ -94,6 +94,7 @@ namespace AITechWebAPI.Controllers
                 CreateDate = DateTime.Now.ToShamsi(),
                 UpdateDate = DateTime.Now.ToShamsi(),
                 Description = requestBody.Description ?? "",
+                Note = requestBody.Note ?? "",
                 CategoryId = requestBody.CategoryId,
                 Title = requestBody.Title,
             };
@@ -141,6 +142,7 @@ namespace AITechWebAPI.Controllers
                 UpdateDate = DateTime.Now.ToShamsi(),
                 ID = requestBody.ID,
                 Description = requestBody.Description ?? "",
+                Note = requestBody.Note ?? "",
                 CategoryId = requestBody.CategoryId,
                 Title = requestBody.Title,
             };

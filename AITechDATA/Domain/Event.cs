@@ -11,6 +11,7 @@ namespace AITechDATA.Domain
     {
         public string Title { get; set; } // عنوان رویداد
         public string Description { get; set; } // توضیحات رویداد
+        public string? Note { get; set; }
         public DateTime EventDate { get; set; } // تاریخ رویداد
         public string Keywords { get; set; } // کلمات کلیدی برای سئو
 

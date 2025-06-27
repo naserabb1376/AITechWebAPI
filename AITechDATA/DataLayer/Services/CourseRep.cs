@@ -85,6 +85,7 @@ namespace AITechDATA.DataLayer.Services
                     .Where(x =>
                         (categoryId > 0 && x.CategoryId == categoryId)
                         ||((!string.IsNullOrEmpty(x.Title) && x.Title.Contains(searchText)) ||
+                        (!string.IsNullOrEmpty(x.Note) && x.Note.Contains(searchText)) ||
                         (!string.IsNullOrEmpty(x.Description) && x.Description.Contains(searchText)))
                     );
 

@@ -99,6 +99,7 @@ namespace AITechWebAPI.Controllers
                 PublishDate = requestBody.PublishDate.StringToDate(),
                 Keywords = requestBody.Keywords,
                 Title = requestBody.Title,
+                Note = requestBody.Note ?? "",
             };
             var result = await _NewsRep.AddNewsAsync(News);
             if (result.Status)
@@ -149,6 +150,7 @@ namespace AITechWebAPI.Controllers
                 PublishDate = requestBody.PublishDate.StringToDate(),
                 Keywords = requestBody.Keywords,
                 Title = requestBody.Title,
+                Note = requestBody.Note ?? ""
             };
             result = await _NewsRep.EditNewsAsync(News);
             if (result.Status)

@@ -85,6 +85,7 @@ namespace AITechDATA.DataLayer.Services
                     .Where(x =>
                         (userId > 0 && x.UserId == userId)
                         || ((!string.IsNullOrEmpty(x.Title) && x.Title.Contains(searchText)) ||
+                        (!string.IsNullOrEmpty(x.Note) && x.Note.Contains(searchText)) ||
                         (!string.IsNullOrEmpty(x.Description) && x.Description.Contains(searchText)) ||
                         (!string.IsNullOrEmpty(x.Keywords) && x.Keywords.Contains(searchText)))
                     );

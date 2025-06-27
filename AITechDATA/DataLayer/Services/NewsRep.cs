@@ -89,6 +89,7 @@ namespace AITechDATA.DataLayer.Services
                         ((!string.IsNullOrEmpty(x.Title) && x.Title.Contains(searchText)) ||
                         (!string.IsNullOrEmpty(x.Content) && x.Content.Contains(searchText)) ||
                         (!string.IsNullOrEmpty(x.Source) && x.Source.Contains(searchText)) ||
+                        (!string.IsNullOrEmpty(x.Note) && x.Note.Contains(searchText)) ||
                         (!string.IsNullOrEmpty(x.Keywords) && x.Keywords.Contains(searchText)))
                     );
 

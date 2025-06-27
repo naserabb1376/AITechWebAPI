@@ -24,5 +24,8 @@ namespace AITechWebAPI.Models.Event
 
         [Display(Name = "تاریخ رویداد")]
         public string? EventDate { get; set; } // تاریخ رویداد
+
+        [Display(Name = "توضیحات")]
+        public string? Note { get; set; }
     }
 }

@@ -106,6 +106,7 @@ namespace AITechWebAPI.Controllers
                 StartTime = requestBody.StartTime.StringToTimeSpan(),
                 Fee = requestBody.GroupFee,
                 Name = requestBody.Name,
+                Note = requestBody.Note ?? "",
                 Status = (GroupStatus)Enum.Parse(typeof(GroupStatus), requestBody.GroupStatus),
             };
             var result = await _GroupRep.AddGroupAsync(Group);
@@ -158,6 +159,7 @@ namespace AITechWebAPI.Controllers
                 StartTime = requestBody.StartTime.StringToTimeSpan(),
                 Fee = requestBody.GroupFee,
                 Name = requestBody.Name,
+                Note = requestBody.Note ??"",
                 Status = (GroupStatus)Enum.Parse(typeof(GroupStatus), requestBody.GroupStatus),
             };
             result = await _GroupRep.EditGroupAsync(Group);

@@ -28,5 +28,8 @@ namespace AITechWebAPI.Models.News
 
         [Display(Name = "تاریخ انتشار خبر")]
         public string? PublishDate { get; set; } // تاریخ انتشار خبر
+
+        [Display(Name = "توضیحات")]
+        public string? Note { get; set; }
     }
 }

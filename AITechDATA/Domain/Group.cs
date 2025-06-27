@@ -26,7 +26,7 @@ namespace AITechDATA.Domain
         public User Teacher { get; set; } // ارتباط با استاد
         public ICollection<UserGroup> Students { get; set; } // دانش‌آموزان ثبت‌نام‌شده در گروه
         public ICollection<PaymentHistory> PaymentHistories { get; set; } // وضعیت پرداخت ها در گروه
-        //public ICollection<User> Students { get; set; } // دانش‌آموزان ثبت‌نام‌شده در گروه
+        public string? Note { get; set; }
     }
 
     // تعریف وضعیت گروه به عنوان یک enum
