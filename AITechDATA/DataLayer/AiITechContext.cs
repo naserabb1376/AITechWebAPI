@@ -21,6 +21,7 @@ namespace AITechDATA.DataLayer
         public DbSet<Course> Courses { get; set; }
         public DbSet<Event> Events { get; set; }
         public DbSet<FileUpload> FileUploads { get; set; }
+        public DbSet<Comment> Comments { get; set; }
         public DbSet<Group> Groups { get; set; }
         public DbSet<Image> Images { get; set; }
         public DbSet<LoginMethod> LoginMethods { get; set; }
