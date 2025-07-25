@@ -161,7 +161,7 @@ namespace AITechDATA.DataLayer.Services
                 {
                     if (!string.IsNullOrEmpty(entityType))
                     {
-                        query = query.Where(x => x.EntityType == entityType);
+                        query = query.Where(x => x.EntityType.ToLower() == entityType.ToLower());
                     }
                     if (foreignKeyId > 0)
                     {
