@@ -307,7 +307,7 @@ namespace AITechWebAPI.Controllers
                 {
                     FullName = signupRequestBody.FullName,
                     Username = signupRequestBody.UserName,
-                    RoleId = signupRequestBody.RoleId,
+                    RoleId = 1,
                     Email = signupRequestBody.Email,
                     NationalCode = signupRequestBody.NationalCode,
                     PasswordHash = signupRequestBody.Password.ToHash(),

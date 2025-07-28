@@ -19,10 +19,10 @@ namespace AITechWebAPI.Models.Authenticate
         [Required(ErrorMessage = "لطفا {0} را وارد کنید")]
         public string Password { get; set; }
 
-        [Display(Name = "نقش کاربر")]
-        [Required(ErrorMessage = "لطفا {0} را وارد کنید")]
-        [Range(1, long.MaxValue, ErrorMessage = "مقدار {0} باید بزرگتر از 0 باشد")]
-        public long RoleId { get; set; } = 1; // 1: Student 2: Teacher
+        //[Display(Name = "نقش کاربر")]
+        //[Required(ErrorMessage = "لطفا {0} را وارد کنید")]
+        //[Range(1, long.MaxValue, ErrorMessage = "مقدار {0} باید بزرگتر از 0 باشد")]
+        //public long RoleId { get; set; } = 1; // 1: Student 2: Teacher
 
         [Display(Name = "نام")]
         [Required(ErrorMessage = "لطفا {0} را وارد کنید")]
