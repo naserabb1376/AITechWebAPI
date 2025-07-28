@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Mvc;
 using System.ComponentModel.DataAnnotations;
+using Microsoft.AspNetCore.Authorization;
 namespace AITechWebAPI.Validations
 {
     [AttributeUsage(AttributeTargets.Class)]
@@ -17,6 +18,15 @@ namespace AITechWebAPI.Validations
         public async Task OnActionExecutionAsync(ActionExecutingContext context, ActionExecutionDelegate next)
         {
             var httpContext = context.HttpContext;
+
+            var allowAnonymous = context.ActionDescriptor.EndpointMetadata
+                                .OfType<AllowAnonymousAttribute>()
+                                .Any();
+            if (allowAnonymous)
+            {
+                await next(); // ادامه بدون بررسی مجوز
+                return;
+            }
 
             // دریافت RoleId کاربر
             var roleIdClaim = httpContext.User.FindFirst("Role");
