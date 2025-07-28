@@ -15,6 +15,7 @@ using System.Text;
 using AITechWebAPI.Models.User;
 using AITechDATA.CustomResponses;
 using System.Net;
+using AITechWebAPI.Validations;
 
 namespace AITechWebAPI.Controllers
 {
@@ -22,6 +23,8 @@ namespace AITechWebAPI.Controllers
     [ApiController]
     [Authorize]
     [Produces("application/json")]
+    [CheckRoleBase(new[] { 3, 4 })]
+
 
     public class UserController : ControllerBase
     {

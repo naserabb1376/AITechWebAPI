@@ -16,6 +16,7 @@ using System.Security.Claims;
 using System.Text;
 using AutoMapper;
 using AITechWebAPI.ViewModels;
+using AITechWebAPI.Validations;
 
 namespace AITechWebAPI.Controllers
 {
@@ -23,6 +24,8 @@ namespace AITechWebAPI.Controllers
     [ApiController]
     [Authorize]
     [Produces("application/json")]
+    [CheckRoleBase(new[] { 3, 4, 7 })]
+
     public class GroupController : ControllerBase
     {
         private IGroupRep _GroupRep;
