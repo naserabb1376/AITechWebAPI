@@ -14,6 +14,8 @@ using AITechDATA.Tools;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+using AutoMapper;
+using AITechWebAPI.ViewModels;
 
 namespace AITechWebAPI.Controllers
 {
@@ -26,15 +28,18 @@ namespace AITechWebAPI.Controllers
     {
         ISessionRep _SessionRep;
         ILogRep _logRep;
+        private readonly IMapper _mapper;
 
-        public SessionController(ISessionRep SessionRep,ILogRep logRep)
+
+        public SessionController(ISessionRep SessionRep,ILogRep logRep,IMapper mapper)
         {
            _SessionRep = SessionRep;
            _logRep = logRep;
+            _mapper = mapper;
         }
 
         [HttpPost("GetAllSessions_Base")]
-        public async Task<ActionResult<ListResultObject<Session>>> GetAllSessions_Base(GetSessionListRequestBody requestBody)
+        public async Task<ActionResult<ListResultObject<SessionVM>>> GetAllSessions_Base(GetSessionListRequestBody requestBody)
         {
             if (!ModelState.IsValid)
             {
@@ -43,13 +48,14 @@ namespace AITechWebAPI.Controllers
             var result = await _SessionRep.GetAllSessionsAsync(requestBody.GroupId,requestBody.UserId,requestBody.PageIndex,requestBody.PageSize,requestBody.SearchText,requestBody.SortQuery);
             if (result.Status)
             {
-                return Ok(result);
+                var resultVM = _mapper.Map<ListResultObject<SessionVM>>(result);
+                return Ok(resultVM);
             }
             return BadRequest(result);
         }
 
         [HttpPost("GetSessionById_Base")]
-        public async Task<ActionResult<RowResultObject<Session>>> GetSessionById_Base(GetRowRequestBody requestBody)
+        public async Task<ActionResult<RowResultObject<SessionVM>>> GetSessionById_Base(GetRowRequestBody requestBody)
         {
             if (!ModelState.IsValid)
             {
@@ -58,7 +64,8 @@ namespace AITechWebAPI.Controllers
             var result = await _SessionRep.GetSessionByIdAsync(requestBody.ID);
             if (result.Status)
             {
-                return Ok(result);
+                var resultVM = _mapper.Map<RowResultObject<SessionVM>>(result);
+                return Ok(resultVM);
             }
             return BadRequest(result);
         }

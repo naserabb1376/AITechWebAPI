@@ -14,6 +14,8 @@ using AITechDATA.Tools;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+using AITechWebAPI.ViewModels;
+using AutoMapper;
 
 namespace AITechWebAPI.Controllers
 {
@@ -27,16 +29,19 @@ namespace AITechWebAPI.Controllers
         IAddressRep _AddressRep;
         IUserRep _userRep;
         ILogRep _logRep;
+        private readonly IMapper _mapper;
 
-        public AddressController(IAddressRep AddressRep,IUserRep userRep,ILogRep logRep)
+
+        public AddressController(IAddressRep AddressRep,IUserRep userRep,ILogRep logRep,IMapper mapper)
         {
            _AddressRep = AddressRep;
             _userRep = userRep;
            _logRep = logRep;
+           _mapper = mapper;
         }
 
         [HttpPost("GetAllAddresses_Base")]
-        public async Task<ActionResult<ListResultObject<Address>>> GetAllAddresses_Base(GetAddressListRequestBody requestBody)
+        public async Task<ActionResult<ListResultObject<AddressVM>>> GetAllAddresses_Base(GetAddressListRequestBody requestBody)
         {
             if (!ModelState.IsValid)
             {
@@ -45,13 +50,15 @@ namespace AITechWebAPI.Controllers
             var result = await _AddressRep.GetAllAddressesAsync(requestBody.CityId,requestBody.PageIndex,requestBody.PageSize,requestBody.SearchText,requestBody.SortQuery);
             if (result.Status)
             {
-                return Ok(result);
+                var resultVM = _mapper.Map<ListResultObject<AddressVM>>(result);
+                return Ok(resultVM);
+
             }
             return BadRequest(result);
         }
 
         [HttpPost("GetAddressById_Base")]
-        public async Task<ActionResult<RowResultObject<Address>>> GetAddressById_Base(GetRowRequestBody requestBody)
+        public async Task<ActionResult<RowResultObject<AddressVM>>> GetAddressById_Base(GetRowRequestBody requestBody)
         {
             if (!ModelState.IsValid)
             {
@@ -60,7 +67,8 @@ namespace AITechWebAPI.Controllers
             var result = await _AddressRep.GetAddressByIdAsync(requestBody.ID);
             if (result.Status)
             {
-                return Ok(result);
+                var resultVM = _mapper.Map<RowResultObject<AddressVM>>(result);
+                return Ok(resultVM);
             }
             return BadRequest(result);
         }

@@ -17,6 +17,8 @@ using System.Text;
 using AITechWebAPI.Models.News;
 using AITechDATA.CustomResponses;
 using AITechWebAPI.Validations;
+using AutoMapper;
+using AITechWebAPI.ViewModels;
 
 namespace AITechWebAPI.Controllers
 {
@@ -30,16 +32,19 @@ namespace AITechWebAPI.Controllers
     {
         IEventRep _EventRep;
         ILogRep _logRep;
+        private readonly IMapper _mapper;
 
-        public EventController(IEventRep EventRep,ILogRep logRep)
+
+        public EventController(IEventRep EventRep,ILogRep logRep,IMapper mapper)
         {
            _EventRep = EventRep;
            _logRep = logRep;
+            _mapper = mapper;
         }
 
         [AllowAnonymous]
         [HttpPost("GetAllEvents_Base")]
-        public async Task<ActionResult<EventListCustomResponse<Event>>> GetAllEvents_Base(GetEventListRequestBody requestBody)
+        public async Task<ActionResult<EventListCustomResponse<EventVM>>> GetAllEvents_Base(GetEventListRequestBody requestBody)
         {
             if (!ModelState.IsValid)
             {
@@ -48,14 +53,15 @@ namespace AITechWebAPI.Controllers
             var result = await _EventRep.GetAllEventsAsync(requestBody.UserId,requestBody.PageIndex,requestBody.PageSize,requestBody.SearchText,requestBody.SortQuery);
             if (result.Status)
             {
-                return Ok(result);
+                var resultVM = _mapper.Map<EventListCustomResponse<EventVM>>(result);
+                return Ok(resultVM);
             }
             return BadRequest(result);
         }
 
         [AllowAnonymous]
         [HttpPost("GetEventById_Base")]
-        public async Task<ActionResult<EventRowCustomResponse<Event>>> GetEventById_Base(GetRowRequestBody requestBody)
+        public async Task<ActionResult<EventRowCustomResponse<EventVM>>> GetEventById_Base(GetRowRequestBody requestBody)
         {
             if (!ModelState.IsValid)
             {
@@ -64,7 +70,8 @@ namespace AITechWebAPI.Controllers
             var result = await _EventRep.GetEventByIdAsync(requestBody.ID);
             if (result.Status)
             {
-                return Ok(result);
+                var resultVM = _mapper.Map<EventRowCustomResponse<EventVM>>(result);
+                return Ok(resultVM);
             }
             return BadRequest(result);
         }

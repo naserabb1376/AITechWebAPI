@@ -15,6 +15,8 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 using AITechWebAPI.Models.News;
+using AutoMapper;
+using AITechWebAPI.ViewModels;
 
 namespace AITechWebAPI.Controllers
 {
@@ -27,15 +29,18 @@ namespace AITechWebAPI.Controllers
     {
         INotificationRep _NotificationRep;
         ILogRep _logRep;
+        private readonly IMapper _mapper;
 
-        public NotificationController(INotificationRep NotificationRep,ILogRep logRep)
+
+        public NotificationController(INotificationRep NotificationRep,ILogRep logRep,IMapper mapper)
         {
            _NotificationRep = NotificationRep;
            _logRep = logRep;
+            _mapper = mapper;
         }
 
         [HttpPost("GetAllNotifications_Base")]
-        public async Task<ActionResult<ListResultObject<Notification>>> GetAllNotifications_Base(GetNewsListRequestBody requestBody)
+        public async Task<ActionResult<ListResultObject<NotificationVM>>> GetAllNotifications_Base(GetNewsListRequestBody requestBody)
         {
             if (!ModelState.IsValid)
             {
@@ -44,13 +49,14 @@ namespace AITechWebAPI.Controllers
             var result = await _NotificationRep.GetAllNotificationsAsync(requestBody.UserId,requestBody.PageIndex,requestBody.PageSize,requestBody.SearchText,requestBody.SortQuery);
             if (result.Status)
             {
-                return Ok(result);
+                var resultVM = _mapper.Map<ListResultObject<NotificationVM>>(result);
+                return Ok(resultVM);
             }
             return BadRequest(result);
         }
 
         [HttpPost("GetNotificationById_Base")]
-        public async Task<ActionResult<RowResultObject<Notification>>> GetNotificationById_Base(GetRowRequestBody requestBody)
+        public async Task<ActionResult<RowResultObject<NotificationVM>>> GetNotificationById_Base(GetRowRequestBody requestBody)
         {
             if (!ModelState.IsValid)
             {
@@ -59,7 +65,8 @@ namespace AITechWebAPI.Controllers
             var result = await _NotificationRep.GetNotificationByIdAsync(requestBody.ID);
             if (result.Status)
             {
-                return Ok(result);
+                var resultVM = _mapper.Map<RowResultObject<NotificationVM>>(result);
+                return Ok(resultVM);
             }
             return BadRequest(result);
         }

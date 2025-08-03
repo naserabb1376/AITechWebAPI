@@ -1,0 +1,12 @@
+﻿using AITechDATA.Domain;
+
+namespace AITechWebAPI.ViewModels
+{
+    // Session: جدول جلسات دوره‌ها
+    public class SessionVM : BaseEntity
+    {
+        public long GroupId { get; set; } // کلید خارجی به Group
+        public string GroupName { get; set; } // ارتباط با Group
+        public DateTime SessionDate { get; set; } // تاریخ برگزاری جلسه
+    }
+}

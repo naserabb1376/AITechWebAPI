@@ -1,8 +1,10 @@
-﻿using AITechDATA.CustomResponses;
+﻿using AiTech.Domains;
+using AITechDATA.CustomResponses;
 using AITechDATA.Domain;
 using AITechDATA.ResultObjects;
 using AITechWebAPI.ViewModels;
 using AutoMapper;
+using Microsoft.AspNetCore.JsonPatch.Adapters;
 
 
 
@@ -29,9 +31,86 @@ namespace AITechWebAPI.Tools
             CreateMap(typeof(TicketRowCustomResponse<>), typeof(TicketRowCustomResponse<>));
             CreateMap(typeof(TicketListCustomResponse<>), typeof(TicketListCustomResponse<>));
 
-            CreateMap<Group, TeacherGroupVM>()
-.ForMember(dest => dest.TeacherName, opt => opt.MapFrom(src => src.Teacher.FullName))
+            CreateMap<Group, GroupVM>()
 .ForMember(dest => dest.CourseTitle, opt => opt.MapFrom(src => src.Course.Title));
+
+            CreateMap<Address, AddressVM>()
+                .ForMember(dest => dest.CityName, opt => opt.MapFrom(src => src.City.CityName));
+
+            CreateMap<AdminReport, AdminReportVM>()
+               .ForMember(dest => dest.AdminUserName, opt => opt.MapFrom(src => src.Admin.FullName));
+
+            CreateMap<Assignment, AssignmentVM>()
+               .ForMember(dest => dest.UserName, opt => opt.MapFrom(src => src.User.FullName));
+
+            CreateMap<Attendance, AttendanceVM>()
+              .ForMember(dest => dest.UserName, opt => opt.MapFrom(src => src.User.FullName));
+
+            CreateMap<Category, CategoryVM>();
+            CreateMap<City, CityVM>();
+            CreateMap<Permission, PermissionVM>();
+            CreateMap<Role, RoleVM>();
+            CreateMap<SessionAssignment, SessionAssignmentVM>();
+            CreateMap<Setting, SettingVM>();
+            CreateMap<User, UserVM>();
+            CreateMap<User, TeacherVM>();
+
+            CreateMap<Course, CourseVM>()
+             .ForMember(dest => dest.CategoryName, opt => opt.MapFrom(src => src.Category.CategoryName));
+
+            CreateMap<Event, EventVM>()
+  .ForMember(dest => dest.UserName, opt => opt.MapFrom(src => src.User.FullName));
+
+            CreateMap<LoginMethod, LoginMethodVM>()
+.ForMember(dest => dest.UserName, opt => opt.MapFrom(src => src.User.FullName));
+
+            CreateMap<News, NewsVM>()
+.ForMember(dest => dest.UserName, opt => opt.MapFrom(src => src.User.FullName));
+
+            CreateMap<Notification, NotificationVM>()
+.ForMember(dest => dest.UserName, opt => opt.MapFrom(src => src.User.FullName));
+
+            CreateMap<Parent, ParentVM>()
+.ForMember(dest => dest.StudentName, opt => opt.MapFrom(src => src.StudentDetails.User.FullName));
+
+            CreateMap<PaymentHistory, PaymentHistoryVM>()
+.ForMember(dest => dest.UserName, opt => opt.MapFrom(src => src.User.FullName));
+
+            CreateMap<PermissionRole, PermissionRoleVM>()
+.ForMember(dest => dest.PermissionName, opt => opt.MapFrom(src => src.Permission.Name))
+.ForMember(dest => dest.RoleName, opt => opt.MapFrom(src => src.Role.Name));
+
+            CreateMap<PreRegistration, PreRegistrationVM>()
+.ForMember(dest => dest.GroupName, opt => opt.MapFrom(src => src.Group.Name));
+
+            CreateMap<Session, SessionVM>()
+.ForMember(dest => dest.GroupName, opt => opt.MapFrom(src => src.Group.Name));
+
+            CreateMap<StudentDetails, StudentDetailsVM>()
+.ForMember(dest => dest.UserName, opt => opt.MapFrom(src => src.User.FullName));
+
+            CreateMap<TeacherResume, TeacherResumeVM>()
+.ForMember(dest => dest.UserName, opt => opt.MapFrom(src => src.User.FullName));
+
+            CreateMap<TicketMessage, TicketMessageVM>()
+.ForMember(dest => dest.AdminUserName, opt => opt.MapFrom(src => src.Admin.FullName));
+
+            CreateMap<Ticket, TicketVM>()
+.ForMember(dest => dest.UserName, opt => opt.MapFrom(src => src.User.FullName));
+
+            CreateMap<UserGroup, UserGroupVM>()
+.ForMember(dest => dest.UserName, opt => opt.MapFrom(src => src.User.FullName))
+.ForMember(dest => dest.GroupName, opt => opt.MapFrom(src => src.Group.Name));
+
+            CreateMap<UserCourse, UserCourseVM>()
+.ForMember(dest => dest.UserName, opt => opt.MapFrom(src => src.User.FullName))
+.ForMember(dest => dest.CourseName, opt => opt.MapFrom(src => src.Course.Title));
+
+            CreateMap<User, UserVM>()
+.ForMember(dest => dest.RoleName, opt => opt.MapFrom(src => src.Role.Name));
+
+
+
         }
     }
 

@@ -14,6 +14,8 @@ using AITechDATA.Tools;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+using AutoMapper;
+using AITechWebAPI.ViewModels;
 
 namespace AITechWebAPI.Controllers
 {
@@ -26,15 +28,17 @@ namespace AITechWebAPI.Controllers
     {
         ISessionAssignmentRep _SessionAssignmentRep;
         ILogRep _logRep;
+        private readonly IMapper _mapper;
 
-        public SessionAssignmentController(ISessionAssignmentRep SessionAssignmentRep,ILogRep logRep)
+        public SessionAssignmentController(ISessionAssignmentRep SessionAssignmentRep,ILogRep logRep,IMapper mapper)
         {
            _SessionAssignmentRep = SessionAssignmentRep;
            _logRep = logRep;
+            _mapper = mapper;
         }
 
         [HttpPost("GetAllSessionAssignments_Base")]
-        public async Task<ActionResult<ListResultObject<SessionAssignment>>> GetAllSessionAssignments_Base(GetSessionAssignmentListRequestBody requestBody)
+        public async Task<ActionResult<ListResultObject<SessionAssignmentVM>>> GetAllSessionAssignments_Base(GetSessionAssignmentListRequestBody requestBody)
         {
             if (!ModelState.IsValid)
             {
@@ -43,13 +47,14 @@ namespace AITechWebAPI.Controllers
             var result = await _SessionAssignmentRep.GetAllSessionAssignmentsAsync(requestBody.SessionId,requestBody.UserId,requestBody.PageIndex,requestBody.PageSize,requestBody.SearchText,requestBody.SortQuery);
             if (result.Status)
             {
-                return Ok(result);
+                var resultVM = _mapper.Map<ListResultObject<SessionAssignmentVM>>(result);
+                return Ok(resultVM);
             }
             return BadRequest(result);
         }
 
         [HttpPost("GetSessionAssignmentById_Base")]
-        public async Task<ActionResult<RowResultObject<SessionAssignment>>> GetSessionAssignmentById_Base(GetRowRequestBody requestBody)
+        public async Task<ActionResult<RowResultObject<SessionAssignmentVM>>> GetSessionAssignmentById_Base(GetRowRequestBody requestBody)
         {
             if (!ModelState.IsValid)
             {
@@ -58,7 +63,8 @@ namespace AITechWebAPI.Controllers
             var result = await _SessionAssignmentRep.GetSessionAssignmentByIdAsync(requestBody.ID);
             if (result.Status)
             {
-                return Ok(result);
+                var resultVM = _mapper.Map<RowResultObject<SessionAssignmentVM>>(result);
+                return Ok(resultVM);
             }
             return BadRequest(result);
         }

@@ -14,6 +14,8 @@ using AITechDATA.Tools;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+using AutoMapper;
+using AITechWebAPI.ViewModels;
 
 namespace AITechWebAPI.Controllers
 {
@@ -26,15 +28,18 @@ namespace AITechWebAPI.Controllers
     {
         IUserCourseRep _UserCourseRep;
         ILogRep _logRep;
+        private readonly IMapper _mapper;
 
-        public UserCourseController(IUserCourseRep UserCourseRep,ILogRep logRep)
+
+        public UserCourseController(IUserCourseRep UserCourseRep,ILogRep logRep,IMapper mapper)
         {
            _UserCourseRep = UserCourseRep;
            _logRep = logRep;
+            _mapper = mapper;   
         }
 
         [HttpPost("GetAllUserCourses_Base")]
-        public async Task<ActionResult<ListResultObject<UserCourse>>> GetAllUserCourses_Base(GetUserCourseListRequestBody requestBody)
+        public async Task<ActionResult<ListResultObject<UserCourseVM>>> GetAllUserCourses_Base(GetUserCourseListRequestBody requestBody)
         {
             if (!ModelState.IsValid)
             {
@@ -43,13 +48,14 @@ namespace AITechWebAPI.Controllers
             var result = await _UserCourseRep.GetAllUserCoursesAsync(requestBody.UserId,requestBody.CourseId,requestBody.PageIndex,requestBody.PageSize,requestBody.SearchText,requestBody.SortQuery);
             if (result.Status)
             {
-                return Ok(result);
+                var resultVM = _mapper.Map<ListResultObject<UserCourseVM>>(result);
+                return Ok(resultVM);
             }
             return BadRequest(result);
         }
 
         [HttpPost("GetUserCourseById_Base")]
-        public async Task<ActionResult<RowResultObject<UserCourse>>> GetUserCourseById_Base(GetRowRequestBody requestBody)
+        public async Task<ActionResult<RowResultObject<UserCourseVM>>> GetUserCourseById_Base(GetRowRequestBody requestBody)
         {
             if (!ModelState.IsValid)
             {
@@ -58,7 +64,8 @@ namespace AITechWebAPI.Controllers
             var result = await _UserCourseRep.GetUserCourseByIdAsync(requestBody.ID);
             if (result.Status)
             {
-                return Ok(result);
+                var resultVM = _mapper.Map<RowResultObject<UserCourseVM>>(result);
+                return Ok(resultVM);
             }
             return BadRequest(result);
         }

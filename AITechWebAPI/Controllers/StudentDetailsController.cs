@@ -14,6 +14,8 @@ using AITechDATA.Tools;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+using AutoMapper;
+using AITechWebAPI.ViewModels;
 
 namespace AITechWebAPI.Controllers
 {
@@ -26,15 +28,18 @@ namespace AITechWebAPI.Controllers
     {
         IStudentDetailsRep _StudentDetailsRep;
         ILogRep _logRep;
+        private readonly IMapper _mapper;
 
-        public StudentDetailsController(IStudentDetailsRep StudentDetailsRep,ILogRep logRep)
+
+        public StudentDetailsController(IStudentDetailsRep StudentDetailsRep,ILogRep logRep,IMapper mapper)
         {
            _StudentDetailsRep = StudentDetailsRep;
            _logRep = logRep;
+            _mapper = mapper;
         }
 
         [HttpPost("GetAllStudentDetails_Base")]
-        public async Task<ActionResult<ListResultObject<StudentDetails>>> GetAllStudentDetails_Base(GetStudentDetailsListRequestBody requestBody)
+        public async Task<ActionResult<ListResultObject<StudentDetailsVM>>> GetAllStudentDetails_Base(GetStudentDetailsListRequestBody requestBody)
         {
             if (!ModelState.IsValid)
             {
@@ -43,13 +48,14 @@ namespace AITechWebAPI.Controllers
             var result = await _StudentDetailsRep.GetAllStudentDetailsAsync(requestBody.UserId,requestBody.PageIndex,requestBody.PageSize,requestBody.SearchText,requestBody.SortQuery);
             if (result.Status)
             {
-                return Ok(result);
+                var resultVM = _mapper.Map<ListResultObject<StudentDetailsVM>>(result);
+                return Ok(resultVM);
             }
             return BadRequest(result);
         }
 
         [HttpPost("GetStudentDetailsById_Base")]
-        public async Task<ActionResult<RowResultObject<StudentDetails>>> GetStudentDetailsById_Base(GetRowRequestBody requestBody)
+        public async Task<ActionResult<RowResultObject<StudentDetailsVM>>> GetStudentDetailsById_Base(GetRowRequestBody requestBody)
         {
             if (!ModelState.IsValid)
             {
@@ -58,7 +64,8 @@ namespace AITechWebAPI.Controllers
             var result = await _StudentDetailsRep.GetStudentDetailsByIdAsync(requestBody.ID);
             if (result.Status)
             {
-                return Ok(result);
+                var resultVM = _mapper.Map<RowResultObject<StudentDetailsVM>>(result);
+                return Ok(resultVM);
             }
             return BadRequest(result);
         }

@@ -17,6 +17,8 @@ using System.Text;
 using AITechWebAPI.Models.News;
 using AITechDATA.CustomResponses;
 using AITechWebAPI.Validations;
+using AutoMapper;
+using AITechWebAPI.ViewModels;
 
 namespace AITechWebAPI.Controllers
 {
@@ -31,16 +33,19 @@ namespace AITechWebAPI.Controllers
     {
         ICourseRep _CourseRep;
         ILogRep _logRep;
+        private readonly IMapper _mapper;
 
-        public CourseController(ICourseRep CourseRep,ILogRep logRep)
+
+        public CourseController(ICourseRep CourseRep,ILogRep logRep,IMapper mapper)
         {
            _CourseRep = CourseRep;
            _logRep = logRep;
+           _mapper = mapper;
         }
 
         [AllowAnonymous]
         [HttpPost("GetAllCourses_Base")]
-        public async Task<ActionResult<CourseListCustomResponse<Course>>> GetAllCourses_Base(GetCourseListRequestBody requestBody)
+        public async Task<ActionResult<CourseListCustomResponse<CourseVM>>> GetAllCourses_Base(GetCourseListRequestBody requestBody)
         {
             if (!ModelState.IsValid)
             {
@@ -49,14 +54,15 @@ namespace AITechWebAPI.Controllers
             var result = await _CourseRep.GetAllCoursesAsync(requestBody.CategoryId,requestBody.PageIndex,requestBody.PageSize,requestBody.SearchText,requestBody.SortQuery);
             if (result.Status)
             {
-                return Ok(result);
+                var resultVM = _mapper.Map<CourseListCustomResponse<CourseVM>>(result);
+                return Ok(resultVM);
             }
             return BadRequest(result);
         }
 
         [HttpPost("GetCourseById_Base")]
         [AllowAnonymous]
-        public async Task<ActionResult<CourseRowCustomResponse<Course>>> GetCourseById_Base(GetRowRequestBody requestBody)
+        public async Task<ActionResult<CourseRowCustomResponse<CourseVM>>> GetCourseById_Base(GetRowRequestBody requestBody)
         {
             if (!ModelState.IsValid)
             {
@@ -65,7 +71,8 @@ namespace AITechWebAPI.Controllers
             var result = await _CourseRep.GetCourseByIdAsync(requestBody.ID);
             if (result.Status)
             {
-                return Ok(result);
+                var resultVM = _mapper.Map<CourseRowCustomResponse<CourseVM>>(result);
+                return Ok(resultVM);
             }
             return BadRequest(result);
         }

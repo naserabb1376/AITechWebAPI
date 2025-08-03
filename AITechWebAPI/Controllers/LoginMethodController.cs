@@ -14,6 +14,9 @@ using AITechDATA.Tools;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+using AutoMapper;
+using AITechWebAPI.ViewModels;
+using AITechDATA.CustomResponses;
 
 namespace AITechWebAPI.Controllers
 {
@@ -26,15 +29,18 @@ namespace AITechWebAPI.Controllers
     {
         ILoginMethodRep _LoginMethodRep;
         ILogRep _logRep;
+        private readonly IMapper _mapper;
 
-        public LoginMethodController(ILoginMethodRep LoginMethodRep,ILogRep logRep)
+
+        public LoginMethodController(ILoginMethodRep LoginMethodRep,ILogRep logRep,IMapper mapper)
         {
            _LoginMethodRep = LoginMethodRep;
            _logRep = logRep;
+            _mapper = mapper;
         }
 
         [HttpPost("GetAllLoginMethods_Base")]
-        public async Task<ActionResult<ListResultObject<LoginMethod>>> GetAllLoginMethods_Base(GetLoginMethodListRequestBody requestBody)
+        public async Task<ActionResult<ListResultObject<LoginMethodVM>>> GetAllLoginMethods_Base(GetLoginMethodListRequestBody requestBody)
         {
             if (!ModelState.IsValid)
             {
@@ -43,13 +49,14 @@ namespace AITechWebAPI.Controllers
             var result = await _LoginMethodRep.GetAllLoginMethodsAsync(requestBody.UserId,requestBody.PageIndex,requestBody.PageSize,requestBody.SearchText,requestBody.SortQuery);
             if (result.Status)
             {
-                return Ok(result);
+                var resultVM = _mapper.Map<ListResultObject<LoginMethodVM>>(result);
+                return Ok(resultVM);
             }
             return BadRequest(result);
         }
 
         [HttpPost("GetLoginMethodById_Base")]
-        public async Task<ActionResult<RowResultObject<LoginMethod>>> GetLoginMethodById_Base(GetLoginMethodRowRequestBody requestBody)
+        public async Task<ActionResult<RowResultObject<LoginMethodVM>>> GetLoginMethodById_Base(GetLoginMethodRowRequestBody requestBody)
         {
             if (!ModelState.IsValid)
             {
@@ -58,7 +65,8 @@ namespace AITechWebAPI.Controllers
             var result = await _LoginMethodRep.GetLoginMethodByIdAsync(requestBody.ID);
             if (result.Status)
             {
-                return Ok(result);
+                var resultVM = _mapper.Map<RowResultObject<LoginMethodVM>>(result);
+                return Ok(resultVM);
             }
             return BadRequest(result);
         }

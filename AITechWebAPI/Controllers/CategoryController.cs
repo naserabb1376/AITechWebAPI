@@ -14,6 +14,8 @@ using AITechDATA.Tools;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+using AutoMapper;
+using AITechWebAPI.ViewModels;
 
 namespace AITechWebAPI.Controllers
 {
@@ -26,16 +28,19 @@ namespace AITechWebAPI.Controllers
     {
         ICategoryRep _CategoryRep;
         ILogRep _logRep;
+        private readonly IMapper _mapper;
 
-        public CategoryController(ICategoryRep CategoryRep,ILogRep logRep)
+
+        public CategoryController(ICategoryRep CategoryRep,ILogRep logRep,IMapper mapper)
         {
            _CategoryRep = CategoryRep;
            _logRep = logRep;
+           _mapper = mapper;
         }
 
         [HttpPost("GetAllCategories_Base")]
         [AllowAnonymous]
-        public async Task<ActionResult<ListResultObject<Category>>> GetAllCategories_Base(GetCategoryListRequestBody requestBody)
+        public async Task<ActionResult<ListResultObject<CategoryVM>>> GetAllCategories_Base(GetCategoryListRequestBody requestBody)
         {
             if (!ModelState.IsValid)
             {
@@ -44,14 +49,15 @@ namespace AITechWebAPI.Controllers
             var result = await _CategoryRep.GetAllCategoriesAsync(requestBody.PageIndex,requestBody.PageSize,requestBody.SearchText,requestBody.SortQuery);
             if (result.Status)
             {
-                return Ok(result);
+                var resultVM = _mapper.Map<ListResultObject<CategoryVM>>(result);
+                return Ok(resultVM);
             }
             return BadRequest(result);
         }
 
         [HttpPost("GetCategoryById_Base")]
         [AllowAnonymous]
-        public async Task<ActionResult<RowResultObject<Category>>> GetCategoryById_Base(GetRowRequestBody requestBody)
+        public async Task<ActionResult<RowResultObject<CategoryVM>>> GetCategoryById_Base(GetRowRequestBody requestBody)
         {
             if (!ModelState.IsValid)
             {
@@ -60,7 +66,8 @@ namespace AITechWebAPI.Controllers
             var result = await _CategoryRep.GetCategoryByIdAsync(requestBody.ID);
             if (result.Status)
             {
-                return Ok(result);
+                var resultVM = _mapper.Map<RowResultObject<CategoryVM>>(result);
+                return Ok(resultVM);
             }
             return BadRequest(result);
         }

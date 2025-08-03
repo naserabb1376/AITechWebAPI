@@ -14,6 +14,9 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 using AITechDATA.Models.City;
+using AutoMapper;
+using AITechWebAPI.ViewModels;
+using AITechDATA.CustomResponses;
 
 namespace AITechWebAPI.Controllers
 {
@@ -26,15 +29,18 @@ namespace AITechWebAPI.Controllers
     {
         ICityRep _CityRep;
         ILogRep _logRep;
+        private readonly IMapper _mapper;
 
-        public CityController(ICityRep CityRep,ILogRep logRep)
+
+        public CityController(ICityRep CityRep,ILogRep logRep,IMapper mapper)
         {
            _CityRep = CityRep;
             _logRep = logRep;
+            _mapper = mapper;
         }
 
         [HttpPost("GetAllCities_Base")]
-        public async Task<ActionResult<ListResultObject<City>>> GetAllCities_Base(GetCityListRequestBody requestBody)
+        public async Task<ActionResult<ListResultObject<CityVM>>> GetAllCities_Base(GetCityListRequestBody requestBody)
         {
             if (!ModelState.IsValid)
             {
@@ -43,13 +49,14 @@ namespace AITechWebAPI.Controllers
             var result = await _CityRep.GetAllCitiesAsync(requestBody.ParentId,requestBody.PageIndex,requestBody.PageSize,requestBody.SearchText,requestBody.SortQuery);
             if (result.Status)
             {
-                return Ok(result);
+                var resultVM = _mapper.Map<ListResultObject<CityVM>>(result);
+                return Ok(resultVM);
             }
             return BadRequest(result);
         }
 
         [HttpPost("GetCityById_Base")]
-        public async Task<ActionResult<RowResultObject<City>>> GetCityById_Base(GetRowRequestBody requestBody)
+        public async Task<ActionResult<RowResultObject<CityVM>>> GetCityById_Base(GetRowRequestBody requestBody)
         {
             if (!ModelState.IsValid)
             {
@@ -58,7 +65,8 @@ namespace AITechWebAPI.Controllers
             var result = await _CityRep.GetCityByIdAsync(requestBody.ID);
             if (result.Status)
             {
-                return Ok(result);
+                var resultVM = _mapper.Map<RowResultObject<CityVM>>(result);
+                return Ok(resultVM);
             }
             return BadRequest(result);
         }

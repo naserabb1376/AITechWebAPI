@@ -17,6 +17,8 @@ using System.Text;
 using AITechWebAPI.Models.News;
 using AITechDATA.CustomResponses;
 using AITechWebAPI.Validations;
+using AutoMapper;
+using AITechWebAPI.ViewModels;
 
 namespace AITechWebAPI.Controllers
 {
@@ -31,16 +33,19 @@ namespace AITechWebAPI.Controllers
     {
         INewsRep _NewsRep;
         ILogRep _logRep;
+        private readonly IMapper _mapper;
 
-        public NewsController(INewsRep NewsRep,ILogRep logRep)
+
+        public NewsController(INewsRep NewsRep,ILogRep logRep,IMapper mapper)
         {
            _NewsRep = NewsRep;
            _logRep = logRep;
+            _mapper = mapper;
         }
 
         [AllowAnonymous]
         [HttpPost("GetAllNews_Base")]
-        public async Task<ActionResult<NewsListCustomResponse<News>>> GetAllNews_Base(GetNewsListRequestBody requestBody)
+        public async Task<ActionResult<NewsListCustomResponse<NewsVM>>> GetAllNews_Base(GetNewsListRequestBody requestBody)
         {
             if (!ModelState.IsValid)
             {
@@ -49,14 +54,15 @@ namespace AITechWebAPI.Controllers
             var result = await _NewsRep.GetAllNewsAsync(requestBody.UserId,requestBody.PageIndex,requestBody.PageSize,requestBody.SearchText,requestBody.SortQuery);
             if (result.Status)
             {
-                return Ok(result);
+                var resultVM = _mapper.Map<NewsListCustomResponse<NewsVM>>(result);
+                return Ok(resultVM);
             }
             return BadRequest(result);
         }
 
         [AllowAnonymous]
         [HttpPost("GetNewsById_Base")]
-        public async Task<ActionResult<NewsRowCustomResponse<News>>> GetNewsById_Base(GetRowRequestBody requestBody)
+        public async Task<ActionResult<NewsRowCustomResponse<NewsVM>>> GetNewsById_Base(GetRowRequestBody requestBody)
         {
             if (!ModelState.IsValid)
             {
@@ -65,7 +71,8 @@ namespace AITechWebAPI.Controllers
             var result = await _NewsRep.GetNewsByIdAsync(requestBody.ID);
             if (result.Status)
             {
-                return Ok(result);
+                var resultVM = _mapper.Map<NewsRowCustomResponse<NewsVM>>(result);
+                return Ok(resultVM);
             }
             return BadRequest(result);
         }

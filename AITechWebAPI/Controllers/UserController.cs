@@ -16,6 +16,8 @@ using AITechWebAPI.Models.User;
 using AITechDATA.CustomResponses;
 using System.Net;
 using AITechWebAPI.Validations;
+using AutoMapper;
+using AITechWebAPI.ViewModels;
 
 namespace AITechWebAPI.Controllers
 {
@@ -31,16 +33,19 @@ namespace AITechWebAPI.Controllers
         IUserRep _UserRep;
         ILogRep _logRep;
         IAddressRep _addressRep;
+        private readonly IMapper _mapper;
 
-        public UserController(IUserRep UserRep,IAddressRep addressRep,ILogRep logRep)
+
+        public UserController(IUserRep UserRep,IAddressRep addressRep,ILogRep logRep,IMapper mapper)
         {
            _UserRep = UserRep;
            _logRep = logRep;
            _addressRep = addressRep;
+            _mapper = mapper;   
         }
 
         [HttpPost("GetAllUsers_Base")]
-        public async Task<ActionResult<UserListCustomResponse<User>>> GetAllUsers_Base(GetUserListRequestBody requestBody)
+        public async Task<ActionResult<UserListCustomResponse<UserVM>>> GetAllUsers_Base(GetUserListRequestBody requestBody)
         {
             if (!ModelState.IsValid)
             {
@@ -49,14 +54,15 @@ namespace AITechWebAPI.Controllers
             var result = await _UserRep.GetAllUsersAsync(requestBody.GroupId,requestBody.CourseId,requestBody.SessionAssignmentId,requestBody.SessionId,requestBody.AddressId,requestBody.RoleId,requestBody.PageIndex,requestBody.PageSize,requestBody.SearchText,requestBody.SortQuery);
             if (result.Status)
             {
-                return Ok(result);
+                var resultVM = _mapper.Map<UserListCustomResponse<UserVM>>(result);
+                return Ok(resultVM);
             }
             return BadRequest(result);
         }
 
         [AllowAnonymous]
         [HttpPost("GetAllTeachers_Base")]
-        public async Task<ActionResult<UserListCustomResponse<User>>> GetAllTeachers_Base(GetUserListRequestBody requestBody)
+        public async Task<ActionResult<UserListCustomResponse<TeacherVM>>> GetAllTeachers_Base(GetUserListRequestBody requestBody)
         {
             if (!ModelState.IsValid)
             {
@@ -65,14 +71,14 @@ namespace AITechWebAPI.Controllers
             var result = await _UserRep.GetAllUsersAsync(requestBody.GroupId, requestBody.CourseId, requestBody.SessionAssignmentId, requestBody.SessionId, requestBody.AddressId,2, requestBody.PageIndex, requestBody.PageSize, requestBody.SearchText, requestBody.SortQuery);
             if (result.Status)
             {
-                return Ok(result);
+                var resultVM = _mapper.Map<UserListCustomResponse<TeacherVM>>(result);
+                return Ok(resultVM);
             }
             return BadRequest(result);
         }
 
-        [AllowAnonymous]
         [HttpPost("GetUserById_Base")]
-        public async Task<ActionResult<UserRowCustomResponse<User>>> GetUserById_Base(GetRowRequestBody requestBody)
+        public async Task<ActionResult<UserRowCustomResponse<UserVM>>> GetUserById_Base(GetRowRequestBody requestBody)
         {
             if (!ModelState.IsValid)
             {
@@ -81,10 +87,34 @@ namespace AITechWebAPI.Controllers
             var result = await _UserRep.GetUserByIdAsync(requestBody.ID);
             if (result.Status)
             {
-                return Ok(result);
+                var resultVM = _mapper.Map<UserRowCustomResponse<UserVM>>(result);
+                return Ok(resultVM);
             }
             return BadRequest(result);
         }
+
+        [HttpPost("GetTeacherById_Base")]
+        [AllowAnonymous]
+        public async Task<ActionResult<UserRowCustomResponse<TeacherVM>>> GetTeacherById_Base(GetRowRequestBody requestBody)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(requestBody);
+            }
+            var result = await _UserRep.GetUserByIdAsync(requestBody.ID);
+            if (result.Result.RoleId != 2)
+            {
+                result.ResultImages = new Dictionary<User, List<Image>?>();
+                result.Result = new User();
+            }
+            if (result.Status)
+            {
+                var resultVM = _mapper.Map<UserRowCustomResponse<TeacherVM>>(result);
+                return Ok(resultVM);
+            }
+            return BadRequest(result);
+        }
+
         [AllowAnonymous]
         [HttpPost("ExistUser_Base")]
         public async Task<ActionResult<BitResultObject>> ExistUser_Base(ExistUserRequestBody requestBody)

@@ -14,6 +14,8 @@ using AITechDATA.Tools;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+using AutoMapper;
+using AITechWebAPI.ViewModels;
 
 namespace AITechWebAPI.Controllers
 {
@@ -26,15 +28,18 @@ namespace AITechWebAPI.Controllers
     {
         IAdminReportRep _AdminReportRep;
         ILogRep _logRep;
+        private readonly IMapper _mapper;
 
-        public AdminReportController(IAdminReportRep AdminReportRep,ILogRep logRep)
+
+        public AdminReportController(IAdminReportRep AdminReportRep,ILogRep logRep,IMapper mapper)
         {
            _AdminReportRep = AdminReportRep;
            _logRep = logRep;
+           _mapper = mapper;
         }
 
         [HttpPost("GetAllAdminReports_Base")]
-        public async Task<ActionResult<ListResultObject<AdminReport>>> GetAllAdminReports_Base(GetAdminReportListRequestBody requestBody)
+        public async Task<ActionResult<ListResultObject<AdminReportVM>>> GetAllAdminReports_Base(GetAdminReportListRequestBody requestBody)
         {
             if (!ModelState.IsValid)
             {
@@ -43,13 +48,14 @@ namespace AITechWebAPI.Controllers
             var result = await _AdminReportRep.GetAllAdminReportsAsync(requestBody.AdminId,requestBody.PageIndex,requestBody.PageSize,requestBody.SearchText,requestBody.SortQuery);
             if (result.Status)
             {
-                return Ok(result);
+                var resultVM = _mapper.Map<ListResultObject<AdminReportVM>>(result);
+                return Ok(resultVM);
             }
             return BadRequest(result);
         }
 
         [HttpPost("GetAdminReportById_Base")]
-        public async Task<ActionResult<RowResultObject<AdminReport>>> GetAdminReportById_Base(GetRowRequestBody requestBody)
+        public async Task<ActionResult<RowResultObject<AdminReportVM>>> GetAdminReportById_Base(GetRowRequestBody requestBody)
         {
             if (!ModelState.IsValid)
             {
@@ -58,7 +64,8 @@ namespace AITechWebAPI.Controllers
             var result = await _AdminReportRep.GetAdminReportByIdAsync(requestBody.ID);
             if (result.Status)
             {
-                return Ok(result);
+                var resultVM = _mapper.Map<RowResultObject<AdminReportVM>>(result);
+                return Ok(resultVM);
             }
             return BadRequest(result);
         }

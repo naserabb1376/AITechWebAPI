@@ -14,6 +14,8 @@ using AITechDATA.Tools;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+using AutoMapper;
+using AITechWebAPI.ViewModels;
 
 namespace AITechWebAPI.Controllers
 {
@@ -26,15 +28,18 @@ namespace AITechWebAPI.Controllers
     {
         IPreRegistrationRep _PreRegistrationRep;
         ILogRep _logRep;
+        private readonly IMapper _mapper;
 
-        public PreRegistrationController(IPreRegistrationRep PreRegistrationRep,ILogRep logRep)
+
+        public PreRegistrationController(IPreRegistrationRep PreRegistrationRep,ILogRep logRep,IMapper mapper)
         {
            _PreRegistrationRep = PreRegistrationRep;
            _logRep = logRep;
+            _mapper = mapper;
         }
 
         [HttpPost("GetAllPreRegistrations_Base")]
-        public async Task<ActionResult<ListResultObject<PreRegistration>>> GetAllPreRegistrations_Base(GetPreRegistrationListRequestBody requestBody)
+        public async Task<ActionResult<ListResultObject<PreRegistrationVM>>> GetAllPreRegistrations_Base(GetPreRegistrationListRequestBody requestBody)
         {
             if (!ModelState.IsValid)
             {
@@ -43,13 +48,14 @@ namespace AITechWebAPI.Controllers
             var result = await _PreRegistrationRep.GetAllPreRegistrationsAsync(requestBody.GroupId,requestBody.PageIndex,requestBody.PageSize,requestBody.SearchText,requestBody.SortQuery);
             if (result.Status)
             {
-                return Ok(result);
+                var resultVM = _mapper.Map<ListResultObject<PreRegistrationVM>>(result);
+                return Ok(resultVM);
             }
             return BadRequest(result);
         }
 
         [HttpPost("GetPreRegistrationById_Base")]
-        public async Task<ActionResult<RowResultObject<PreRegistration>>> GetPreRegistrationById_Base(GetRowRequestBody requestBody)
+        public async Task<ActionResult<RowResultObject<PreRegistrationVM>>> GetPreRegistrationById_Base(GetRowRequestBody requestBody)
         {
             if (!ModelState.IsValid)
             {
@@ -58,7 +64,8 @@ namespace AITechWebAPI.Controllers
             var result = await _PreRegistrationRep.GetPreRegistrationByIdAsync(requestBody.ID);
             if (result.Status)
             {
-                return Ok(result);
+                var resultVM = _mapper.Map<RowResultObject<PreRegistrationVM>>(result);
+                return Ok(resultVM);
             }
             return BadRequest(result);
         }

@@ -16,6 +16,8 @@ using System.Security.Claims;
 using System.Text;
 using AITechWebAPI.Models.News;
 using AITechDATA.CustomResponses;
+using AutoMapper;
+using AITechWebAPI.ViewModels;
 
 namespace AITechWebAPI.Controllers
 {
@@ -28,16 +30,19 @@ namespace AITechWebAPI.Controllers
     {
         ISettingRep _SettingRep;
         ILogRep _logRep;
+        private readonly IMapper _mapper;
 
-        public SettingController(ISettingRep SettingRep,ILogRep logRep)
+
+        public SettingController(ISettingRep SettingRep,ILogRep logRep,IMapper mapper)
         {
            _SettingRep = SettingRep;
            _logRep = logRep;
+            _mapper = mapper;
         }
 
         [AllowAnonymous]
         [HttpPost("GetAllSettings_Base")]
-        public async Task<ActionResult<SettingListCustomResponse<Setting>>> GetAllSettings_Base(GetSettingListRequestBody requestBody)
+        public async Task<ActionResult<SettingListCustomResponse<SettingVM>>> GetAllSettings_Base(GetSettingListRequestBody requestBody)
         {
             if (!ModelState.IsValid)
             {
@@ -46,14 +51,15 @@ namespace AITechWebAPI.Controllers
             var result = await _SettingRep.GetAllSettingsAsync(requestBody.ParentId,requestBody.Key,requestBody.PageIndex,requestBody.PageSize,requestBody.SearchText,requestBody.SortQuery);
             if (result.Status)
             {
-                return Ok(result);
+                var resultVM = _mapper.Map<SettingListCustomResponse<SettingVM>>(result);
+                return Ok(resultVM);
             }
             return BadRequest(result);
         }
 
         [AllowAnonymous]
         [HttpPost("GetSettingById_Base")]
-        public async Task<ActionResult<SettingRowCustomResponse<Setting>>> GetSettingById_Base(GetSettingRowRequestBody requestBody)
+        public async Task<ActionResult<SettingRowCustomResponse<SettingVM>>> GetSettingById_Base(GetSettingRowRequestBody requestBody)
         {
             if (!ModelState.IsValid)
             {
@@ -62,7 +68,8 @@ namespace AITechWebAPI.Controllers
             var result = await _SettingRep.GetSettingRowAsync(requestBody.ID,requestBody.Key);
             if (result.Status)
             {
-                return Ok(result);
+                var resultVM = _mapper.Map<SettingRowCustomResponse<SettingVM>>(result);
+                return Ok(resultVM);
             }
             return BadRequest(result);
         }

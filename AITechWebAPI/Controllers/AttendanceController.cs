@@ -14,6 +14,8 @@ using AITechDATA.Tools;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+using AutoMapper;
+using AITechWebAPI.ViewModels;
 
 namespace AITechWebAPI.Controllers
 {
@@ -26,15 +28,18 @@ namespace AITechWebAPI.Controllers
     {
         IAttendanceRep _AttendanceRep;
         ILogRep _logRep;
+        private readonly IMapper _mapper;
 
-        public AttendanceController(IAttendanceRep AttendanceRep,ILogRep logRep)
+
+        public AttendanceController(IAttendanceRep AttendanceRep,ILogRep logRep,IMapper mapper)
         {
            _AttendanceRep = AttendanceRep;
            _logRep = logRep;
+           _mapper = mapper;
         }
 
         [HttpPost("GetAllAttendances_Base")]
-        public async Task<ActionResult<ListResultObject<Attendance>>> GetAllAttendances_Base(GetAttendanceListRequestBody requestBody)
+        public async Task<ActionResult<ListResultObject<AttendanceVM>>> GetAllAttendances_Base(GetAttendanceListRequestBody requestBody)
         {
             if (!ModelState.IsValid)
             {
@@ -43,13 +48,14 @@ namespace AITechWebAPI.Controllers
             var result = await _AttendanceRep.GetAllAttendancesAsync(requestBody.UserId,requestBody.SessionId,requestBody.PageIndex,requestBody.PageSize,requestBody.SearchText,requestBody.SortQuery);
             if (result.Status)
             {
-                return Ok(result);
+                var resultVM = _mapper.Map<ListResultObject<AttendanceVM>>(result);
+                return Ok(resultVM);
             }
             return BadRequest(result);
         }
 
         [HttpPost("GetAttendanceById_Base")]
-        public async Task<ActionResult<RowResultObject<Attendance>>> GetAttendanceById_Base(GetRowRequestBody requestBody)
+        public async Task<ActionResult<RowResultObject<AttendanceVM>>> GetAttendanceById_Base(GetRowRequestBody requestBody)
         {
             if (!ModelState.IsValid)
             {
@@ -58,7 +64,8 @@ namespace AITechWebAPI.Controllers
             var result = await _AttendanceRep.GetAttendanceByIdAsync(requestBody.ID);
             if (result.Status)
             {
-                return Ok(result);
+                var resultVM = _mapper.Map<RowResultObject<AttendanceVM>>(result);
+                return Ok(resultVM);
             }
             return BadRequest(result);
         }

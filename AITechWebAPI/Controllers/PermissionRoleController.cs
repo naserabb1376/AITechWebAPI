@@ -14,6 +14,8 @@ using AITechDATA.Tools;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+using AutoMapper;
+using AITechWebAPI.ViewModels;
 
 namespace AITechWebAPI.Controllers
 {
@@ -26,15 +28,18 @@ namespace AITechWebAPI.Controllers
     {
         IPermissionRoleRep _PermissionRoleRep;
         ILogRep _logRep;
+        private readonly IMapper _mapper;
 
-        public PermissionRoleController(IPermissionRoleRep PermissionRoleRep,ILogRep logRep)
+
+        public PermissionRoleController(IPermissionRoleRep PermissionRoleRep,ILogRep logRep,IMapper mapper)
         {
            _PermissionRoleRep = PermissionRoleRep;
            _logRep = logRep;
+            _mapper = mapper;
         }
 
         [HttpPost("GetAllPermissionRoles_Base")]
-        public async Task<ActionResult<ListResultObject<PermissionRole>>> GetAllPermissionRoles_Base(GetPermissionRoleListRequestBody requestBody)
+        public async Task<ActionResult<ListResultObject<PermissionRoleVM>>> GetAllPermissionRoles_Base(GetPermissionRoleListRequestBody requestBody)
         {
             if (!ModelState.IsValid)
             {
@@ -43,13 +48,14 @@ namespace AITechWebAPI.Controllers
             var result = await _PermissionRoleRep.GetAllPermissionRolesAsync(requestBody.RoleId,requestBody.PermissionId,requestBody.PageIndex,requestBody.PageSize,requestBody.SearchText,requestBody.SortQuery);
             if (result.Status)
             {
-                return Ok(result);
+                var resultVM = _mapper.Map<ListResultObject<SessionAssignmentVM>>(result);
+                return Ok(resultVM);
             }
             return BadRequest(result);
         }
 
         [HttpPost("GetPermissionRoleById_Base")]
-        public async Task<ActionResult<RowResultObject<PermissionRole>>> GetPermissionRoleById_Base(GetRowRequestBody requestBody)
+        public async Task<ActionResult<RowResultObject<PermissionRoleVM>>> GetPermissionRoleById_Base(GetRowRequestBody requestBody)
         {
             if (!ModelState.IsValid)
             {
@@ -58,7 +64,8 @@ namespace AITechWebAPI.Controllers
             var result = await _PermissionRoleRep.GetPermissionRoleByIdAsync(requestBody.ID);
             if (result.Status)
             {
-                return Ok(result);
+                var resultVM = _mapper.Map<RowResultObject<PermissionRoleVM>>(result);
+                return Ok(resultVM);
             }
             return BadRequest(result);
         }

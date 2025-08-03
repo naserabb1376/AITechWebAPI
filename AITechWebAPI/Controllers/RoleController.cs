@@ -14,6 +14,8 @@ using AITechDATA.Tools;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+using AutoMapper;
+using AITechWebAPI.ViewModels;
 
 namespace AITechWebAPI.Controllers
 {
@@ -26,15 +28,18 @@ namespace AITechWebAPI.Controllers
     {
         IRoleRep _RoleRep;
         ILogRep _logRep;
+        private readonly IMapper _mapper;
 
-        public RoleController(IRoleRep RoleRep,ILogRep logRep)
+
+        public RoleController(IRoleRep RoleRep,ILogRep logRep,IMapper mapper)
         {
            _RoleRep = RoleRep;
            _logRep = logRep;
+            _mapper = mapper;
         }
 
         [HttpPost("GetAllRoles_Base")]
-        public async Task<ActionResult<ListResultObject<Role>>> GetAllRoles_Base(GetRoleListRequestBody requestBody)
+        public async Task<ActionResult<ListResultObject<RoleVM>>> GetAllRoles_Base(GetRoleListRequestBody requestBody)
         {
             if (!ModelState.IsValid)
             {
@@ -43,14 +48,15 @@ namespace AITechWebAPI.Controllers
             var result = await _RoleRep.GetAllRolesAsync(requestBody.PermissionId,requestBody.PageIndex,requestBody.PageSize,requestBody.SearchText,requestBody.SortQuery);
             if (result.Status)
             {
-                return Ok(result);
+                var resultVM = _mapper.Map<ListResultObject<RoleVM>>(result);
+                return Ok(resultVM);
             }
 
             return BadRequest(result);
         }
 
         [HttpPost("GetRoleById_Base")]
-        public async Task<ActionResult<RowResultObject<Role>>> GetRoleById_Base(GetRowRequestBody requestBody)
+        public async Task<ActionResult<RowResultObject<RoleVM>>> GetRoleById_Base(GetRowRequestBody requestBody)
         {
             if (!ModelState.IsValid)
             {
@@ -59,7 +65,8 @@ namespace AITechWebAPI.Controllers
             var result = await _RoleRep.GetRoleByIdAsync(requestBody.ID);
             if (result.Status)
             {
-                return Ok(result);
+                var resultVM = _mapper.Map<RowResultObject<RoleVM>>(result);
+                return Ok(resultVM);
             }
             return BadRequest(result);
         }

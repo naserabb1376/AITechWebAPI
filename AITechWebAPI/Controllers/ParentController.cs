@@ -14,6 +14,8 @@ using AITechDATA.Tools;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+using AutoMapper;
+using AITechWebAPI.ViewModels;
 
 namespace AITechWebAPI.Controllers
 {
@@ -26,15 +28,18 @@ namespace AITechWebAPI.Controllers
     {
         IParentRep _ParentRep;
         ILogRep _logRep;
+        private readonly IMapper _mapper;
 
-        public ParentController(IParentRep ParentRep,ILogRep logRep)
+
+        public ParentController(IParentRep ParentRep,ILogRep logRep,IMapper mapper)
         {
            _ParentRep = ParentRep;
            _logRep = logRep;
+            _mapper = mapper;
         }
 
         [HttpPost("GetAllParents_Base")]
-        public async Task<ActionResult<ListResultObject<Parent>>> GetAllParents_Base(GetParentListRequestBody requestBody)
+        public async Task<ActionResult<ListResultObject<ParentVM>>> GetAllParents_Base(GetParentListRequestBody requestBody)
         {
             if (!ModelState.IsValid)
             {
@@ -43,13 +48,14 @@ namespace AITechWebAPI.Controllers
             var result = await _ParentRep.GetAllParentsAsync(requestBody.StudentDetailsId,requestBody.PageIndex,requestBody.PageSize,requestBody.SearchText,requestBody.SortQuery);
             if (result.Status)
             {
-                return Ok(result);
+                var resultVM = _mapper.Map<ListResultObject<ParentVM>>(result);
+                return Ok(resultVM);
             }
             return BadRequest(result);
         }
 
         [HttpPost("GetParentById_Base")]
-        public async Task<ActionResult<RowResultObject<Parent>>> GetParentById_Base(GetRowRequestBody requestBody)
+        public async Task<ActionResult<RowResultObject<ParentVM>>> GetParentById_Base(GetRowRequestBody requestBody)
         {
             if (!ModelState.IsValid)
             {
@@ -58,7 +64,8 @@ namespace AITechWebAPI.Controllers
             var result = await _ParentRep.GetParentByIdAsync(requestBody.ID);
             if (result.Status)
             {
-                return Ok(result);
+                var resultVM = _mapper.Map<RowResultObject<ParentVM>>(result);
+                return Ok(resultVM);
             }
             return BadRequest(result);
         }

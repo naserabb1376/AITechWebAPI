@@ -14,6 +14,8 @@ using AITechDATA.Tools;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+using AutoMapper;
+using AITechWebAPI.ViewModels;
 
 namespace AITechWebAPI.Controllers
 {
@@ -25,15 +27,18 @@ namespace AITechWebAPI.Controllers
     {
         private IPermissionRep _PermissionRep;
         private ILogRep _logRep;
+        private readonly IMapper _mapper;
 
-        public PermissionController(IPermissionRep PermissionRep, ILogRep logRep)
+
+        public PermissionController(IPermissionRep PermissionRep, ILogRep logRep,IMapper mapper)
         {
             _PermissionRep = PermissionRep;
             _logRep = logRep;
+            _mapper = mapper;
         }
 
         [HttpPost("GetAllPermissions_Base")]
-        public async Task<ActionResult<ListResultObject<Permission>>> GetAllPermissions_Base(GetPermissionListRequestBody requestBody)
+        public async Task<ActionResult<ListResultObject<PermissionVM>>> GetAllPermissions_Base(GetPermissionListRequestBody requestBody)
         {
             if (!ModelState.IsValid)
             {
@@ -42,13 +47,14 @@ namespace AITechWebAPI.Controllers
             var result = await _PermissionRep.GetAllPermissionsAsync(requestBody.RoleId, requestBody.PageIndex, requestBody.PageSize, requestBody.SearchText, requestBody.SortQuery);
             if (result.Status)
             {
-                return Ok(result);
+                var resultVM = _mapper.Map<ListResultObject<PermissionVM>>(result);
+                return Ok(resultVM);
             }
             return BadRequest(result);
         }
 
         [HttpPost("GetPermissionById_Base")]
-        public async Task<ActionResult<RowResultObject<Permission>>> GetPermissionById_Base(GetRowRequestBody requestBody)
+        public async Task<ActionResult<RowResultObject<PermissionVM>>> GetPermissionById_Base(GetRowRequestBody requestBody)
         {
             if (!ModelState.IsValid)
             {
@@ -57,7 +63,8 @@ namespace AITechWebAPI.Controllers
             var result = await _PermissionRep.GetPermissionByIdAsync(requestBody.ID);
             if (result.Status)
             {
-                return Ok(result);
+                var resultVM = _mapper.Map<RowResultObject<PermissionVM>>(result);
+                return Ok(resultVM);
             }
             return BadRequest(result);
         }

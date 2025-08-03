@@ -14,6 +14,9 @@ using AITechDATA.Tools;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+using AutoMapper;
+using AITechWebAPI.ViewModels;
+using AITechDATA.CustomResponses;
 
 namespace AITechWebAPI.Controllers
 {
@@ -26,15 +29,18 @@ namespace AITechWebAPI.Controllers
     {
         ITeacherResumeRep _TeacherResumeRep;
         ILogRep _logRep;
+        private readonly IMapper _mapper;
 
-        public TeacherResumeController(ITeacherResumeRep TeacherResumeRep,ILogRep logRep)
+
+        public TeacherResumeController(ITeacherResumeRep TeacherResumeRep,ILogRep logRep,IMapper mapper)
         {
            _TeacherResumeRep = TeacherResumeRep;
            _logRep = logRep;
+            _mapper = mapper;
         }
 
         [HttpPost("GetAllTeacherResumes_Base")]
-        public async Task<ActionResult<ListResultObject<TeacherResume>>> GetAllTeacherResumes_Base(GetTeacherResumeListRequestBody requestBody)
+        public async Task<ActionResult<ListResultObject<TeacherResumeVM>>> GetAllTeacherResumes_Base(GetTeacherResumeListRequestBody requestBody)
         {
             if (!ModelState.IsValid)
             {
@@ -43,13 +49,15 @@ namespace AITechWebAPI.Controllers
             var result = await _TeacherResumeRep.GetAllTeacherResumesAsync(requestBody.UserId,requestBody.PageIndex,requestBody.PageSize,requestBody.SearchText,requestBody.SortQuery);
             if (result.Status)
             {
-                return Ok(result);
+                var resultVM = _mapper.Map<ListResultObject<TeacherResumeVM>>(result);
+                return Ok(resultVM);
             }
             return BadRequest(result);
         }
 
         [HttpPost("GetTeacherResumeById_Base")]
-        public async Task<ActionResult<RowResultObject<TeacherResume>>> GetTeacherResumeById_Base(GetRowRequestBody requestBody)
+        [AllowAnonymous]
+        public async Task<ActionResult<RowResultObject<TeacherResumeVM>>> GetTeacherResumeById_Base(GetRowRequestBody requestBody)
         {
             if (!ModelState.IsValid)
             {
@@ -58,7 +66,8 @@ namespace AITechWebAPI.Controllers
             var result = await _TeacherResumeRep.GetTeacherResumeByIdAsync(requestBody.ID);
             if (result.Status)
             {
-                return Ok(result);
+                var resultVM = _mapper.Map<RowResultObject<TeacherResumeVM>>(result);
+                return Ok(resultVM);
             }
             return BadRequest(result);
         }
@@ -89,7 +98,7 @@ namespace AITechWebAPI.Controllers
             {
                 CreateDate = DateTime.Now.ToShamsi(),
                 UpdateDate = DateTime.Now.ToShamsi(),
-                DateAchieved = requestBody.DateAchieved.StringToDate(),
+                DateAchieved = !string.IsNullOrEmpty(requestBody.DateAchieved) ? requestBody.DateAchieved.StringToDate() : DateTime.Now.ToShamsi(),
                 Description = requestBody.Description ?? "",
                 Title = requestBody.Title,
                 UserId = requestBody.UserId,
@@ -137,7 +146,7 @@ namespace AITechWebAPI.Controllers
                 CreateDate = theRow.Result.CreateDate,
                 UpdateDate = DateTime.Now.ToShamsi(),
                 ID = requestBody.ID,
-                DateAchieved = requestBody.DateAchieved.StringToDate(),
+                DateAchieved = !string.IsNullOrEmpty(requestBody.DateAchieved) ? requestBody.DateAchieved.StringToDate() : DateTime.Now.ToShamsi(),
                 Description = requestBody.Description ?? "",
                 Title = requestBody.Title,
                 UserId = requestBody.UserId,

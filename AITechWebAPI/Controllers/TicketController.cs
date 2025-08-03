@@ -15,6 +15,8 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 using AITechDATA.CustomResponses;
+using AutoMapper;
+using AITechWebAPI.ViewModels;
 
 namespace AITechWebAPI.Controllers
 {
@@ -27,15 +29,18 @@ namespace AITechWebAPI.Controllers
     {
         ITicketRep _TicketRep;
         ILogRep _logRep;
+        private readonly IMapper _mapper;
 
-        public TicketController(ITicketRep TicketRep,ILogRep logRep)
+
+        public TicketController(ITicketRep TicketRep,ILogRep logRep,IMapper mapper)
         {
            _TicketRep = TicketRep;
            _logRep = logRep;
+            _mapper = mapper;
         }
 
         [HttpPost("GetAllTickets_Base")]
-        public async Task<ActionResult<TicketListCustomResponse<Ticket>>> GetAllTickets_Base(GetTicketListRequestBody requestBody)
+        public async Task<ActionResult<TicketListCustomResponse<TicketVM>>> GetAllTickets_Base(GetTicketListRequestBody requestBody)
         {
             if (!ModelState.IsValid)
             {
@@ -44,13 +49,14 @@ namespace AITechWebAPI.Controllers
             var result = await _TicketRep.GetAllTicketsAsync(requestBody.UserId,requestBody.PageIndex,requestBody.PageSize,requestBody.SearchText,requestBody.SortQuery);
             if (result.Status)
             {
-                return Ok(result);
+                var resultVM = _mapper.Map<TicketListCustomResponse<TicketVM>>(result);
+                return Ok(resultVM);
             }
             return BadRequest(result);
         }
 
         [HttpPost("GetTicketById_Base")]
-        public async Task<ActionResult<TicketRowCustomResponse<Ticket>>> GetTicketById_Base(GetRowRequestBody requestBody)
+        public async Task<ActionResult<TicketRowCustomResponse<TicketVM>>> GetTicketById_Base(GetRowRequestBody requestBody)
         {
             if (!ModelState.IsValid)
             {
@@ -59,7 +65,8 @@ namespace AITechWebAPI.Controllers
             var result = await _TicketRep.GetTicketByIdAsync(requestBody.ID);
             if (result.Status)
             {
-                return Ok(result);
+                var resultVM = _mapper.Map<TicketRowCustomResponse<TicketVM>>(result);
+                return Ok(resultVM);
             }
             return BadRequest(result);
         }

@@ -14,6 +14,8 @@ using AITechDATA.Tools;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+using AutoMapper;
+using AITechWebAPI.ViewModels;
 
 namespace AITechWebAPI.Controllers
 {
@@ -26,15 +28,19 @@ namespace AITechWebAPI.Controllers
     {
         IUserGroupRep _UserGroupRep;
         ILogRep _logRep;
+        private readonly IMapper _mapper;
 
-        public UserGroupController(IUserGroupRep UserGroupRep,ILogRep logRep)
+
+        public UserGroupController(IUserGroupRep UserGroupRep,ILogRep logRep,IMapper mapper)
         {
            _UserGroupRep = UserGroupRep;
            _logRep = logRep;
+            _mapper = mapper;
+
         }
 
         [HttpPost("GetAllUserGroups_Base")]
-        public async Task<ActionResult<ListResultObject<UserGroup>>> GetAllUserGroups_Base(GetUserGroupListRequestBody requestBody)
+        public async Task<ActionResult<ListResultObject<UserGroupVM>>> GetAllUserGroups_Base(GetUserGroupListRequestBody requestBody)
         {
             if (!ModelState.IsValid)
             {
@@ -43,13 +49,14 @@ namespace AITechWebAPI.Controllers
             var result = await _UserGroupRep.GetAllUserGroupsAsync(requestBody.UserId,requestBody.GroupId,requestBody.PageIndex,requestBody.PageSize,requestBody.SearchText,requestBody.SortQuery);
             if (result.Status)
             {
-                return Ok(result);
+                var resultVM = _mapper.Map<ListResultObject<UserGroupVM>>(result);
+                return Ok(resultVM);
             }
             return BadRequest(result);
         }
 
         [HttpPost("GetUserGroupById_Base")]
-        public async Task<ActionResult<RowResultObject<UserGroup>>> GetUserGroupById_Base(GetRowRequestBody requestBody)
+        public async Task<ActionResult<RowResultObject<UserGroupVM>>> GetUserGroupById_Base(GetRowRequestBody requestBody)
         {
             if (!ModelState.IsValid)
             {
@@ -58,7 +65,8 @@ namespace AITechWebAPI.Controllers
             var result = await _UserGroupRep.GetUserGroupByIdAsync(requestBody.ID);
             if (result.Status)
             {
-                return Ok(result);
+                var resultVM = _mapper.Map<RowResultObject<UserGroupVM>>(result);
+                return Ok(resultVM);
             }
             return BadRequest(result);
         }

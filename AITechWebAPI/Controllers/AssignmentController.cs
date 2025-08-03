@@ -14,6 +14,8 @@ using AITechDATA.Tools;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+using AutoMapper;
+using AITechWebAPI.ViewModels;
 
 namespace AITechWebAPI.Controllers
 {
@@ -26,15 +28,18 @@ namespace AITechWebAPI.Controllers
     {
         IAssignmentRep _AssignmentRep;
         ILogRep _logRep;
+        private readonly IMapper _mapper;
 
-        public AssignmentController(IAssignmentRep AssignmentRep,ILogRep logRep)
+
+        public AssignmentController(IAssignmentRep AssignmentRep,ILogRep logRep,IMapper mapper)
         {
            _AssignmentRep = AssignmentRep;
            _logRep = logRep;
+           _mapper = mapper;
         }
 
         [HttpPost("GetAllAssignments_Base")]
-        public async Task<ActionResult<ListResultObject<Assignment>>> GetAllAssignments_Base(GetAssignmentListRequestBody requestBody)
+        public async Task<ActionResult<ListResultObject<AssignmentVM>>> GetAllAssignments_Base(GetAssignmentListRequestBody requestBody)
         {
             if (!ModelState.IsValid)
             {
@@ -43,13 +48,14 @@ namespace AITechWebAPI.Controllers
             var result = await _AssignmentRep.GetAllAssignmentsAsync(requestBody.UserId,requestBody.SessionAssignmentId,requestBody.PageIndex,requestBody.PageSize,requestBody.SearchText,requestBody.SortQuery);
             if (result.Status)
             {
-                return Ok(result);
+                var resultVM = _mapper.Map<ListResultObject<AssignmentVM>>(result);
+                return Ok(resultVM);
             }
             return BadRequest(result);
         }
 
         [HttpPost("GetAssignmentById_Base")]
-        public async Task<ActionResult<RowResultObject<Assignment>>> GetAssignmentById_Base(GetRowRequestBody requestBody)
+        public async Task<ActionResult<RowResultObject<AssignmentVM>>> GetAssignmentById_Base(GetRowRequestBody requestBody)
         {
             if (!ModelState.IsValid)
             {
@@ -58,7 +64,8 @@ namespace AITechWebAPI.Controllers
             var result = await _AssignmentRep.GetAssignmentByIdAsync(requestBody.ID);
             if (result.Status)
             {
-                return Ok(result);
+                var resultVM = _mapper.Map<RowResultObject<AssignmentVM>>(result);
+                return Ok(resultVM);
             }
             return BadRequest(result);
         }

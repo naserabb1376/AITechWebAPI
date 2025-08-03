@@ -22,8 +22,8 @@ namespace AITechWebAPI.Controllers
 {
     [Route("Group")]
     [ApiController]
-    [Authorize]
     [Produces("application/json")]
+    [Authorize]
     [CheckRoleBase(new[] { 3, 4, 7 })]
 
     public class GroupController : ControllerBase
@@ -41,7 +41,7 @@ namespace AITechWebAPI.Controllers
 
         [HttpPost("GetAllGroups_Base")]
         [AllowAnonymous]
-        public async Task<ActionResult<ListResultObject<Group>>> GetAllGroups_Base(GetGroupListRequestBody requestBody)
+        public async Task<ActionResult<ListResultObject<GroupVM>>> GetAllGroups_Base(GetGroupListRequestBody requestBody)
         {
             if (!ModelState.IsValid)
             {
@@ -50,14 +50,14 @@ namespace AITechWebAPI.Controllers
             var result = await _GroupRep.GetAllGroupsAsync(requestBody.StudentId,requestBody.CourseId,requestBody.TeacherId, requestBody.GroupStatus, requestBody.PageIndex, requestBody.PageSize, requestBody.SearchText, requestBody.SortQuery);
             if (result.Status)
             {
-                var resultVM = _mapper.Map<ListResultObject<TeacherGroupVM>>(result);
+                var resultVM = _mapper.Map<ListResultObject<GroupVM>>(result);
                 return Ok(resultVM);
             }
             return BadRequest(result);
         }
 
         [HttpPost("GetGroupById_Base")]
-        public async Task<ActionResult<RowResultObject<Group>>> GetGroupById_Base(GetRowRequestBody requestBody)
+        public async Task<ActionResult<RowResultObject<GroupVM>>> GetGroupById_Base(GetRowRequestBody requestBody)
         {
             if (!ModelState.IsValid)
             {
@@ -66,7 +66,7 @@ namespace AITechWebAPI.Controllers
             var result = await _GroupRep.GetGroupByIdAsync(requestBody.ID);
             if (result.Status)
             {
-                var resultVM = _mapper.Map<RowResultObject<TeacherGroupVM>>(result);
+                var resultVM = _mapper.Map<RowResultObject<GroupVM>>(result);
                 return Ok(resultVM);
             }
             return BadRequest(result);

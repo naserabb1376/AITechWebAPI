@@ -14,6 +14,8 @@ using AITechDATA.Tools;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+using AutoMapper;
+using AITechWebAPI.ViewModels;
 
 namespace AITechWebAPI.Controllers
 {
@@ -26,15 +28,18 @@ namespace AITechWebAPI.Controllers
     {
         ITicketMessageRep _TicketMessageRep;
         ILogRep _logRep;
+        private readonly IMapper _mapper;
 
-        public TicketMessageController(ITicketMessageRep TicketMessageRep,ILogRep logRep)
+
+        public TicketMessageController(ITicketMessageRep TicketMessageRep,ILogRep logRep,IMapper mapper)
         {
            _TicketMessageRep = TicketMessageRep;
            _logRep = logRep;
+            _mapper = mapper;
         }
 
         [HttpPost("GetAllTicketMessages_Base")]
-        public async Task<ActionResult<ListResultObject<TicketMessage>>> GetAllTicketMessages_Base(GetTicketMessageListRequestBody requestBody)
+        public async Task<ActionResult<ListResultObject<TicketMessageVM>>> GetAllTicketMessages_Base(GetTicketMessageListRequestBody requestBody)
         {
             if (!ModelState.IsValid)
             {
@@ -43,13 +48,14 @@ namespace AITechWebAPI.Controllers
             var result = await _TicketMessageRep.GetAllTicketMessagesAsync(requestBody.UserId,requestBody.TicketId,requestBody.PageIndex,requestBody.PageSize,requestBody.SearchText,requestBody.SortQuery);
             if (result.Status)
             {
-                return Ok(result);
+                var resultVM = _mapper.Map<ListResultObject<TicketMessageVM>>(result);
+                return Ok(resultVM);
             }
             return BadRequest(result);
         }
 
         [HttpPost("GetTicketMessageById_Base")]
-        public async Task<ActionResult<RowResultObject<TicketMessage>>> GetTicketMessageById_Base(GetRowRequestBody requestBody)
+        public async Task<ActionResult<RowResultObject<TicketMessageVM>>> GetTicketMessageById_Base(GetRowRequestBody requestBody)
         {
             if (!ModelState.IsValid)
             {
@@ -58,7 +64,8 @@ namespace AITechWebAPI.Controllers
             var result = await _TicketMessageRep.GetTicketMessageByIdAsync(requestBody.ID);
             if (result.Status)
             {
-                return Ok(result);
+                var resultVM = _mapper.Map<RowResultObject<TicketMessageVM>>(result);
+                return Ok(resultVM);
             }
             return BadRequest(result);
         }
