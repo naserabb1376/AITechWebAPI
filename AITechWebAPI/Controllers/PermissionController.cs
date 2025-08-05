@@ -23,9 +23,9 @@ namespace AITechWebAPI.Controllers
 {
     [Route("Permission")]
     [ApiController]
-    [Authorize]
     [Produces("application/json")]
-    [CheckRoleBase(new[] {(int)BaseRole.GeneralAdmin })]
+    [Authorize]
+    [CheckRoleBase(new[] { (int)BaseRole.GeneralAdmin })]
 
     public class PermissionController : ControllerBase
     {
@@ -48,7 +48,7 @@ namespace AITechWebAPI.Controllers
             {
                 return BadRequest(requestBody);
             }
-            var result = await _PermissionRep.GetAllPermissionsAsync(requestBody.RoleId,requestBody.PermissionType ?? "", requestBody.PageIndex, requestBody.PageSize, requestBody.SearchText, requestBody.SortQuery);
+            var result = await _PermissionRep.GetAllPermissionsAsync(requestBody.RoleId,requestBody.PermissionType ?? "menu", requestBody.PageIndex, requestBody.PageSize, requestBody.SearchText, requestBody.SortQuery);
             if (result.Status)
             {
                 var resultVM = _mapper.Map<ListResultObject<PermissionVM>>(result);
