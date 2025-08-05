@@ -100,6 +100,7 @@ namespace AITechWebAPI.Controllers
                 ContactNumber = requestBody.ContactNumber,
                 StudentDetailsId = requestBody.StudentDetailsId,
                 Name = requestBody.Name,
+                OtherLangs = requestBody.OtherLangs ?? "",
             };
             var result = await _ParentRep.AddParentAsync(Parent);
             if (result.Status)
@@ -148,6 +149,7 @@ namespace AITechWebAPI.Controllers
                 ContactNumber = requestBody.ContactNumber,
                 StudentDetailsId = requestBody.StudentDetailsId,
                 Name = requestBody.Name,
+                OtherLangs = requestBody.OtherLangs ?? "",
             };
             result = await _ParentRep.EditParentAsync(Parent);
             if (result.Status)

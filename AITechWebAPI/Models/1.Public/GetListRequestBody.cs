@@ -11,5 +11,8 @@ namespace AITechWebAPI.Models.Public
         public int PageSize { get; set; }
         public string SearchText { get; set; } = "";
         public string SortQuery { get; set; } = "";
+
+        [Display(Name = "زبان")]
+        public string? Lang { get; set; } = "";
     }
 }

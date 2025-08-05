@@ -102,6 +102,8 @@ namespace AITechWebAPI.Controllers
                 Description = requestBody.Description ?? "",
                 Title = requestBody.Title,
                 UserId = requestBody.UserId,
+                OtherLangs = requestBody.OtherLangs ?? "",
+
             };
             var result = await _TeacherResumeRep.AddTeacherResumeAsync(TeacherResume);
             if (result.Status)
@@ -150,6 +152,8 @@ namespace AITechWebAPI.Controllers
                 Description = requestBody.Description ?? "",
                 Title = requestBody.Title,
                 UserId = requestBody.UserId,
+                OtherLangs = requestBody.OtherLangs ?? "",
+
             };
             result = await _TeacherResumeRep.EditTeacherResumeAsync(TeacherResume);
             if (result.Status)

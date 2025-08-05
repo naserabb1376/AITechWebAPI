@@ -13,10 +13,10 @@ using AITechDATA.Tools;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
-using AITechDATA.Models.City;
 using AutoMapper;
 using AITechWebAPI.ViewModels;
 using AITechDATA.CustomResponses;
+using AITechWebAPI.Models.City;
 
 namespace AITechWebAPI.Controllers
 {
@@ -101,6 +101,8 @@ namespace AITechWebAPI.Controllers
                 //Description = requestBody.Description,
                 UpdateDate = DateTime.Now.ToShamsi(),
                 DefaultCity = requestBody.DefaultCity,
+                OtherLangs = requestBody.OtherLangs ?? "",
+
             };
             var result = await _CityRep.AddCityAsync(City);
             if (result.Status)
@@ -149,6 +151,8 @@ namespace AITechWebAPI.Controllers
                 CityName = requestBody.CityName,
                 CityParentID = requestBody.ParentId,
                 //Description = requestBody.Description,
+                OtherLangs = requestBody.OtherLangs ?? "",
+
             };
             result = await _CityRep.EditCityAsync(City);
             if (result.Status)

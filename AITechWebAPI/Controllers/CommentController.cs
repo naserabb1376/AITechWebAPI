@@ -94,6 +94,8 @@ namespace AITechWebAPI.Controllers
                 Title = requestBody.Title,
                 CreatorId = requestBody.CreatorId ?? 0,
                 Description = requestBody.Description ?? "",
+                OtherLangs = requestBody.OtherLangs ?? "",
+
             };
             var result = await _CommentRep.AddCommentAsync(Comment);
             if (result.Status)
@@ -142,6 +144,8 @@ namespace AITechWebAPI.Controllers
                 Title = requestBody.Title,
                 CreatorId = requestBody.CreatorId ?? 0,
                 Description = requestBody.Description ?? "",
+                OtherLangs = requestBody.OtherLangs ?? "",
+
             };
             result = await _CommentRep.EditCommentAsync(Comment);
             if (result.Status)

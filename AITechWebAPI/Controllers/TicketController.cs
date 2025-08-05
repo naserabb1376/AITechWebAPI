@@ -100,6 +100,8 @@ namespace AITechWebAPI.Controllers
                 UserId = requestBody.UserId,
                 Description= requestBody.Description ??"",
                 Subject = requestBody.Subject,
+                OtherLangs = requestBody.OtherLangs ?? "",
+
             };
             var result = await _TicketRep.AddTicketAsync(Ticket);
             if (result.Status)
@@ -147,6 +149,8 @@ namespace AITechWebAPI.Controllers
                 UserId = requestBody.UserId,
                 Description = requestBody.Description ?? "",
                 Subject = requestBody.Subject,
+                OtherLangs = requestBody.OtherLangs ?? "",
+
             };
             result = await _TicketRep.EditTicketAsync(Ticket);
             if (result.Status)

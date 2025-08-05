@@ -8,5 +8,8 @@ namespace AITechWebAPI.Models.Public
         [Required(ErrorMessage = "لطفا {0} را وارد کنید")]
         [Range(1, long.MaxValue, ErrorMessage = "مقدار {0} باید بزرگتر از 0 باشد")]
         public long ID { get; set; }
+
+        [Display(Name = "زبان")]
+        public string? Lang { get; set; } = "";
     }
 }

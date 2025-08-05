@@ -1,23 +1,24 @@
-﻿using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.IdentityModel.Tokens;
-using AITechWebAPI.Models;
-using AITechWebAPI.Models.Public;
+﻿using AITechDATA.CustomResponses;
 using AITechDATA.DataLayer.Repositories;
 using AITechDATA.Domain;
 using AITechDATA.ResultObjects;
 using AITechDATA.Tools;
+using AITechWebAPI.Models;
+using AITechWebAPI.Models.Public;
+using AITechWebAPI.Models.User;
+using AITechWebAPI.Validations;
+using AITechWebAPI.ViewModels;
+using AutoMapper;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
+using System.Net;
 using System.Security.Claims;
 using System.Text;
-using AITechWebAPI.Models.User;
-using AITechDATA.CustomResponses;
-using System.Net;
-using AITechWebAPI.Validations;
-using AutoMapper;
-using AITechWebAPI.ViewModels;
+using static AITechWebAPI.Tools.ToolBox;
 
 namespace AITechWebAPI.Controllers
 {
@@ -25,7 +26,7 @@ namespace AITechWebAPI.Controllers
     [ApiController]
     [Authorize]
     [Produces("application/json")]
-    [CheckRoleBase(new[] { 3, 4 })]
+    [CheckRoleBase(new[] { (int)BaseRole.MiddleAdmin, (int)BaseRole.GeneralAdmin })]
 
 
     public class UserController : ControllerBase
@@ -148,6 +149,7 @@ namespace AITechWebAPI.Controllers
                 Username = requestBody.UserName,
                 AddressId = (requestBody.AdressId > 0) ? requestBody.AdressId : null,
                 FullName = requestBody.FullName,
+                OtherLangs = requestBody.OtherLangs ?? "",
                 PasswordHash = requestBody.Password.ToHash(),
                 RoleId = requestBody.RoleId,
 
@@ -202,7 +204,8 @@ namespace AITechWebAPI.Controllers
                 FullName = requestBody.FullName ?? theRow.Result.FullName,
                 PasswordHash = requestBody.Password?.ToHash() ?? theRow.Result.PasswordHash,
                 RoleId = requestBody.RoleId ?? theRow.Result.RoleId,
-                
+                OtherLangs = requestBody.OtherLangs ?? "",
+
             };
             result = await _UserRep.EditUserAsync(User);
             if (result.Status)
@@ -251,6 +254,8 @@ namespace AITechWebAPI.Controllers
                     // Description = requestBody.AddressDescription,
                     CreateDate = DateTime.Now.ToShamsi(),
                     UpdateDate = DateTime.Now.ToShamsi(),
+                    OtherLangs = requestBody.OtherLangs ?? "",
+
 
                 };
                 result = await _addressRep.AddAddressAsync(address);
@@ -271,6 +276,8 @@ namespace AITechWebAPI.Controllers
                     FullName = requestBody.FullName,
                     PasswordHash = requestBody.Password.ToHash(),
                     RoleId = requestBody.RoleId,
+                    OtherLangs = requestBody.OtherLangs ?? "",
+
                 };
                 result = await _UserRep.AddUserAsync(User);
             }
@@ -333,6 +340,8 @@ namespace AITechWebAPI.Controllers
                     // Description = requestBody.AddressDescription,
                     CreateDate = theRow.Result.Address.CreateDate,
                     UpdateDate = DateTime.Now.ToShamsi(),
+                    OtherLangs = requestBody.OtherLangs ?? "",
+
 
                 };
                 result = await _addressRep.AddAddressAsync(address);
@@ -352,6 +361,7 @@ namespace AITechWebAPI.Controllers
                     FullName = requestBody.FullName,
                     PasswordHash = requestBody.Password.ToHash(),
                     RoleId = requestBody.RoleId,
+                    OtherLangs = requestBody.OtherLangs ?? "",
                 };
                 result = await _UserRep.EditUserAsync(User);
             }

@@ -112,6 +112,7 @@ namespace AITechWebAPI.Controllers
                 AddressPostalCode = requestBody.AddressPostalCode,
                 AddressStreet = requestBody.AddressStreet,
                 //Description = requestBody.AddressDescription,
+                OtherLangs = requestBody.OtherLangs ?? "",
             };
             var result = await _AddressRep.AddAddressAsync(Address);
             if (result.Status)
@@ -169,6 +170,8 @@ namespace AITechWebAPI.Controllers
                 AddressPostalCode = requestBody.AddressPostalCode,
                 AddressStreet = requestBody.AddressStreet,
                 //Description = requestBody.AddressDescription,
+                OtherLangs = requestBody.OtherLangs ?? "",
+
             };
              result = await _AddressRep.EditAddressAsync(Address);
             if (result.Status)

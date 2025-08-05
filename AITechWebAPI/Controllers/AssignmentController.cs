@@ -102,6 +102,8 @@ namespace AITechWebAPI.Controllers
                 SessionAssignmentId = x.SessionAssignmentId,
                 Title = x.Title,
                 UserId = x.UserId,
+                OtherLangs = x.OtherLangs ?? "",
+
             }).ToList();
             
             var result = await _AssignmentRep.AddAssignmentsAsync(Assignments);
@@ -158,6 +160,8 @@ namespace AITechWebAPI.Controllers
                     SubmissionDate = body.SubmissionDate.StringToDate(),
                     UserId = body.UserId,
                     Title = body.Title,
+                    OtherLangs = body.OtherLangs ?? "",
+
                 };
 
                 Assignments.Add(Assignment);

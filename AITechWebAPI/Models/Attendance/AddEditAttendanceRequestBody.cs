@@ -19,5 +19,9 @@ namespace AITechWebAPI.Models.Attendance
         [Display(Name = "وضعیت حضور")]
         [Required(ErrorMessage = "لطفا {0} را وارد کنید")]
         public bool IsPresent { get; set; }
+
+        [Display(Name = "زبان های دیگر")]
+        public string? OtherLangs { get; set; } = "";
+
     }
 }

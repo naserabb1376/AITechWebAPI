@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace AITechDATA.Models.City
+namespace AITechWebAPI.Models.City
 {
     public class AddEditCiyRequestBody
     {
@@ -11,7 +11,10 @@ namespace AITechDATA.Models.City
         public string CityName { get; set; }
         public long ParentId { get; set; } = 0;
         public bool DefaultCity { get; set; } = false;
-       // public string? Description { get; set; }
+
+        [Display(Name = "زبان های دیگر")]
+        public string? OtherLangs { get; set; } = "";
+
 
     }
 }

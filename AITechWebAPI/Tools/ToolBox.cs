@@ -17,6 +17,14 @@ namespace AITechWebAPI.Tools
     {
         private static IConfigurationRoot Configuration { get; }
 
+        public enum BaseRole: int
+        {
+            Student = 1,
+            Teacher = 2,
+            MiddleAdmin = 3,
+            GeneralAdmin = 4,
+            ContentAdmin = 7,
+        }
         static ToolBox()
         {
             var builder = new ConfigurationBuilder()
@@ -89,7 +97,7 @@ namespace AITechWebAPI.Tools
         }
 
         // تابع تولید Access Token (JWT)
-        public static string GenerateAccessToken(User login)
+        public static string GenerateAccessToken(User login,string permissionsJson)
         {
             var key = Configuration["Jwt:Key"];
             var issuer = Configuration["Jwt:Issuer"];
@@ -97,14 +105,7 @@ namespace AITechWebAPI.Tools
 
             var securityKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(key));
             var signingCredentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
-            var claims = new List<Claim>
-            {
-            new Claim(JwtRegisteredClaimNames.Sub, login.Username),
-                new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-            new Claim("userId", login.ID.ToString()),
-            new Claim("FullName", login.FullName),
-            new Claim("Role", login.RoleId.ToString())
-            };
+            List<Claim> claims = SetClaims(login,permissionsJson);
 
             var token = new JwtSecurityToken(
                 issuer,
@@ -118,6 +119,18 @@ namespace AITechWebAPI.Tools
             return tokenString;
         }
 
+        private static List<Claim> SetClaims(User login, string permissionsJson)
+        {
+            return new List<Claim>
+            {
+            new Claim(JwtRegisteredClaimNames.Sub, login.Username),
+                new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+            new Claim("userId", login.ID.ToString()),
+            new Claim("FullName", login.FullName),
+            new Claim("Role", login.RoleId.ToString()),
+            new Claim("PermissionsJson", permissionsJson)
+            };
+        }
 
         private static string GenerateResetPasswordToken(long loginId)
         {

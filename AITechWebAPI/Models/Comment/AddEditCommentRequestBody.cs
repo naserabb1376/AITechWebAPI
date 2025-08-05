@@ -28,5 +28,9 @@ namespace AITechWebAPI.Models.Comment
 
         [Display(Name = "کاربر ایجاد کننده")]
         public long? CreatorId { get; set; }
+
+        [Display(Name = "زبان های دیگر")]
+        public string? OtherLangs { get; set; } = "";
+
     }
 }

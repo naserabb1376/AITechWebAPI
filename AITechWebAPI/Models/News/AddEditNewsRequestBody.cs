@@ -31,5 +31,9 @@ namespace AITechWebAPI.Models.News
 
         [Display(Name = "توضیحات")]
         public string? Note { get; set; }
+
+        [Display(Name = "زبان های دیگر")]
+        public string? OtherLangs { get; set; } = "";
+
     }
 }

@@ -26,5 +26,10 @@ namespace AITechWebAPI.Models.Assignment
         
         [Display(Name = "تاریخ ارسال تمرین")]
         public string? SubmissionDate { get; set; }
+
+        [Display(Name = "زبان های دیگر")]
+        public string? OtherLangs { get; set; } = "";
+
+
     }
 }

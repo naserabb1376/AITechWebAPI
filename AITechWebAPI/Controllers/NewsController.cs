@@ -1,24 +1,25 @@
-﻿using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.IdentityModel.Tokens;
-using AITechWebAPI.Models;
-using AITechWebAPI.Models.News;
-using AITechWebAPI.Models.Public;
+﻿using AITechDATA.CustomResponses;
 using AITechDATA.DataLayer.Repositories;
 using AITechDATA.DataLayer.Services;
 using AITechDATA.Domain;
 using AITechDATA.ResultObjects;
 using AITechDATA.Tools;
+using AITechWebAPI.Models;
+using AITechWebAPI.Models.News;
+using AITechWebAPI.Models.News;
+using AITechWebAPI.Models.Public;
+using AITechWebAPI.Validations;
+using AITechWebAPI.ViewModels;
+using AutoMapper;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
-using AITechWebAPI.Models.News;
-using AITechDATA.CustomResponses;
-using AITechWebAPI.Validations;
-using AutoMapper;
-using AITechWebAPI.ViewModels;
+using static AITechWebAPI.Tools.ToolBox;
 
 namespace AITechWebAPI.Controllers
 {
@@ -26,7 +27,7 @@ namespace AITechWebAPI.Controllers
     [ApiController]
     [Authorize]
     [Produces("application/json")]
-    [CheckRoleBase(new[] { 3, 4, 7 })]
+    [CheckRoleBase(new[] { (int)BaseRole.MiddleAdmin, (int)BaseRole.GeneralAdmin, (int)BaseRole.ContentAdmin })]
 
 
     public class NewsController : ControllerBase
@@ -110,6 +111,8 @@ namespace AITechWebAPI.Controllers
                 Keywords = requestBody.Keywords,
                 Title = requestBody.Title,
                 Note = requestBody.Note ?? "",
+                OtherLangs = requestBody.OtherLangs ?? "",
+
             };
             var result = await _NewsRep.AddNewsAsync(News);
             if (result.Status)
@@ -160,7 +163,9 @@ namespace AITechWebAPI.Controllers
                 PublishDate = requestBody.PublishDate.StringToDate(),
                 Keywords = requestBody.Keywords,
                 Title = requestBody.Title,
-                Note = requestBody.Note ?? ""
+                Note = requestBody.Note ?? "",
+                OtherLangs = requestBody.OtherLangs ?? "",
+
             };
             result = await _NewsRep.EditNewsAsync(News);
             if (result.Status)

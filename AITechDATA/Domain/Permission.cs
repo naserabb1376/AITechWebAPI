@@ -14,6 +14,7 @@ namespace AITechDATA.Domain
         public string Routename { get; set; }
         public string Description { get; set; } // توضیحات دسترسی
         public string Description_EN { get; set; } // توضیحات دسترسی
+        public string? PermissionType { get; set; } // نوع دسترسی
         public ICollection<PermissionRole> PermissionRoles { get; set; } // دسترسی‌های مرتبط با نقش
 
         //public ICollection<Role> Roles { get; set; } // نقش‌های مرتبط با دسترسی

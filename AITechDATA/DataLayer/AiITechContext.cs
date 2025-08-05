@@ -46,6 +46,9 @@ namespace AITechDATA.DataLayer
         public DbSet<User> Users { get; set; }
         public DbSet<Token> Tokens { get; set; }
         public DbSet<Content> Contents { get; set; }
+        public DbSet<LinkedEntity> LinkedEntities { get; set; }
+        public DbSet<Article> Articles { get; set; }
+        public DbSet<JobRequest> JobRequests { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {

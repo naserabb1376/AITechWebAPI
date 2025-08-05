@@ -12,5 +12,9 @@ namespace AITechWebAPI.Models.Category
 
         [Display(Name = "شرح دسته بندی")]
         public string? CategoryDescription { get; set; }
+
+        [Display(Name = "زبان های دیگر")]
+        public string? OtherLangs { get; set; } = "";
+
     }
 }
