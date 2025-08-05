@@ -57,6 +57,9 @@ namespace AITechWebAPI.Models.User
         [RegularExpression(@"^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{6,20}$", ErrorMessage = "رمز عبور باید شامل حرف و عدد باشد")]
         [Required(ErrorMessage = "لطفا {0} را وارد کنید")]
         public string Password { get; set; }
+
+        [Display(Name = "زبان های دیگر")]
+        public string? OtherLangs { get; set; } = "";
     }
 
     public class AddEditUserProRequestBody
@@ -112,6 +115,10 @@ namespace AITechWebAPI.Models.User
         [Required(ErrorMessage = "لطفا {0} را وارد کنید")]
         [Range(1, long.MaxValue, ErrorMessage = "مقدار {0} باید بزرگتر از 0 باشد")]
         public long RoleId { get; set; }
+
+        [Display(Name = "زبان های دیگر")]
+        public string? OtherLangs { get; set; } = "";
+
     }
 
     public class EditUserRequestBody
@@ -153,5 +160,9 @@ namespace AITechWebAPI.Models.User
         [DataType(DataType.Password)] //Hide Characters
         [RegularExpression(@"^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{6,20}$", ErrorMessage = "رمز عبور باید شامل حرف و عدد باشد")]
         public string? Password { get; set; }
+
+        [Display(Name = "زبان های دیگر")]
+        public string? OtherLangs { get; set; } = "";
+
     }
 }

@@ -21,5 +21,10 @@ namespace AITechWebAPI.Models.AdminReport
 
         [Display(Name = "تاریخ گزارش")]
         public string? ReportDate { get; set; } // تاریخ گزارش
+
+        [Display(Name = "زبان های دیگر")]
+        public string? OtherLangs { get; set; } = "";
+
+
     }
 }

@@ -103,7 +103,8 @@ namespace AITechWebAPI.Controllers
                 PhoneNumber = requestBody.PhoneNumber,
                 GroupId = requestBody.GroupId,
                 RegistrationDate = requestBody.RegistrationDate.StringToDate(),
-               // Description = requestBody.Description,
+                OtherLangs = requestBody.OtherLangs ?? "",
+                // Description = requestBody.Description,
             };
             var result = await _PreRegistrationRep.AddPreRegistrationAsync(PreRegistration);
             if (result.Status)
@@ -153,6 +154,7 @@ namespace AITechWebAPI.Controllers
                 GroupId = requestBody.GroupId,
                 RegistrationDate = requestBody.RegistrationDate.StringToDate(),
                 ID = requestBody.ID,
+                OtherLangs = requestBody.OtherLangs ?? "",
                 // Description = requestBody.Description,
 
 

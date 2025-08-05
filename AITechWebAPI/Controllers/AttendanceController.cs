@@ -100,6 +100,7 @@ namespace AITechWebAPI.Controllers
                 SessionId = x.SessionId,
                 IsPresent = x.IsPresent,
                 UserId = x.UserId,
+
             }).ToList();
             
             var result = await _AttendanceRep.AddAttendancesAsync(Attendances);

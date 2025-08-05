@@ -99,7 +99,9 @@ namespace AITechWebAPI.Controllers
                 AdminId = requestBody.UserId,
                 TicketId= requestBody.TicketId,
                 IsAdminResponse = requestBody.IsAdminResponse,
-                MessageContent = requestBody.MessageContent
+                MessageContent = requestBody.MessageContent,
+                OtherLangs = requestBody.OtherLangs ?? "",
+
             };
             var result = await _TicketMessageRep.AddTicketMessageAsync(TicketMessage);
             if (result.Status)
@@ -148,6 +150,8 @@ namespace AITechWebAPI.Controllers
                 TicketId = requestBody.TicketId,
                 IsAdminResponse = requestBody.IsAdminResponse,
                 MessageContent = requestBody.MessageContent,
+                OtherLangs = requestBody.OtherLangs ?? "",
+
             };
             result = await _TicketMessageRep.EditTicketMessageAsync(TicketMessage);
             if (result.Status)

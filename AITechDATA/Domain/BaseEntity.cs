@@ -15,7 +15,6 @@ namespace AITechDATA.Domain
         [Display(Name = "تاریخ بروزرسانی")]
         public DateTime? UpdateDate { get; set; } = DateTime.Now.ToShamsi();
 
-        //[Display(Name = "توضیحات")]
-        //public string? Description { get; set; }
+        public string? OtherLangs { get; set; }
     }
 }

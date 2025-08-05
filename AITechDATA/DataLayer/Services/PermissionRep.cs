@@ -74,28 +74,30 @@ namespace AITechDATA.DataLayer.Services
             return result;
         }
 
-        public async Task<ListResultObject<Permission>> GetAllPermissionsAsync(long roleId = 0, int pageIndex = 1, int pageSize = 20, string searchText = "", string sortQuery = "")
+        public async Task<ListResultObject<Permission>> GetAllPermissionsAsync(long roleId = 0,string permissionType="", int pageIndex = 1, int pageSize = 20, string searchText = "", string sortQuery = "")
         {
             ListResultObject<Permission> results = new ListResultObject<Permission>();
             try
             {
-                IQueryable<Permission> query;
+                IQueryable<Permission> query = _context.Permissions.AsNoTracking();
                 if (roleId > 0)
                 {
-                    query = _context.PermissionRoles.Where(x => x.RoleId == roleId).Select(x => x.Permission)
-                   .AsNoTracking()
-                   .Where(x =>
-                        (!string.IsNullOrEmpty(x.Name) && x.Name.Contains(searchText)) ||
-                       (!string.IsNullOrEmpty(x.Description) && x.Description.Contains(searchText))
-                   );
+                    query = _context.PermissionRoles.Where(x => x. RoleId== roleId).Select(x => x.Permission)
+                   .AsNoTracking();
+                }
+
+                if (!string.IsNullOrEmpty(permissionType))
+                {
+                    query = query.Where(x => x.PermissionType.ToLower() == permissionType.ToLower());
                 }
                 else
                 {
-                    query = _context.Permissions
-                  .AsNoTracking()
-                  .Where(x =>
-                      (!string.IsNullOrEmpty(x.Name) && x.Name.Contains(searchText)) ||
-                      (!string.IsNullOrEmpty(x.Description) && x.Description.Contains(searchText))
+                    query = query.Where(x =>
+                      (!string.IsNullOrEmpty(x.Name) && x.Name.Contains(searchText))
+                   || (!string.IsNullOrEmpty(x.PermissionType) && x.PermissionType.Contains(searchText))
+                   || (!string.IsNullOrEmpty(x.Name_EN) && x.Name_EN.Contains(searchText))
+                   || (!string.IsNullOrEmpty(x.Description_EN) && x.Description_EN.Contains(searchText))
+                   || (!string.IsNullOrEmpty(x.Description) && x.Description.Contains(searchText))
                   );
                 }
 

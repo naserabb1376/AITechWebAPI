@@ -22,5 +22,9 @@ namespace AITechWebAPI.Models.TicketMessage
         public long UserId { get; set; }
 
         public bool IsAdminResponse { get; set; }
+
+        [Display(Name = "زبان های دیگر")]
+        public string? OtherLangs { get; set; } = "";
+
     }
 }

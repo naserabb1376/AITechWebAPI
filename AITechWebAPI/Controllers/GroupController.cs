@@ -1,22 +1,23 @@
-﻿using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.IdentityModel.Tokens;
-using AITechWebAPI.Models;
-using AITechWebAPI.Models.Group;
-using AITechWebAPI.Models.Public;
-using AITechDATA.DataLayer.Repositories;
+﻿using AITechDATA.DataLayer.Repositories;
 using AITechDATA.DataLayer.Services;
 using AITechDATA.Domain;
 using AITechDATA.ResultObjects;
 using AITechDATA.Tools;
+using AITechWebAPI.Models;
+using AITechWebAPI.Models.Group;
+using AITechWebAPI.Models.Public;
+using AITechWebAPI.Validations;
+using AITechWebAPI.ViewModels;
+using AutoMapper;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
-using AutoMapper;
-using AITechWebAPI.ViewModels;
-using AITechWebAPI.Validations;
+using static AITechWebAPI.Tools.ToolBox;
 
 namespace AITechWebAPI.Controllers
 {
@@ -24,7 +25,7 @@ namespace AITechWebAPI.Controllers
     [ApiController]
     [Produces("application/json")]
     [Authorize]
-    [CheckRoleBase(new[] { 3, 4, 7 })]
+    [CheckRoleBase(new[] { (int)BaseRole.MiddleAdmin, (int)BaseRole.GeneralAdmin, (int)BaseRole.ContentAdmin })]
 
     public class GroupController : ControllerBase
     {
@@ -110,6 +111,7 @@ namespace AITechWebAPI.Controllers
                 Fee = requestBody.GroupFee,
                 Name = requestBody.Name,
                 Note = requestBody.Note ?? "",
+                OtherLangs = requestBody.OtherLangs ?? "",
                 Status = (GroupStatus)Enum.Parse(typeof(GroupStatus), requestBody.GroupStatus),
             };
             var result = await _GroupRep.AddGroupAsync(Group);
@@ -163,6 +165,7 @@ namespace AITechWebAPI.Controllers
                 Fee = requestBody.GroupFee,
                 Name = requestBody.Name,
                 Note = requestBody.Note ??"",
+                OtherLangs = requestBody.OtherLangs ?? "",
                 Status = (GroupStatus)Enum.Parse(typeof(GroupStatus), requestBody.GroupStatus),
             };
             result = await _GroupRep.EditGroupAsync(Group);

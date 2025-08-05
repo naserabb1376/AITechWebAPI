@@ -50,6 +50,9 @@ namespace AITechDATA.Migrations
                     b.Property<DateTime?>("CreateDate")
                         .HasColumnType("datetime2");
 
+                    b.Property<string>("OtherLangs")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<DateTime?>("UpdateDate")
                         .HasColumnType("datetime2");
 
@@ -78,6 +81,9 @@ namespace AITechDATA.Migrations
                     b.Property<DateTime?>("CreateDate")
                         .HasColumnType("datetime2");
 
+                    b.Property<string>("OtherLangs")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<DateTime>("ReportDate")
                         .HasColumnType("datetime2");
 
@@ -95,6 +101,44 @@ namespace AITechDATA.Migrations
                     b.ToTable("AdminReports");
                 });
 
+            modelBuilder.Entity("AITechDATA.Domain.Article", b =>
+                {
+                    b.Property<long>("ID")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("ID"));
+
+                    b.Property<long>("CategoryId")
+                        .HasColumnType("bigint");
+
+                    b.Property<DateTime?>("CreateDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Note")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("OtherLangs")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("UpdateDate")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("ID");
+
+                    b.HasIndex("CategoryId");
+
+                    b.ToTable("Articles");
+                });
+
             modelBuilder.Entity("AITechDATA.Domain.Assignment", b =>
                 {
                     b.Property<long>("ID")
@@ -108,6 +152,9 @@ namespace AITechDATA.Migrations
 
                     b.Property<string>("Description")
                         .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("OtherLangs")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<long>("SessionAssignmentId")
@@ -149,6 +196,9 @@ namespace AITechDATA.Migrations
                     b.Property<bool>("IsPresent")
                         .HasColumnType("bit");
 
+                    b.Property<string>("OtherLangs")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<long>("SessionId")
                         .HasColumnType("bigint");
 
@@ -185,6 +235,9 @@ namespace AITechDATA.Migrations
                     b.Property<DateTime?>("CreateDate")
                         .HasColumnType("datetime2");
 
+                    b.Property<string>("OtherLangs")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<DateTime?>("UpdateDate")
                         .HasColumnType("datetime2");
 
@@ -213,6 +266,9 @@ namespace AITechDATA.Migrations
 
                     b.Property<bool>("DefaultCity")
                         .HasColumnType("bit");
+
+                    b.Property<string>("OtherLangs")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime?>("UpdateDate")
                         .HasColumnType("datetime2");
@@ -246,6 +302,9 @@ namespace AITechDATA.Migrations
 
                     b.Property<long>("ForeignKeyId")
                         .HasColumnType("bigint");
+
+                    b.Property<string>("OtherLangs")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<long>("ParentId")
                         .HasColumnType("bigint");
@@ -286,6 +345,9 @@ namespace AITechDATA.Migrations
                     b.Property<bool>("HaveImage")
                         .HasColumnType("bit");
 
+                    b.Property<string>("OtherLangs")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<int?>("Priority")
                         .HasColumnType("int");
 
@@ -316,6 +378,9 @@ namespace AITechDATA.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Note")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("OtherLangs")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Title")
@@ -355,6 +420,9 @@ namespace AITechDATA.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Note")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("OtherLangs")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Title")
@@ -411,6 +479,9 @@ namespace AITechDATA.Migrations
                     b.Property<long>("ForeignKeyId")
                         .HasColumnType("bigint");
 
+                    b.Property<string>("OtherLangs")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<DateTime?>("UpdateDate")
                         .HasColumnType("datetime2");
 
@@ -451,6 +522,9 @@ namespace AITechDATA.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Note")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("OtherLangs")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime>("StartDate")
@@ -510,6 +584,9 @@ namespace AITechDATA.Migrations
                     b.Property<long>("ForeignKeyId")
                         .HasColumnType("bigint");
 
+                    b.Property<string>("OtherLangs")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<int?>("Priority")
                         .HasColumnType("int");
 
@@ -519,6 +596,96 @@ namespace AITechDATA.Migrations
                     b.HasKey("ID");
 
                     b.ToTable("Images");
+                });
+
+            modelBuilder.Entity("AITechDATA.Domain.JobRequest", b =>
+                {
+                    b.Property<long>("ID")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("ID"));
+
+                    b.Property<string>("CourseTitle")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("CreateDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Description")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Email")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("FullName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("OtherLangs")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("PhoneNumber")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("RequestedPosition")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("UpdateDate")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("ID");
+
+                    b.ToTable("JobRequests");
+                });
+
+            modelBuilder.Entity("AITechDATA.Domain.LinkedEntity", b =>
+                {
+                    b.Property<long>("ID")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("ID"));
+
+                    b.Property<DateTime?>("CreateDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<long>("CreatorId")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("EntityName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<long>("ForeignKeyId")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("LinkType")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<long>("LinkedEntityId")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("OtherLangs")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("Priority")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("UpdateDate")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("ID");
+
+                    b.ToTable("LinkedEntities");
                 });
 
             modelBuilder.Entity("AITechDATA.Domain.Log", b =>
@@ -538,6 +705,9 @@ namespace AITechDATA.Migrations
 
                     b.Property<DateTime>("LogTime")
                         .HasColumnType("datetime2");
+
+                    b.Property<string>("OtherLangs")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime?>("UpdateDate")
                         .HasColumnType("datetime2");
@@ -563,6 +733,9 @@ namespace AITechDATA.Migrations
 
                     b.Property<string>("Method")
                         .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("OtherLangs")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Token")
@@ -602,6 +775,9 @@ namespace AITechDATA.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Note")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("OtherLangs")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime>("PublishDate")
@@ -646,6 +822,9 @@ namespace AITechDATA.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("OtherLangs")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<DateTime?>("UpdateDate")
                         .HasColumnType("datetime2");
 
@@ -680,6 +859,9 @@ namespace AITechDATA.Migrations
 
                     b.Property<string>("Name")
                         .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("OtherLangs")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<long>("StudentDetailsId")
@@ -726,6 +908,12 @@ namespace AITechDATA.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("OtherLangs")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("PermissionType")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("Routename")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -748,6 +936,9 @@ namespace AITechDATA.Migrations
 
                     b.Property<DateTime?>("CreateDate")
                         .HasColumnType("datetime2");
+
+                    b.Property<string>("OtherLangs")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<long>("PerrmissionId")
                         .HasColumnType("bigint");
@@ -789,6 +980,9 @@ namespace AITechDATA.Migrations
                     b.Property<long>("GroupId")
                         .HasColumnType("bigint");
 
+                    b.Property<string>("OtherLangs")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("PhoneNumber")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -824,6 +1018,9 @@ namespace AITechDATA.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("OtherLangs")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<DateTime?>("UpdateDate")
                         .HasColumnType("datetime2");
 
@@ -845,6 +1042,9 @@ namespace AITechDATA.Migrations
 
                     b.Property<long>("GroupId")
                         .HasColumnType("bigint");
+
+                    b.Property<string>("OtherLangs")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime>("SessionDate")
                         .HasColumnType("datetime2");
@@ -876,6 +1076,9 @@ namespace AITechDATA.Migrations
 
                     b.Property<DateTime>("DueDate")
                         .HasColumnType("datetime2");
+
+                    b.Property<string>("OtherLangs")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<long>("SessionId")
                         .HasColumnType("bigint");
@@ -909,6 +1112,9 @@ namespace AITechDATA.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("OtherLangs")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<long?>("ParentId")
                         .HasColumnType("bigint");
 
@@ -936,6 +1142,9 @@ namespace AITechDATA.Migrations
 
                     b.Property<DateTime?>("CreateDate")
                         .HasColumnType("datetime2");
+
+                    b.Property<string>("OtherLangs")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime?>("UpdateDate")
                         .HasColumnType("datetime2");
@@ -969,6 +1178,9 @@ namespace AITechDATA.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("OtherLangs")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("Title")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -999,6 +1211,9 @@ namespace AITechDATA.Migrations
 
                     b.Property<string>("Description")
                         .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("OtherLangs")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Subject")
@@ -1037,6 +1252,9 @@ namespace AITechDATA.Migrations
 
                     b.Property<string>("MessageContent")
                         .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("OtherLangs")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<long>("TicketId")
@@ -1116,6 +1334,9 @@ namespace AITechDATA.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("OtherLangs")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("PasswordHash")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -1153,6 +1374,9 @@ namespace AITechDATA.Migrations
                     b.Property<DateTime?>("CreateDate")
                         .HasColumnType("datetime2");
 
+                    b.Property<string>("OtherLangs")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<int>("PeresentType")
                         .HasColumnType("int");
 
@@ -1185,6 +1409,9 @@ namespace AITechDATA.Migrations
                     b.Property<long>("GroupId")
                         .HasColumnType("bigint");
 
+                    b.Property<string>("OtherLangs")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<DateTime?>("UpdateDate")
                         .HasColumnType("datetime2");
 
@@ -1216,6 +1443,9 @@ namespace AITechDATA.Migrations
 
                     b.Property<long>("GroupId")
                         .HasColumnType("bigint");
+
+                    b.Property<string>("OtherLangs")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime>("PaymentDate")
                         .HasColumnType("datetime2");
@@ -1255,6 +1485,17 @@ namespace AITechDATA.Migrations
                         .IsRequired();
 
                     b.Navigation("Admin");
+                });
+
+            modelBuilder.Entity("AITechDATA.Domain.Article", b =>
+                {
+                    b.HasOne("AITechDATA.Domain.Category", "Category")
+                        .WithMany()
+                        .HasForeignKey("CategoryId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Category");
                 });
 
             modelBuilder.Entity("AITechDATA.Domain.Assignment", b =>

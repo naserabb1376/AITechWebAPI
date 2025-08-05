@@ -1,19 +1,22 @@
-﻿using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.IdentityModel.Tokens;
-using AITechWebAPI.Tools;
-using AITechDATA.DataLayer.Repositories;
+﻿using AITechDATA.DataLayer.Repositories;
 using AITechDATA.Domain;
 using AITechDATA.ResultObjects;
 using AITechDATA.Tools;
+using AITechWebAPI.Models.Authenticate;
+using AITechWebAPI.Tools;
+using AITechWebAPI.ViewModels;
+using AutoMapper;
+using Azure.Core;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.HttpResults;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.IdentityModel.Tokens;
+using Newtonsoft.Json;
+using Repositories;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
-using Microsoft.AspNetCore.Http.HttpResults;
-using Azure.Core;
-using Repositories;
-using AITechWebAPI.Models.Authenticate;
 
 namespace AITechWebAPI.Controllers
 {
@@ -28,8 +31,10 @@ namespace AITechWebAPI.Controllers
         private readonly IAddressRep _addressRep;
         private readonly ILogRep _logRep;
         private readonly ITokenRep _tokenRep;
+        private readonly IPermissionRep _permissionRep;
+        private readonly IMapper _mapper;
 
-        public AuthenticationController(IConfiguration configuration,ILoginMethodRep loginRep, IUserRep userRep,IAddressRep addressRep,ILogRep logRep,ITokenRep tokenRep)
+        public AuthenticationController(IConfiguration configuration,ILoginMethodRep loginRep, IUserRep userRep,IAddressRep addressRep,ILogRep logRep,ITokenRep tokenRep,IPermissionRep permissionRep,IMapper mapper)
         {
             _configuration = configuration;
             _loginRep = loginRep;
@@ -37,6 +42,8 @@ namespace AITechWebAPI.Controllers
             _addressRep = addressRep;
             _logRep = logRep;
             _tokenRep = tokenRep;
+            _permissionRep = permissionRep;
+            _mapper = mapper;  
         }
 
         [HttpPost("Authenticate")]
@@ -82,7 +89,9 @@ namespace AITechWebAPI.Controllers
                 if (authenticateResult.Status)
                 {
                     var refreshToken = ToolBox.GenerateToken(); // تولید رفرش توکن
-                    var accessToken = ToolBox.GenerateAccessToken(authenticateResult.Result); // تولید رفرش توکن
+                    var permissionObj = await _permissionRep.GetAllPermissionsAsync(authenticateResult.Result.RoleId, "action", 1, 0);
+                    var permissionsJson = JsonConvert.SerializeObject(permissionObj.Results.Select(x => x.Routename).ToList()).ToHash();
+                    var accessToken = ToolBox.GenerateAccessToken(authenticateResult.Result,permissionsJson); // تولید رفرش توکن
                     var refreshTokenExpiryDate = DateTime.Now.ToShamsi().AddDays(30); // تنظیم تاریخ انقضای رفرش توکن برای 30 روز
 
 
@@ -106,7 +115,7 @@ namespace AITechWebAPI.Controllers
                         {
                             RefreshToken = refreshToken, // بازگرداندن رفرش توکن
                             AccessToken = accessToken, // بازگرداندن اکسس توکن
-                            User = authenticateResult.Result,
+                            User = _mapper.Map<UserVM>(authenticateResult.Result),
                         };
 
                         LoginMethod loginMethod = new LoginMethod()
@@ -192,7 +201,9 @@ namespace AITechWebAPI.Controllers
             {
                 var user = await _userRep.GetUserByIdAsync(refreshTokenRecord.Result.UserId);
                 var refreshToken = ToolBox.GenerateToken(); // تولید رفرش توکن
-                var accessToken = ToolBox.GenerateAccessToken(user.Result); // تولید رفرش توکن
+                var permissionObj = await _permissionRep.GetAllPermissionsAsync(user.Result.RoleId,"action",1,0);
+                var permissionsJson = JsonConvert.SerializeObject(permissionObj.Results.Select(x => x.Routename).ToList()).ToHash();
+                var accessToken = ToolBox.GenerateAccessToken(user.Result,permissionsJson); // تولید رفرش توکن
                 var refreshTokenExpiryDate = DateTime.Now.ToShamsi().AddDays(30); // تنظیم تاریخ انقضای رفرش توکن برای 30 روز
 
 

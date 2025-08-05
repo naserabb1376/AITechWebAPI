@@ -13,5 +13,9 @@ namespace AITechWebAPI.Models.Role
         [Display(Name = "شرح دسترسی")]
         [Required(ErrorMessage = "لطفا {0} را وارد کنید")]
         public string Description { get; set; }
+
+        [Display(Name = "زبان های دیگر")]
+        public string? OtherLangs { get; set; } = "";
+
     }
 }

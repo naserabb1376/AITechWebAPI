@@ -10,5 +10,9 @@ namespace AITechWebAPI.Models.Setting
 
         [Display(Name = "کلید")]
         public string Key { get; set; } = "";
+
+        [Display(Name = "زبان")]
+        public string? Lang { get; set; } = "";
+
     }
 }

@@ -99,6 +99,7 @@ namespace AITechWebAPI.Controllers
                 DueDate = requestBody.DueDate.StringToDate(),
                 Title = requestBody.Title,
                 SessionId = requestBody.SessionId,
+                OtherLangs = requestBody.OtherLangs ?? "",
             };
             var result = await _SessionAssignmentRep.AddSessionAssignmentAsync(SessionAssignment);
             if (result.Status)
@@ -147,6 +148,8 @@ namespace AITechWebAPI.Controllers
                 DueDate = requestBody.DueDate.StringToDate(),
                 Title = requestBody.Title,
                 SessionId = requestBody.SessionId,
+                OtherLangs = requestBody.OtherLangs ?? "",
+
             };
             result = await _SessionAssignmentRep.EditSessionAssignmentAsync(SessionAssignment);
             if (result.Status)

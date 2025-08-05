@@ -103,6 +103,8 @@ namespace AITechWebAPI.Controllers
                 Key = requestBody.Key,
                 Value = requestBody.Value,
                 ParentId = requestBody.ParentId,
+                OtherLangs = requestBody.OtherLangs ?? "",
+
             };
             var result = await _SettingRep.AddSettingAsync(Setting);
             if (result.Status)
@@ -150,6 +152,8 @@ namespace AITechWebAPI.Controllers
                 Key = requestBody.Key,
                 Value = requestBody.Value,
                 ParentId = requestBody.ParentId,
+                OtherLangs = requestBody.OtherLangs ?? "",
+
             };
             result = await _SettingRep.EditSettingAsync(Setting);
             if (result.Status)

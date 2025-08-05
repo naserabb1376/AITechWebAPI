@@ -1,21 +1,23 @@
-﻿using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.IdentityModel.Tokens;
-using AITechWebAPI.Models;
-using AITechWebAPI.Models.Permission;
-using AITechWebAPI.Models.Public;
-using AITechDATA.DataLayer.Repositories;
+﻿using AITechDATA.DataLayer.Repositories;
 using AITechDATA.DataLayer.Services;
 using AITechDATA.Domain;
 using AITechDATA.ResultObjects;
 using AITechDATA.Tools;
+using AITechWebAPI.Models;
+using AITechWebAPI.Models.Permission;
+using AITechWebAPI.Models.Public;
+using AITechWebAPI.Validations;
+using AITechWebAPI.ViewModels;
+using AutoMapper;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
-using AutoMapper;
-using AITechWebAPI.ViewModels;
+using static AITechWebAPI.Tools.ToolBox;
 
 namespace AITechWebAPI.Controllers
 {
@@ -23,6 +25,8 @@ namespace AITechWebAPI.Controllers
     [ApiController]
     [Authorize]
     [Produces("application/json")]
+    [CheckRoleBase(new[] {(int)BaseRole.GeneralAdmin })]
+
     public class PermissionController : ControllerBase
     {
         private IPermissionRep _PermissionRep;
@@ -44,7 +48,7 @@ namespace AITechWebAPI.Controllers
             {
                 return BadRequest(requestBody);
             }
-            var result = await _PermissionRep.GetAllPermissionsAsync(requestBody.RoleId, requestBody.PageIndex, requestBody.PageSize, requestBody.SearchText, requestBody.SortQuery);
+            var result = await _PermissionRep.GetAllPermissionsAsync(requestBody.RoleId,requestBody.PermissionType ?? "", requestBody.PageIndex, requestBody.PageSize, requestBody.SearchText, requestBody.SortQuery);
             if (result.Status)
             {
                 var resultVM = _mapper.Map<ListResultObject<PermissionVM>>(result);
@@ -100,7 +104,11 @@ namespace AITechWebAPI.Controllers
                 Name_EN = requestBody.Name_EN,
                 Icon = requestBody.Icon,
                 Routename = requestBody.Routename,
-                Description_EN = requestBody.Description_EN
+                Description_EN = requestBody.Description_EN,
+                PermissionType = requestBody.PermissionType ??"",
+                OtherLangs = requestBody.OtherLangs ?? "",
+
+
             };
             var result = await _PermissionRep.AddPermissionAsync(Permission);
             if (result.Status)
@@ -148,7 +156,10 @@ namespace AITechWebAPI.Controllers
                 Name_EN = requestBody.Name_EN,
                 Icon = requestBody.Icon,
                 Routename = requestBody.Routename,
-                Description_EN = requestBody.Description_EN
+                Description_EN = requestBody.Description_EN,
+                PermissionType = requestBody.PermissionType ?? "",
+                OtherLangs = requestBody.OtherLangs ?? "",
+
             };
             result = await _PermissionRep.EditPermissionAsync(Permission);
             if (result.Status)

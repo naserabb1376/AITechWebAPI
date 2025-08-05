@@ -31,5 +31,11 @@ namespace AITechWebAPI.Models.PreRegistration
 
         [Display(Name = "تاریخ ثبت نام")]
         public string? RegistrationDate { get; set; } // تاریخ ثبت نام
+
+        [Display(Name = "زبان های دیگر")]
+        public string? OtherLangs { get; set; } = "";
+
+
+
     }
 }

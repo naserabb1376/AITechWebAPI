@@ -41,5 +41,9 @@ namespace AITechWebAPI.Models.Authenticate
         public string NationalCode { get; set; }
 
         public AddEditAddressRequestBody? Address { get; set; }
+
+        [Display(Name = "زبان های دیگر")]
+        public string? OtherLangs { get; set; } = "";
+
     }
 }

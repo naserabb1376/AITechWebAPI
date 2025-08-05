@@ -100,6 +100,8 @@ namespace AITechWebAPI.Controllers
                 UpdateDate = DateTime.Now.ToShamsi(),
                 CategoryDescription = requestBody.CategoryDescription ??"",
                 CategoryName = requestBody.CategoryName,
+                OtherLangs = requestBody.OtherLangs ?? "",
+
             };
             var result = await _CategoryRep.AddCategoryAsync(Category);
             if (result.Status)
@@ -146,6 +148,8 @@ namespace AITechWebAPI.Controllers
                 ID = requestBody.ID,
                 CategoryDescription = requestBody.CategoryDescription ?? "",
                 CategoryName = requestBody.CategoryName,
+                OtherLangs = requestBody.OtherLangs ?? "",
+
             };
             result = await _CategoryRep.EditCategoryAsync(Category);
             if (result.Status)

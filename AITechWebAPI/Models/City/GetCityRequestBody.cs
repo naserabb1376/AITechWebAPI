@@ -1,7 +1,7 @@
 ﻿using AITechWebAPI.Models.Public;
 using System.ComponentModel.DataAnnotations;
 
-namespace AITechDATA.Models.City
+namespace AITechWebAPI.Models.City
 {
     public class GetCityListRequestBody:GetListRequestBody
     {

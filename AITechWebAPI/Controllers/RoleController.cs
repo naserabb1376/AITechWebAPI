@@ -1,21 +1,23 @@
-﻿using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.IdentityModel.Tokens;
-using AITechWebAPI.Models;
-using AITechWebAPI.Models.Role;
-using AITechWebAPI.Models.Public;
-using AITechDATA.DataLayer.Repositories;
+﻿using AITechDATA.DataLayer.Repositories;
 using AITechDATA.DataLayer.Services;
 using AITechDATA.Domain;
 using AITechDATA.ResultObjects;
 using AITechDATA.Tools;
+using AITechWebAPI.Models;
+using AITechWebAPI.Models.Public;
+using AITechWebAPI.Models.Role;
+using AITechWebAPI.Validations;
+using AITechWebAPI.ViewModels;
+using AutoMapper;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
-using AutoMapper;
-using AITechWebAPI.ViewModels;
+using static AITechWebAPI.Tools.ToolBox;
 
 namespace AITechWebAPI.Controllers
 {
@@ -23,6 +25,8 @@ namespace AITechWebAPI.Controllers
     [ApiController]
     [Authorize]
     [Produces("application/json")]
+    [CheckRoleBase(new[] { (int)BaseRole.GeneralAdmin })]
+
 
     public class RoleController : ControllerBase
     {
@@ -99,6 +103,8 @@ namespace AITechWebAPI.Controllers
                 UpdateDate = DateTime.Now.ToShamsi(),
                 Description = requestBody.Description ??"",          
                 Name = requestBody.Name,
+                OtherLangs = requestBody.OtherLangs ?? "",
+
             };
             var result = await _RoleRep.AddRoleAsync(Role);
             if (result.Status)
@@ -145,6 +151,8 @@ namespace AITechWebAPI.Controllers
                 ID = requestBody.ID,
                 Description = requestBody.Description ?? "",
                 Name = requestBody.Name,
+                OtherLangs = requestBody.OtherLangs ?? "",
+
             };
             result = await _RoleRep.EditRoleAsync(Role);
             if (result.Status)

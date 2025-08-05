@@ -28,6 +28,8 @@ namespace AITechWebAPI.Tools
             CreateMap(typeof(SettingListCustomResponse<>), typeof(SettingListCustomResponse<>));
             CreateMap(typeof(CourseRowCustomResponse<>), typeof(CourseRowCustomResponse<>));
             CreateMap(typeof(CourseListCustomResponse<>), typeof(CourseListCustomResponse<>));
+            CreateMap(typeof(ArticleRowCustomResponse<>), typeof(ArticleRowCustomResponse<>));
+            CreateMap(typeof(ArticleListCustomResponse<>), typeof(ArticleListCustomResponse<>));
             CreateMap(typeof(TicketRowCustomResponse<>), typeof(TicketRowCustomResponse<>));
             CreateMap(typeof(TicketListCustomResponse<>), typeof(TicketListCustomResponse<>));
 
@@ -57,6 +59,9 @@ namespace AITechWebAPI.Tools
 
             CreateMap<Course, CourseVM>()
              .ForMember(dest => dest.CategoryName, opt => opt.MapFrom(src => src.Category.CategoryName));
+
+            CreateMap<Article, ArticleVM>()
+            .ForMember(dest => dest.CategoryName, opt => opt.MapFrom(src => src.Category.CategoryName));
 
             CreateMap<Event, EventVM>()
   .ForMember(dest => dest.UserName, opt => opt.MapFrom(src => src.User.FullName));

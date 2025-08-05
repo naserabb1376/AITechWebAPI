@@ -100,6 +100,8 @@ namespace AITechWebAPI.Controllers
                 Title= requestBody.Title,
                 Content = requestBody.Content,
                 ReportDate = requestBody.ReportDate.StringToDate(),
+                OtherLangs = requestBody.OtherLangs ?? "",
+
             };
             var result = await _AdminReportRep.AddAdminReportAsync(AdminReport);
             if (result.Status)
@@ -148,6 +150,8 @@ namespace AITechWebAPI.Controllers
                 Title = requestBody.Title,
                 Content = requestBody.Content,
                 ReportDate = requestBody.ReportDate.StringToDate(),
+                OtherLangs = requestBody.OtherLangs ?? "",
+
             };
             result = await _AdminReportRep.EditAdminReportAsync(AdminReport);
             if (result.Status)

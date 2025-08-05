@@ -7,5 +7,8 @@ namespace AITechWebAPI.Models.Permission
     {
         [Display(Name = "کد نقش")]
         public long RoleId { get; set; } = 0;
+
+        [Display(Name = "نوع دسترسی")]
+        public string? PermissionType { get; set; } = "";
     }
 }

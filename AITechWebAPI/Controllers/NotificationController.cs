@@ -100,8 +100,9 @@ namespace AITechWebAPI.Controllers
                 UserId = requestBody.UserID,
                 Message = requestBody.Message,
                 IsRead = requestBody.NotificationSeenStatus,
+                OtherLangs = requestBody.OtherLangs ?? "",
                 //IsRead = requestBody.SentDate ?? DateTime.Now.ToShamsi(),
-               // Description = requestBody.Description,
+                // Description = requestBody.Description,
             };
             var result = await _NotificationRep.AddNotificationAsync(Notification);
             if (result.Status)
@@ -149,6 +150,7 @@ namespace AITechWebAPI.Controllers
                 UserId = requestBody.UserID,
                 Message = requestBody.Message,
                 IsRead = requestBody.NotificationSeenStatus,
+                OtherLangs = requestBody.OtherLangs ?? "",
                 //SentDate = requestBody.SentDate ?? DateTime.Now.ToShamsi(),
                 //Description = requestBody.Description,
             };
