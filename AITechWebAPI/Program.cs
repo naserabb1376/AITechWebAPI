@@ -154,6 +154,10 @@ namespace AITechWebAPI
             builder.Services.AddScoped<IUserCourseRep, UserCourseRep>();
             builder.Services.AddScoped<IUserGroupRep, UserGroupRep>();
             builder.Services.AddScoped<IUserRep, UserRep>();
+            builder.Services.AddScoped<IContentRep, ContentRep>();
+            builder.Services.AddScoped<ILinkedEntityRep, LinkedEntityRep>();
+            builder.Services.AddScoped<IJobRequestRep, JobRequestRep>();
+            builder.Services.AddScoped<IArticleRep, ArticleRep>();
 
 
             #endregion ImportDbServices
