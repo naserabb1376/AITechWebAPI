@@ -4,6 +4,7 @@ using AITechDATA.DataLayer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace AITechDATA.Migrations
 {
     [DbContext(typeof(AiITechContext))]
-    partial class AiITechContextModelSnapshot : ModelSnapshot
+    [Migration("20250808192523_addgetUrlForFiles")]
+    partial class addgetUrlForFiles
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -60,7 +63,7 @@ namespace AITechDATA.Migrations
 
                     b.HasIndex("CityID");
 
-                    b.ToTable("Addresses", (string)null);
+                    b.ToTable("Addresses");
                 });
 
             modelBuilder.Entity("AITechDATA.Domain.AdminReport", b =>
@@ -98,7 +101,7 @@ namespace AITechDATA.Migrations
 
                     b.HasIndex("AdminId");
 
-                    b.ToTable("AdminReports", (string)null);
+                    b.ToTable("AdminReports");
                 });
 
             modelBuilder.Entity("AITechDATA.Domain.Article", b =>
@@ -136,7 +139,7 @@ namespace AITechDATA.Migrations
 
                     b.HasIndex("CategoryId");
 
-                    b.ToTable("Articles", (string)null);
+                    b.ToTable("Articles");
                 });
 
             modelBuilder.Entity("AITechDATA.Domain.Assignment", b =>
@@ -179,7 +182,7 @@ namespace AITechDATA.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("Assignments", (string)null);
+                    b.ToTable("Assignments");
                 });
 
             modelBuilder.Entity("AITechDATA.Domain.Attendance", b =>
@@ -214,7 +217,7 @@ namespace AITechDATA.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("Attendances", (string)null);
+                    b.ToTable("Attendances");
                 });
 
             modelBuilder.Entity("AITechDATA.Domain.Category", b =>
@@ -243,7 +246,7 @@ namespace AITechDATA.Migrations
 
                     b.HasKey("ID");
 
-                    b.ToTable("Categories", (string)null);
+                    b.ToTable("Categories");
                 });
 
             modelBuilder.Entity("AITechDATA.Domain.City", b =>
@@ -275,7 +278,7 @@ namespace AITechDATA.Migrations
 
                     b.HasKey("ID");
 
-                    b.ToTable("Cities", (string)null);
+                    b.ToTable("Cities");
                 });
 
             modelBuilder.Entity("AITechDATA.Domain.Comment", b =>
@@ -318,7 +321,7 @@ namespace AITechDATA.Migrations
 
                     b.HasKey("ID");
 
-                    b.ToTable("Comments", (string)null);
+                    b.ToTable("Comments");
                 });
 
             modelBuilder.Entity("AITechDATA.Domain.Content", b =>
@@ -356,7 +359,7 @@ namespace AITechDATA.Migrations
 
                     b.HasKey("ID");
 
-                    b.ToTable("Contents", (string)null);
+                    b.ToTable("Contents");
                 });
 
             modelBuilder.Entity("AITechDATA.Domain.Course", b =>
@@ -394,7 +397,7 @@ namespace AITechDATA.Migrations
 
                     b.HasIndex("CategoryId");
 
-                    b.ToTable("Courses", (string)null);
+                    b.ToTable("Courses");
                 });
 
             modelBuilder.Entity("AITechDATA.Domain.Event", b =>
@@ -439,7 +442,7 @@ namespace AITechDATA.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("Events", (string)null);
+                    b.ToTable("Events");
                 });
 
             modelBuilder.Entity("AITechDATA.Domain.FileUpload", b =>
@@ -490,7 +493,7 @@ namespace AITechDATA.Migrations
 
                     b.HasKey("ID");
 
-                    b.ToTable("FileUploads", (string)null);
+                    b.ToTable("FileUploads");
                 });
 
             modelBuilder.Entity("AITechDATA.Domain.Group", b =>
@@ -551,7 +554,7 @@ namespace AITechDATA.Migrations
 
                     b.HasIndex("TeacherId");
 
-                    b.ToTable("Groups", (string)null);
+                    b.ToTable("Groups");
                 });
 
             modelBuilder.Entity("AITechDATA.Domain.Image", b =>
@@ -601,7 +604,7 @@ namespace AITechDATA.Migrations
 
                     b.HasKey("ID");
 
-                    b.ToTable("Images", (string)null);
+                    b.ToTable("Images");
                 });
 
             modelBuilder.Entity("AITechDATA.Domain.JobRequest", b =>
@@ -645,7 +648,7 @@ namespace AITechDATA.Migrations
 
                     b.HasKey("ID");
 
-                    b.ToTable("JobRequests", (string)null);
+                    b.ToTable("JobRequests");
                 });
 
             modelBuilder.Entity("AITechDATA.Domain.LinkedEntity", b =>
@@ -691,7 +694,7 @@ namespace AITechDATA.Migrations
 
                     b.HasKey("ID");
 
-                    b.ToTable("LinkedEntities", (string)null);
+                    b.ToTable("LinkedEntities");
                 });
 
             modelBuilder.Entity("AITechDATA.Domain.Log", b =>
@@ -720,7 +723,7 @@ namespace AITechDATA.Migrations
 
                     b.HasKey("ID");
 
-                    b.ToTable("Logs", (string)null);
+                    b.ToTable("Logs");
                 });
 
             modelBuilder.Entity("AITechDATA.Domain.LoginMethod", b =>
@@ -758,7 +761,7 @@ namespace AITechDATA.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("LoginMethods", (string)null);
+                    b.ToTable("LoginMethods");
                 });
 
             modelBuilder.Entity("AITechDATA.Domain.News", b =>
@@ -807,7 +810,7 @@ namespace AITechDATA.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("News", (string)null);
+                    b.ToTable("News");
                 });
 
             modelBuilder.Entity("AITechDATA.Domain.Notification", b =>
@@ -841,7 +844,7 @@ namespace AITechDATA.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("Notifications", (string)null);
+                    b.ToTable("Notifications");
                 });
 
             modelBuilder.Entity("AITechDATA.Domain.Parent", b =>
@@ -880,7 +883,7 @@ namespace AITechDATA.Migrations
 
                     b.HasIndex("StudentDetailsId");
 
-                    b.ToTable("Parents", (string)null);
+                    b.ToTable("Parents");
                 });
 
             modelBuilder.Entity("AITechDATA.Domain.Permission", b =>
@@ -929,7 +932,7 @@ namespace AITechDATA.Migrations
 
                     b.HasKey("ID");
 
-                    b.ToTable("Permissions", (string)null);
+                    b.ToTable("Permissions");
                 });
 
             modelBuilder.Entity("AITechDATA.Domain.PermissionRole", b =>
@@ -961,7 +964,7 @@ namespace AITechDATA.Migrations
 
                     b.HasIndex("RoleId");
 
-                    b.ToTable("PermissionRoles", (string)null);
+                    b.ToTable("PermissionRoles");
                 });
 
             modelBuilder.Entity("AITechDATA.Domain.PreRegistration", b =>
@@ -1003,7 +1006,7 @@ namespace AITechDATA.Migrations
 
                     b.HasIndex("GroupId");
 
-                    b.ToTable("PreRegistrations", (string)null);
+                    b.ToTable("PreRegistrations");
                 });
 
             modelBuilder.Entity("AITechDATA.Domain.Role", b =>
@@ -1032,7 +1035,7 @@ namespace AITechDATA.Migrations
 
                     b.HasKey("ID");
 
-                    b.ToTable("Roles", (string)null);
+                    b.ToTable("Roles");
                 });
 
             modelBuilder.Entity("AITechDATA.Domain.Session", b =>
@@ -1062,7 +1065,7 @@ namespace AITechDATA.Migrations
 
                     b.HasIndex("GroupId");
 
-                    b.ToTable("Sessions", (string)null);
+                    b.ToTable("Sessions");
                 });
 
             modelBuilder.Entity("AITechDATA.Domain.SessionAssignment", b =>
@@ -1100,7 +1103,7 @@ namespace AITechDATA.Migrations
 
                     b.HasIndex("SessionId");
 
-                    b.ToTable("SessionAssignments", (string)null);
+                    b.ToTable("SessionAssignments");
                 });
 
             modelBuilder.Entity("AITechDATA.Domain.Setting", b =>
@@ -1135,7 +1138,7 @@ namespace AITechDATA.Migrations
 
                     b.HasIndex("ParentId");
 
-                    b.ToTable("Settings", (string)null);
+                    b.ToTable("Settings");
                 });
 
             modelBuilder.Entity("AITechDATA.Domain.StudentDetails", b =>
@@ -1163,7 +1166,7 @@ namespace AITechDATA.Migrations
                     b.HasIndex("UserId")
                         .IsUnique();
 
-                    b.ToTable("StudentDetails", (string)null);
+                    b.ToTable("StudentDetails");
                 });
 
             modelBuilder.Entity("AITechDATA.Domain.TeacherResume", b =>
@@ -1201,7 +1204,7 @@ namespace AITechDATA.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("TeacherResumes", (string)null);
+                    b.ToTable("TeacherResumes");
                 });
 
             modelBuilder.Entity("AITechDATA.Domain.Ticket", b =>
@@ -1236,7 +1239,7 @@ namespace AITechDATA.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("Tickets", (string)null);
+                    b.ToTable("Tickets");
                 });
 
             modelBuilder.Entity("AITechDATA.Domain.TicketMessage", b =>
@@ -1275,7 +1278,7 @@ namespace AITechDATA.Migrations
 
                     b.HasIndex("TicketId");
 
-                    b.ToTable("TicketMessages", (string)null);
+                    b.ToTable("TicketMessages");
                 });
 
             modelBuilder.Entity("AITechDATA.Domain.Token", b =>
@@ -1311,7 +1314,7 @@ namespace AITechDATA.Migrations
 
                     b.HasKey("ID");
 
-                    b.ToTable("Tokens", (string)null);
+                    b.ToTable("Tokens");
                 });
 
             modelBuilder.Entity("AITechDATA.Domain.User", b =>
@@ -1363,7 +1366,7 @@ namespace AITechDATA.Migrations
 
                     b.HasIndex("RoleId");
 
-                    b.ToTable("Users", (string)null);
+                    b.ToTable("Users");
                 });
 
             modelBuilder.Entity("AITechDATA.Domain.UserCourse", b =>
@@ -1398,7 +1401,7 @@ namespace AITechDATA.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("UserCourses", (string)null);
+                    b.ToTable("UserCourses");
                 });
 
             modelBuilder.Entity("AITechDATA.Domain.UserGroup", b =>
@@ -1430,7 +1433,7 @@ namespace AITechDATA.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("UserGroups", (string)null);
+                    b.ToTable("UserGroups");
                 });
 
             modelBuilder.Entity("AiTech.Domains.PaymentHistory", b =>
@@ -1468,7 +1471,7 @@ namespace AITechDATA.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("PaymentHistories", (string)null);
+                    b.ToTable("PaymentHistories");
                 });
 
             modelBuilder.Entity("AITechDATA.Domain.Address", b =>

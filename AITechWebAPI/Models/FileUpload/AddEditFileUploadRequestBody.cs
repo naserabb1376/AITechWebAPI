@@ -36,5 +36,9 @@ namespace AITechWebAPI.Models.FileUpload
 
         [Display(Name = "کاربر ایجاد کننده")]
         public long? CreatorId { get; set; }
+
+        [Display(Name = "لینک دانلود")]
+        public string? GetUrl { get; set; } // لینک دانلود
+
     }
 }

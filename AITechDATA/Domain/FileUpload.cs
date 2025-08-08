@@ -19,6 +19,6 @@ namespace AITechDATA.Domain
         public long CreatorId { get; set; } = 0; // کاربر ایجاد کننده
         public long ForeignKeyId { get; set; } // کلید خارجی به رکورد اصلی
         public string EntityType { get; set; } // نوع جدول مرتبط (مثلاً "User", "Course", "Event")
-        //public Assignment Assignment { get; set; } // ارتباط با Assignment
+        public string? GetUrl { get; set; } // لینک دانلود
     }
 }

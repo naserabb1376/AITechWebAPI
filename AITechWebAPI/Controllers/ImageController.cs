@@ -14,6 +14,7 @@ using AITechDATA.Tools;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+using FileIO = System.IO.File;
 
 namespace AITechWebAPI.Controllers
 {
@@ -96,6 +97,7 @@ namespace AITechWebAPI.Controllers
                 FileName = x.FileName,
                 FilePath = x.FilePath,
                 ForeignKeyId = x.ForeignKeyId,
+                GetUrl = x.GetUrl ?? "",
             }).ToList();
             
             var result = await _ImageRep.AddImagesAsync(Images);
@@ -153,6 +155,7 @@ namespace AITechWebAPI.Controllers
                     ForeignKeyId = body.ForeignKeyId,
                     Description = body.Description ??"",
                     CreatorId = body.CreatorId ?? 0,
+                    GetUrl = body.GetUrl ?? "",
 
                 };
 
@@ -188,7 +191,14 @@ namespace AITechWebAPI.Controllers
             {
                 return BadRequest(ids);
             }
-
+            foreach (long id in ids)
+            {
+                var theRow = await _ImageRep.GetImageByIdAsync(id);
+                if (theRow.Result != null && FileIO.Exists(theRow.Result.FilePath))
+                {
+                    FileIO.Delete(theRow.Result.FilePath);
+                }
+            }
             var result = await _ImageRep.RemoveImagesAsync(ids);
             if (result.Status)
             {
