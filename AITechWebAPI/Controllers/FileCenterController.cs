@@ -237,7 +237,7 @@ public class FileCenterController : ControllerBase
         {
             return Ok(result);
         }
-        return BadRequest(resultrecords);
+        return BadRequest(result);
     }
 
 
