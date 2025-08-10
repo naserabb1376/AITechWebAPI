@@ -195,7 +195,7 @@ public class FileCenterController : ControllerBase
         requestBody.entityType= requestBody.entityType.ToLower();
         requestBody.fileType= requestBody.fileType.ToLower();
 
-        var result = new List<ListResultObject<string>>();
+        var result = new ListResultObject<string>();
         dynamic resultrecords;
 
         if (!ModelState.IsValid)
@@ -216,9 +216,26 @@ public class FileCenterController : ControllerBase
                 }
                 break;
         }
-        if (resultrecords.Status)
+
+        result.ErrorMessage = resultrecords.ErrorMessage;
+        result.Status = resultrecords.Status;
+        result.PageCount = resultrecords.PageCount;
+        result.TotalCount = resultrecords.TotalCount;
+
+        if (requestBody.fileType == "images")
         {
-            return Ok(resultrecords);
+            result.Results = ((List<Image>)resultrecords.Results)
+  .Select(x => x.FilePath).ToList();
+        }
+        if (requestBody.fileType == "files")
+        {
+            result.Results = ((List<FileUpload>)resultrecords.Results)
+  .Select(x => x.FilePath).ToList();
+        }
+
+        if (result.Status)
+        {
+            return Ok(result);
         }
         return BadRequest(resultrecords);
     }
