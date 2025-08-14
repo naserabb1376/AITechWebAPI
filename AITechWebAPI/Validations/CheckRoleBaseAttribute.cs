@@ -168,6 +168,7 @@ namespace AITechWebAPI.Validations
             // id فقط در کنترلر Users معتبر است
             return name.Equals("userId", StringComparison.OrdinalIgnoreCase)
                    || name.Equals("teacherId", StringComparison.OrdinalIgnoreCase)
+                   || name.Equals("adminid", StringComparison.OrdinalIgnoreCase)
                    || (isUsersController && name.Equals("id", StringComparison.OrdinalIgnoreCase));
         }
 

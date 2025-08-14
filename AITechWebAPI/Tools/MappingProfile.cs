@@ -100,7 +100,7 @@ namespace AITechWebAPI.Tools
 .ForMember(dest => dest.UserName, opt => opt.MapFrom(src => src.User.FullName));
 
             CreateMap<TicketMessage, TicketMessageVM>()
-.ForMember(dest => dest.AdminUserName, opt => opt.MapFrom(src => src.Admin.FullName));
+.ForMember(dest => dest.UserName, opt => opt.MapFrom(src => src.User.FullName));
 
             CreateMap<Ticket, TicketVM>()
 .ForMember(dest => dest.UserName, opt => opt.MapFrom(src => src.User.FullName));
