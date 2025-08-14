@@ -15,9 +15,9 @@ namespace AITechDATA.DataLayer.Services
     {
         private AiITechContext _context;
 
-        public SessionAssignmentRep()
+        public SessionAssignmentRep(AiITechContext context)
         {
-            _context = DbTools.GetDbContext();
+            _context = context;
         }
 
         public async Task<BitResultObject> AddSessionAssignmentAsync(SessionAssignment sessionAssignment)

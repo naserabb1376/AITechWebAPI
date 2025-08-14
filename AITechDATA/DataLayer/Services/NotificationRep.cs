@@ -15,9 +15,9 @@ namespace AITechDATA.DataLayer.Services
     {
         private AiITechContext _context;
 
-        public NotificationRep()
+        public NotificationRep(AiITechContext context)
         {
-            _context = DbTools.GetDbContext();
+            _context = context;
         }
 
         public async Task<BitResultObject> AddNotificationAsync(Notification notification)

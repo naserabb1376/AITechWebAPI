@@ -1,7 +1,10 @@
-﻿using AITechDATA.DataLayer.Repositories;
+﻿using AITechDATA.DataLayer;
+using AITechDATA.DataLayer.Repositories;
 using AITechDATA.DataLayer.Services;
+using AITechDATA.Tools;
 using AITechWebAPI.Tools;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
@@ -118,6 +121,12 @@ namespace AITechWebAPI
         { securityScheme, new string[] { } }
     });
             });
+
+            var configHelper = new ConfigurationHelper();
+
+            builder.Services.AddDbContext<AiITechContext>(options =>
+                options.UseSqlServer(configHelper.GetConnectionString("publicdb")));
+
 
             #region ImportDbServices
 

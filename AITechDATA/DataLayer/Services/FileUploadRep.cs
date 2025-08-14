@@ -17,9 +17,9 @@ namespace AITechDATA.DataLayer.Services
     {
         private AiITechContext _context;
 
-        public FileUploadRep()
+        public FileUploadRep(AiITechContext context)
         {
-            _context = DbTools.GetDbContext();
+            _context = context;
         }
 
         public async Task<BitResultObject> AddFileUploadAsync(FileUpload fileUpload)

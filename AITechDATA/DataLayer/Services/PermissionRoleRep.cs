@@ -16,9 +16,9 @@ namespace AITechDATA.DataLayer.Services
     {
         private AiITechContext _context;
 
-        public PermissionRoleRep()
+        public PermissionRoleRep(AiITechContext context)
         {
-            _context = DbTools.GetDbContext();
+            _context = context;
         }
 
         public async Task<BitResultObject> AddPermissionRolesAsync(List<PermissionRole> PermissionRoles)

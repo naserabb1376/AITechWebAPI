@@ -12,6 +12,11 @@ namespace AITechDATA.DataLayer
 {
     public class AiITechContext : DbContext
     {
+
+        public AiITechContext(DbContextOptions<AiITechContext> options)
+      : base(options)
+        {
+        }
         public DbSet<Address> Addresses { get; set; }
         public DbSet<AdminReport> AdminReports { get; set; }
         public DbSet<Assignment> Assignments { get; set; }
@@ -50,12 +55,7 @@ namespace AITechDATA.DataLayer
         public DbSet<Article> Articles { get; set; }
         public DbSet<JobRequest> JobRequests { get; set; }
 
-        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-        {
-            var configHelper = new ConfigurationHelper();
-            string _connectionString = configHelper.GetConnectionString("publicdb");
-            optionsBuilder.UseSqlServer(_connectionString);
-        }
+     
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
