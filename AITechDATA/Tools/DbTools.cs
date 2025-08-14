@@ -12,16 +12,6 @@ namespace AITechDATA.Tools
 {
     public static class DbTools
     {
-        private static AiITechContext _context;
-
-        public static AiITechContext GetDbContext()
-        {
-            //if (_context == null)
-            //{
-            _context = new AiITechContext();
-            //}
-            return _context;
-        }
 
         public static List<T> ToPaging<T>(this List<T> list, int pageIndex = 1, int pageSize = 20)
         {

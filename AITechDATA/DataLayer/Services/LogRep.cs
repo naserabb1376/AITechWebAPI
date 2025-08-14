@@ -17,9 +17,9 @@ namespace AITechDATA.DataLayer.Services
     {
 
         private AiITechContext _context;
-        public LogRep()
+        public LogRep(AiITechContext context)
         {
-            _context = DbTools.GetDbContext();
+            _context = context;
         }
 
         public async Task<BitResultObject> AddLogAsync(Log Log)

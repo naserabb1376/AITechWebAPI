@@ -20,9 +20,9 @@ namespace Services
     {
         private AiITechContext _context;
 
-        public TokenRep()
+        public TokenRep(AiITechContext context)
         {
-            _context = DbTools.GetDbContext();
+            _context = context;
         }
 
         public async Task<BitResultObject> AddTokenAsync(Token Token)
