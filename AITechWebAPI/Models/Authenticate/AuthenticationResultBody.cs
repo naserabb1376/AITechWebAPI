@@ -8,5 +8,6 @@ namespace AITechWebAPI.Models.Authenticate
         public UserVM User { get; set; }
         public string AccessToken { get; set; }
         public string RefreshToken { get; set; }
+        public List<string> routename { get; set; }
     }
 }

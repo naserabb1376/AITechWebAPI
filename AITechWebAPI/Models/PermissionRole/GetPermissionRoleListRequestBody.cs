@@ -10,5 +10,9 @@ namespace AITechWebAPI.Models.PermissionRole
 
         [Display(Name = "کد دسترسی")]
         public long PermissionId { get; set; } = 0;
+
+        [Display(Name = "نوع دسترسی")]
+        public string? PermissionType { get; set; } = "";
+
     }
 }

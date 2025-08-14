@@ -81,19 +81,34 @@ namespace AITechDATA.DataLayer.Services
             return result;
         }
 
-        public async Task<ListResultObject<PermissionRole>> GetAllPermissionRolesAsync(long RoleId = 0, long PerrmissionId = 0, int pageIndex = 1, int pageSize = 20, string searchText = "", string sortQuery = "")
+        public async Task<ListResultObject<PermissionRole>> GetAllPermissionRolesAsync(long RoleId = 0, long PerrmissionId = 0, string permissionType = "", int pageIndex = 1, int pageSize = 20, string searchText = "", string sortQuery = "")
         {
             ListResultObject<PermissionRole> results = new ListResultObject<PermissionRole>();
             try
             {
-                var query = _context.PermissionRoles
+                var query = _context.PermissionRoles.Include(x =>x.Role).Include(x=> x.Permission)
                     .AsNoTracking()
                     .Where(x =>
-                        (RoleId > 0 && x.RoleId == RoleId) ||
-                        (PerrmissionId > 0 && x.PerrmissionId == PerrmissionId) ||
                         x.Permission.Name.ToString().Contains(searchText) ||
+                        x.Permission.Routename.ToString().Contains(searchText) ||
                         x.Role.Name.ToString().Contains(searchText)
                     );
+
+                if (PerrmissionId > 0)
+                {
+                    query = query.Where(x => x.PerrmissionId == PerrmissionId);
+                }
+
+                if (RoleId > 0)
+                {
+                    query = query.Where(x => x.RoleId == RoleId);
+                }
+
+                if (!string.IsNullOrEmpty(permissionType))
+                {
+                    query = query.Where(x => x.Permission.PermissionType == permissionType);
+                }
+
 
                 results.TotalCount = query.Count();
                 results.PageCount = DbTools.GetPageCount(results.TotalCount, pageSize);
