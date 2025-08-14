@@ -74,7 +74,7 @@ namespace AITechDATA.DataLayer.Services
             return result;
         }
 
-        public async Task<ListResultObject<TicketMessage>> GetAllTicketMessagesAsync(long AdminId = 0, long TicketId = 0, int pageIndex = 1, int pageSize = 20, string searchText = "", string sortQuery = "")
+        public async Task<ListResultObject<TicketMessage>> GetAllTicketMessagesAsync(long userId = 0, long TicketId = 0, int pageIndex = 1, int pageSize = 20, string searchText = "", string sortQuery = "")
         {
             ListResultObject<TicketMessage> results = new ListResultObject<TicketMessage>();
             try
@@ -82,16 +82,24 @@ namespace AITechDATA.DataLayer.Services
                 var query = _context.TicketMessages.Include(x=> x.Ticket)
                     .AsNoTracking()
                     .Where(x =>
-                        (AdminId > 0 && x.AdminId == AdminId) || (TicketId > 0 && x.TicketId == TicketId) ||
                         (!string.IsNullOrEmpty(x.MessageContent) && x.MessageContent.Contains(searchText))
                     );
+                if (userId > 0)
+                {
+                    query = query.Where(x=> x.UserId ==userId);
+                }
+
+                if (TicketId > 0)
+                {
+                    query = query.Where(x => x.TicketId == TicketId);
+                }
 
                 results.TotalCount = query.Count();
                 results.PageCount = DbTools.GetPageCount(results.TotalCount, pageSize);
                 results.Results = await query.OrderByDescending(x => x.CreateDate)
                      .SortBy(sortQuery).ToPaging(pageIndex, pageSize)
                     .Include(x => x.Ticket)
-                    .Include(x => x.Admin)
+                    .Include(x => x.User)
                     .ToListAsync();
             }
             catch (Exception ex)
@@ -110,7 +118,7 @@ namespace AITechDATA.DataLayer.Services
                 result.Result = await _context.TicketMessages
                     .AsNoTracking()
                     .Include(x => x.Ticket)
-                    .Include(x => x.Admin)
+                    .Include(x => x.User)
                     .SingleOrDefaultAsync(x => x.ID == ticketMessageId);
             }
             catch (Exception ex)

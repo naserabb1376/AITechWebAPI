@@ -83,7 +83,9 @@ namespace AITechWebAPI.Tools
 
             CreateMap<PermissionRole, PermissionRoleVM>()
 .ForMember(dest => dest.PermissionName, opt => opt.MapFrom(src => src.Permission.Name))
-.ForMember(dest => dest.RoleName, opt => opt.MapFrom(src => src.Role.Name));
+.ForMember(dest => dest.RoleName, opt => opt.MapFrom(src => src.Role.Name))
+.ForMember(dest => dest.RouteName, opt => opt.MapFrom(src => src.Permission.Routename))
+.ForMember(dest => dest.PermissionType, opt => opt.MapFrom(src => src.Permission.PermissionType));
 
             CreateMap<PreRegistration, PreRegistrationVM>()
 .ForMember(dest => dest.GroupName, opt => opt.MapFrom(src => src.Group.Name));
@@ -98,7 +100,7 @@ namespace AITechWebAPI.Tools
 .ForMember(dest => dest.UserName, opt => opt.MapFrom(src => src.User.FullName));
 
             CreateMap<TicketMessage, TicketMessageVM>()
-.ForMember(dest => dest.AdminUserName, opt => opt.MapFrom(src => src.Admin.FullName));
+.ForMember(dest => dest.UserName, opt => opt.MapFrom(src => src.User.FullName));
 
             CreateMap<Ticket, TicketVM>()
 .ForMember(dest => dest.UserName, opt => opt.MapFrom(src => src.User.FullName));

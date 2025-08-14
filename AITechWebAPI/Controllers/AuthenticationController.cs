@@ -32,9 +32,10 @@ namespace AITechWebAPI.Controllers
         private readonly ILogRep _logRep;
         private readonly ITokenRep _tokenRep;
         private readonly IPermissionRep _permissionRep;
+        private readonly IPermissionRoleRep _permissionRoleRep;
         private readonly IMapper _mapper;
 
-        public AuthenticationController(IConfiguration configuration,ILoginMethodRep loginRep, IUserRep userRep,IAddressRep addressRep,ILogRep logRep,ITokenRep tokenRep,IPermissionRep permissionRep,IMapper mapper)
+        public AuthenticationController(IConfiguration configuration,ILoginMethodRep loginRep, IUserRep userRep,IAddressRep addressRep,ILogRep logRep,ITokenRep tokenRep,IPermissionRep permissionRep,IPermissionRoleRep permissionRole,IMapper mapper)
         {
             _configuration = configuration;
             _loginRep = loginRep;
@@ -43,6 +44,7 @@ namespace AITechWebAPI.Controllers
             _logRep = logRep;
             _tokenRep = tokenRep;
             _permissionRep = permissionRep;
+            _permissionRoleRep = permissionRole;
             _mapper = mapper;  
         }
 
@@ -106,7 +108,7 @@ namespace AITechWebAPI.Controllers
                     };
 
                     var saverefreshToken = await _tokenRep.AddTokenAsync(refreshTokenRecord);
-
+                    var permissionRoles = await _permissionRoleRep.GetAllPermissionRolesAsync(authenticateResult.Result.RoleId, 0, "menu", 1, 0);
                     if (saverefreshToken.Status)
                     {
                         result.Status = authenticateResult.Status;
@@ -116,6 +118,8 @@ namespace AITechWebAPI.Controllers
                             RefreshToken = refreshToken, // بازگرداندن رفرش توکن
                             AccessToken = accessToken, // بازگرداندن اکسس توکن
                             User = _mapper.Map<UserVM>(authenticateResult.Result),
+                            routename = permissionRoles.Results.Select(x => x.Permission.Routename).ToList(),
+
                         };
 
                         LoginMethod loginMethod = new LoginMethod()

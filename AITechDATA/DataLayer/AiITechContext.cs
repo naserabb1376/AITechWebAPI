@@ -209,9 +209,9 @@ namespace AITechDATA.DataLayer
 .OnDelete(DeleteBehavior.Cascade);
 
             modelBuilder.Entity<TicketMessage>()
-.HasOne(x => x.Admin)
+.HasOne(x => x.User)
 .WithMany(x => x.TicketMessages)
-.HasForeignKey(x => x.AdminId)
+.HasForeignKey(x => x.UserId)
 .OnDelete(DeleteBehavior.NoAction);
 
             modelBuilder.Entity<TeacherResume>()
