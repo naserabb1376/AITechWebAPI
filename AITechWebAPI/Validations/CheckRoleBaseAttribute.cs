@@ -2,7 +2,6 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
-using System.Net.Http;
 using System.Security.Claims;
 
 namespace AITechWebAPI.Validations
@@ -46,13 +45,13 @@ namespace AITechWebAPI.Validations
             var controllerName = context.ActionDescriptor.RouteValues.TryGetValue("controller", out var c) ? (c ?? "") : "";
 
             bool isDelete = DeletePrefixes.Any(p => actionName.StartsWith(p, StringComparison.OrdinalIgnoreCase));
-            bool isWrite = WritePrefixes.Any(p => actionName.StartsWith(p, StringComparison.OrdinalIgnoreCase));
-            
+            // توجه: در پروژه شما Getها هم POST هستند، پس از متد HTTP برای حساسیت استفاده نمی‌کنیم.
+            // bool isWrite = WritePrefixes.Any(p => actionName.StartsWith(p, StringComparison.OrdinalIgnoreCase));
 
-            // 4) نقش‌های کاربر
+            // 4) نقش کاربر (تک RoleId)
             var user = httpCtx.User;
-            var userRoleIds = GetUserRoleIds(user);
-            bool hasAllowedRole = _allowedRoles.Count > 0 && (_allowedRoles.Contains(userRoleIds));
+            int userRoleId = GetUserRoleId(user);
+            bool hasAllowedRole = _allowedRoles.Count > 0 && _allowedRoles.Contains(userRoleId);
 
             // 5) Delete فقط با نقش مجاز
             if (isDelete)
@@ -68,7 +67,7 @@ namespace AITechWebAPI.Validations
                 return;
             }
 
-            // 6) برای عملیات نوشتاری غیر Delete:
+            // 6) برای سایر اکشن‌ها:
             //    اگر نقش مجاز است → عبور
             if (hasAllowedRole)
             {
@@ -76,9 +75,9 @@ namespace AITechWebAPI.Validations
                 return;
             }
 
-            //    اگر نقش مجاز نیست → بررسی استثنای «دسترسی به اطلاعات خود کاربر»
-            var currentUserId = GetUserId(user);
-            if (currentUserId == null)
+            //    اگر نقش مجاز نیست → بررسی استثنای «دسترسی به اطلاعات خود کاربر» (userId/teacherId/adminId)
+            long currentUserId = GetUserId(user);
+            if (currentUserId <= 0)
             {
                 context.Result = new JsonResult(new { message = "شما مجوز انجام این عملیات را ندارید." })
                 { StatusCode = StatusCodes.Status403Forbidden };
@@ -86,45 +85,57 @@ namespace AITechWebAPI.Validations
             }
 
             var candidateIds = ExtractRelevantIds(context, controllerName);
-            // باید تمام ID های یافت شده، برابر با UserId جاری باشند (برای جلوگیری از batch روی دیگری)
-            bool isSelfAccess = candidateIds.Any() && candidateIds.All(x => x == currentUserId);
+            bool isSelfAccessByUserId = candidateIds.Any() && candidateIds.All(x => x == currentUserId);
 
-            if (isSelfAccess)
+            if (isSelfAccessByUserId)
             {
                 await next();
                 return;
             }
+
+            // === NEW: استثنای roleId ===
+            // اگر در ورودی userId/teacherId/adminId نبود، ولی roleId بود و roleId ورودی == roleId کاربر → اجازه
+            if (!candidateIds.Any())
+            {
+                var requestRoleIds = ExtractRoleIds(context);
+                bool isSelfAccessByRoleId = requestRoleIds.Any() && requestRoleIds.All(r => r == userRoleId);
+
+                if (isSelfAccessByRoleId)
+                {
+                    await next();
+                    return;
+                }
+            }
+            // === END NEW ===
 
             context.Result = new JsonResult(new { message = "شما مجوز انجام این عملیات را ندارید." })
             { StatusCode = StatusCodes.Status403Forbidden };
         }
 
         // ===== Helpers =====
-
-        private static int GetUserRoleIds(ClaimsPrincipal user)
-        {
-            var roleIdClaim = user.FindFirst("Role"); 
+        private static int GetUserRoleId(ClaimsPrincipal user) 
+        { 
+            var roleIdClaim = user.FindFirst("Role");
             if (roleIdClaim == null || !int.TryParse(roleIdClaim.Value, out var roleId))
             {
                 return 0;
             }
-            return int.Parse(roleIdClaim.Value);
-        }
-
+            return int.Parse(roleIdClaim.Value); 
+        
+        } 
         private static long GetUserId(ClaimsPrincipal user)
-        {
+        { 
             var userIdClaim = user.FindFirst("userId");
             if (userIdClaim == null || !int.TryParse(userIdClaim.Value, out var roleId))
             {
-                return 0;
-            }
-            return long.Parse(userIdClaim.Value);
-        
+                return 0; 
+            } 
+            return long.Parse(userIdClaim.Value); 
         }
 
         /// <summary>
         /// ID های مرتبط در ورودی را استخراج می‌کند:
-        /// - پارامترهای اکشن: userId / teacherId
+        /// - پارامترهای اکشن: userId / teacherId / adminId
         /// - در کنترلر Users: id
         /// - در مدل‌های پیچیده و کالکشن‌ها به‌صورت بازگشتی.
         /// </summary>
@@ -168,15 +179,78 @@ namespace AITechWebAPI.Validations
             // id فقط در کنترلر Users معتبر است
             return name.Equals("userId", StringComparison.OrdinalIgnoreCase)
                    || name.Equals("teacherId", StringComparison.OrdinalIgnoreCase)
-                   || name.Equals("adminid", StringComparison.OrdinalIgnoreCase)
+                   || name.Equals("adminId", StringComparison.OrdinalIgnoreCase)
                    || (isUsersController && name.Equals("id", StringComparison.OrdinalIgnoreCase));
         }
+
+        // === NEW: استخراج roleId از ورودی (پارامتر ساده یا داخل DTO/لیست) ===
+        private static HashSet<int> ExtractRoleIds(ActionExecutingContext ctx)
+        {
+            var result = new HashSet<int>();
+
+            foreach (var (argName, argVal) in ctx.ActionArguments)
+            {
+                if (argVal is null) continue;
+
+                if (IsSimple(argVal))
+                {
+                    if (IsRoleKey(argName) && TryToInt(argVal, out var v))
+                        result.Add(v);
+                    continue;
+                }
+
+                ScanObjectForRoleId(argVal, result);
+            }
+
+            return result;
+        }
+
+        private static bool IsRoleKey(string name)
+        {
+            return !string.IsNullOrEmpty(name) &&
+                   name.Equals("roleId", StringComparison.OrdinalIgnoreCase);
+        }
+
+        private static void ScanObjectForRoleId(object obj, ISet<int> sink)
+        {
+            if (obj is null) return;
+
+            if (obj is System.Collections.IEnumerable en && obj is not string)
+            {
+                foreach (var item in en)
+                    if (item != null) ScanObjectForRoleId(item, sink);
+                return;
+            }
+
+            var type = obj.GetType();
+            if (IsSimple(obj)) return;
+
+            foreach (var prop in type.GetProperties(System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance))
+            {
+                if (!prop.CanRead) continue;
+                object? val;
+                try { val = prop.GetValue(obj); }
+                catch { continue; }
+
+                if (val == null) continue;
+
+                if (IsSimple(val))
+                {
+                    if (IsRoleKey(prop.Name) && TryToInt(val, out var v))
+                        sink.Add(v);
+                }
+                else
+                {
+                    ScanObjectForRoleId(val, sink);
+                }
+            }
+        }
+        // === END NEW ===
 
         private static void ScanObject(object obj, ISet<long> sink, bool isUsersController)
         {
             if (obj is null) return;
 
-            // اگر مجموعه است، تک‌تک اعضا را بررسی کن
             if (obj is System.Collections.IEnumerable en && obj is not string)
             {
                 foreach (var item in en)
@@ -237,6 +311,20 @@ namespace AITechWebAPI.Validations
                 case string str when long.TryParse(str, out var p): val = p; return true;
                 default:
                     if (o != null && long.TryParse(o.ToString(), out var x)) { val = x; return true; }
+                    val = 0; return false;
+            }
+        }
+
+        private static bool TryToInt(object? o, out int val)
+        {
+            switch (o)
+            {
+                case int i: val = i; return true;
+                case short s: val = s; return true;
+                case long l when l is >= int.MinValue and <= int.MaxValue: val = (int)l; return true;
+                case string str when int.TryParse(str, out var p): val = p; return true;
+                default:
+                    if (o != null && int.TryParse(o.ToString(), out var x)) { val = x; return true; }
                     val = 0; return false;
             }
         }
