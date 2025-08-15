@@ -80,26 +80,100 @@ namespace AITechDATA.DataLayer.Services
             return result;
         }
 
-        public async Task<ListResultObject<UserGroup>> GetAllUserGroupsAsync(long userId = 0, long groupId = 0, int pageIndex = 1, int pageSize = 20, string searchText = "", string sortQuery = "")
+        public async Task<ListResultObject<UserGroup>> GetAllUserGroupsAsync(
+      long userId = 0,
+      long groupId = 0,
+      int pageIndex = 1,
+      int pageSize = 20,
+      string searchText = "",
+      string sortQuery = "")
         {
-            ListResultObject<UserGroup> results = new ListResultObject<UserGroup>();
+            var results = new ListResultObject<UserGroup>();
             try
             {
-                var query = _context.UserGroups
-                    .AsNoTracking()
-                    .Where(x =>
-                     (groupId == 0 || x.GroupId == groupId) &&
-                     (userId == 0 || x.UserId == userId) &&
-                      ((x.User.FullName.ToString().Contains(searchText) ||
-                        x.Group.Name.ToString().Contains(searchText))
-                    ));
+                searchText = (searchText ?? string.Empty).Trim();
 
-                results.TotalCount = query.Count();
+                // 1) پایه‌ی فیلتر
+                var baseQuery = _context.UserGroups.AsNoTracking();
+
+                if (userId > 0)
+                    baseQuery = baseQuery.Where(ug => ug.UserId == userId);
+
+                if (groupId > 0)
+                    baseQuery = baseQuery.Where(ug => ug.GroupId == groupId);
+
+                // 2) فیلتر جستجو
+                if (!string.IsNullOrWhiteSpace(searchText))
+                {
+                    if (userId > 0 && groupId == 0)
+                    {
+                        // وقتی دنبال گروه‌های یک کاربر می‌گردیم، روی اطلاعات گروه سرچ کن
+                        baseQuery = baseQuery.Where(ug =>
+                            (ug.Group.Name ?? "").Contains(searchText));
+                    }
+                    else if (groupId > 0 && userId == 0)
+                    {
+                        // وقتی دنبال کاربران یک گروه می‌گردیم، روی اطلاعات کاربر سرچ کن
+                        baseQuery = baseQuery.Where(ug =>
+                            (ug.User.FullName ?? "").Contains(searchText) ||
+                            (ug.User.Email ?? "").Contains(searchText));
+                    }
+                    else
+                    {
+                        // حالت عمومی: روی هر دو طرف
+                        baseQuery = baseQuery.Where(ug =>
+                            (ug.User.FullName ?? "").Contains(searchText) ||
+                            (ug.Group.Name ?? "").Contains(searchText));
+                    }
+                }
+
+                // 3) شمارش قبل از Include (ارزان‌تره)
+                results.TotalCount = await baseQuery.CountAsync();
                 results.PageCount = DbTools.GetPageCount(results.TotalCount, pageSize);
-                results.Results = await query.OrderByDescending(x => x.ID)
-                    .SortBy(sortQuery).ToPaging(pageIndex, pageSize)
-                    .Include(x => x.User)
-                    .Include(x => x.Group)
+
+                // 4) Include های هدفمند
+                IQueryable<UserGroup> withIncludes = baseQuery;
+                if (userId > 0 && groupId == 0)
+                {
+                    withIncludes = withIncludes.Include(ug => ug.Group);
+                }
+                else if (groupId > 0 && userId == 0)
+                {
+                    withIncludes = withIncludes.Include(ug => ug.User);
+                }
+                else
+                {
+                    withIncludes = withIncludes
+                        .Include(ug => ug.User)
+                        .Include(ug => ug.Group);
+                }
+
+                // 5) مرتب‌سازی
+                IOrderedQueryable<UserGroup> ordered;
+
+                if (string.IsNullOrWhiteSpace(sortQuery))
+                {
+                    if (userId > 0 && groupId == 0)
+                        ordered = withIncludes.OrderBy(ug => ug.Group.Name);
+                    else if (groupId > 0 && userId == 0)
+                        ordered = withIncludes.OrderBy(ug => ug.User.FullName);
+                    else
+                        ordered = withIncludes.OrderByDescending(ug => ug.ID);
+                }
+                else
+                {
+                    // SortBy => IQueryable برمی‌گردونه؛ اگر قابل کست نبود، fallback بده
+                    ordered = withIncludes.SortBy(sortQuery) as IOrderedQueryable<UserGroup>
+                              ?? withIncludes.OrderByDescending(ug => ug.ID);
+                }
+
+                results.Results = await ordered
+                    .ToPaging(pageIndex, pageSize)
+                    .ToListAsync();
+
+                // 6) صفحه‌بندی و خروجی
+                results.Results = await ordered
+                    .ToPaging(pageIndex, pageSize)
                     .ToListAsync();
             }
             catch (Exception ex)
@@ -107,8 +181,10 @@ namespace AITechDATA.DataLayer.Services
                 results.Status = false;
                 results.ErrorMessage = $"{ex.Message} - {ex.InnerException?.Message}";
             }
+
             return results;
         }
+
 
         public async Task<RowResultObject<UserGroup>> GetUserGroupByIdAsync(long UserGroupId)
         {
