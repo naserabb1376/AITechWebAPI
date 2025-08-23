@@ -78,8 +78,6 @@ namespace AITechDATA.Tools
             return query.OrderBy(sortingString.ToString());
         }
 
-       
-
         public static string FixPrice(this decimal value)
         {
             return value.ToString("#,0");
@@ -176,7 +174,17 @@ namespace AITechDATA.Tools
             var strshamsi = ToShamsi(strDate);
             var date = strshamsi.Split(' ')[0].Split('/');
             var time = strshamsi.Split(' ')[1].Split(':');
-            DateTime shamsiDate = new DateTime(Convert.ToInt32(date[0]), Convert.ToInt32(date[1]), Convert.ToInt32(date[2]), Convert.ToInt32(time[0]), Convert.ToInt32(time[1]), Convert.ToInt32(time[2]));
+
+            var pc = new PersianCalendar();
+            var year = Convert.ToInt32(date[0]);
+            var month = Convert.ToInt32(date[1]);
+            var day = Convert.ToInt32(date[2]);
+            var hour = Convert.ToInt32(time[0]);
+            var minute = Convert.ToInt32(time[1]);
+            var second = Convert.ToInt32(time[2]);
+
+            DateTime shamsiDate = pc.ToDateTime(year, month, day, hour, minute, second, 0);
+            //DateTime shamsiDate = new DateTime(Convert.ToInt32(date[0]), Convert.ToInt32(date[1]), Convert.ToInt32(date[2]), Convert.ToInt32(time[0]), Convert.ToInt32(time[1]), Convert.ToInt32(time[2]));
             return shamsiDate;
         }
 
