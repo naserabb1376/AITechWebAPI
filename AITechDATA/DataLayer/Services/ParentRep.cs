@@ -25,6 +25,13 @@ namespace AITechDATA.DataLayer.Services
             BitResultObject result = new BitResultObject();
             try
             {
+                var theStudentParents = await GetAllParentsAsync(parent.StudentDetailsId,1,0);
+
+                if (theStudentParents != null && theStudentParents.Results.Count >= 2)
+                {
+                    throw new Exception("شما مجاز به افزودن بیش از 2 والد برای یک دانش آموز نیستید");
+                }
+
                 await _context.Parents.AddAsync(parent);
                 await _context.SaveChangesAsync();
                 result.ID = parent.ID;
