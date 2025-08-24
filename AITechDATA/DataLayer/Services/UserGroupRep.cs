@@ -13,9 +13,9 @@ namespace AITechDATA.DataLayer.Services
 {
     public class UserGroupRep : IUserGroupRep
     {
-        private AiITechContext _context;
+        private AITechContext _context;
 
-        public UserGroupRep(AiITechContext context)
+        public UserGroupRep(AITechContext context)
         {
             _context = context;
         }

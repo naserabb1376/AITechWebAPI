@@ -107,7 +107,6 @@
     <Folder Include="FileCenter\UserGroup\Images\Public\" />
     <Folder Include="FileCenter\User\Files\Public\" />
     <Folder Include="FileCenter\User\Images\Public\" />
-    <Folder Include="wwwroot\" />
   </ItemGroup>
 
 </Project>

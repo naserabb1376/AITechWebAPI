@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using AITechDATA.ResultObjects;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
@@ -108,7 +109,7 @@ namespace AITechWebAPI.Validations
             }
             // === END NEW ===
 
-            context.Result = new JsonResult(new { message = "شما مجوز انجام این عملیات را ندارید." })
+            context.Result = new JsonResult(new BitResultObject() { ErrorMessage = "شما مجوز انجام این عملیات را ندارید.",Status= false })
             { StatusCode = StatusCodes.Status403Forbidden };
         }
 

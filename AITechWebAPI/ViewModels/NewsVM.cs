@@ -3,7 +3,7 @@
 namespace AITechWebAPI.ViewModels
 {
     // News: جدول اخبار دنیای هوش مصنوعی و سایر موضوعات
-    public class NewsVM : BaseEntity
+    public class NewsVM : BaseVM
     {
         public string Title { get; set; } // عنوان خبر
         public string Content { get; set; } // محتوای خبر

@@ -3,7 +3,7 @@
 namespace AITechWebAPI.ViewModels
 {
     // Attendance: جدول حضور و غیاب
-    public class AttendanceVM : BaseEntity
+    public class AttendanceVM : BaseVM
     {
         public long UserId { get; set; } // کلید خارجی به User
         public long SessionId { get; set; } // کلید خارجی به Session

@@ -18,9 +18,9 @@ namespace Services
 {
     public class TokenRep : ITokenRep
     {
-        private AiITechContext _context;
+        private AITechContext _context;
 
-        public TokenRep(AiITechContext context)
+        public TokenRep(AITechContext context)
         {
             _context = context;
         }

@@ -15,8 +15,8 @@ namespace AITechDATA.DataLayer.Services
     public class CityRep : ICityRep
     {
 
-        private AiITechContext _context;
-        public CityRep(AiITechContext context)
+        private AITechContext _context;
+        public CityRep(AITechContext context)
         {
             _context = context;
         }
@@ -78,7 +78,7 @@ namespace AITechDATA.DataLayer.Services
             
         }
 
-        public async Task<ListResultObject<City>> GetAllCitiesAsync(long parentId = 0, int pageIndex = 1, int pageSize = 20, string searchText = "",string sortQuery ="")
+        public async Task<ListResultObject<City>> GetAllCitiesAsync(long parentId = 0,string? lang = "fa",int pageIndex = 1, int pageSize = 20, string searchText = "",string sortQuery ="")
         {
             ListResultObject<City> results = new ListResultObject<City>();
             try
@@ -108,9 +108,8 @@ namespace AITechDATA.DataLayer.Services
 
                 results.TotalCount = query.Count();
                 results.PageCount = DbTools.GetPageCount(results.TotalCount, pageSize);
-                results.Results = await query.OrderByDescending(x => x.DefaultCity)
-                .SortBy(sortQuery).ToPaging(pageIndex, pageSize)
-                .ToListAsync();
+                results.Results = await query.InLang(lang).OrderByDescending(x => x.DefaultCity)
+                .SortBy(sortQuery).ToPaging(pageIndex, pageSize).ToListAsync();
             }
             catch (Exception ex)
             {
@@ -121,13 +120,14 @@ namespace AITechDATA.DataLayer.Services
 
         }
 
-        public async Task<RowResultObject<City>> GetCityByIdAsync(long CityId)
+        public async Task<RowResultObject<City>> GetCityByIdAsync(long CityId, string? lang = "fa")
         {
             RowResultObject<City> result = new RowResultObject<City>();
             try
             {
                 result.Result = await _context.Cities
                 .AsNoTracking()
+                .InLang(lang)
                 .SingleOrDefaultAsync(x => x.ID == CityId);
             }
             catch (Exception ex)

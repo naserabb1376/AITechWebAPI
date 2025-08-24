@@ -3,7 +3,7 @@
 namespace AITechWebAPI.ViewModels
 {
     // TicketMessage: جدول پیام‌های مرتبط با تیکت
-    public class TicketMessageVM : BaseEntity
+    public class TicketMessageVM : BaseVM
     {
         public long TicketId { get; set; } // کلید خارجی به Ticket
         public long? UserId { get; set; } // کلید خارجی به User 

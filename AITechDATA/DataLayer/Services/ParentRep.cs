@@ -13,9 +13,9 @@ namespace AITechDATA.DataLayer.Services
 {
     public class ParentRep : IParentRep
     {
-        private AiITechContext _context;
+        private AITechContext _context;
 
-        public ParentRep(AiITechContext context)
+        public ParentRep(AITechContext context)
         {
             _context = context;
         }
@@ -84,6 +84,7 @@ namespace AITechDATA.DataLayer.Services
                     .Where(x =>
                         (StudentDetailsId > 0 && x.StudentDetailsId == StudentDetailsId) ||
                         (!string.IsNullOrEmpty(x.Name) && x.Name.Contains(searchText)) ||
+                        (!string.IsNullOrEmpty(x.StudentDetails.User.FullName) && x.StudentDetails.User.FullName.Contains(searchText)) ||
                         (!string.IsNullOrEmpty(x.Job) && x.Job.Contains(searchText)) ||
                         (!string.IsNullOrEmpty(x.ContactNumber) && x.ContactNumber.Contains(searchText))
                     );
@@ -92,7 +93,7 @@ namespace AITechDATA.DataLayer.Services
                 results.PageCount = DbTools.GetPageCount(results.TotalCount, pageSize);
                 results.Results = await query.OrderByDescending(x => x.CreateDate)
                      .SortBy(sortQuery).ToPaging(pageIndex, pageSize)
-                    .Include(x => x.StudentDetails)
+                    .Include(x => x.StudentDetails).ThenInclude(x => x.User)
                     .ToListAsync();
             }
             catch (Exception ex)
@@ -110,7 +111,7 @@ namespace AITechDATA.DataLayer.Services
             {
                 result.Result = await _context.Parents
                     .AsNoTracking()
-                    .Include(x => x.StudentDetails)
+                    .Include(x => x.StudentDetails).ThenInclude(x => x.User)
                     .SingleOrDefaultAsync(x => x.ID == parentId);
             }
             catch (Exception ex)

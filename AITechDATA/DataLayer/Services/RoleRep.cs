@@ -13,9 +13,9 @@ namespace AITechDATA.DataLayer.Services
 {
     public class RoleRep : IRoleRep
     {
-        private AiITechContext _context;
+        private AITechContext _context;
 
-        public RoleRep(AiITechContext context)
+        public RoleRep(AITechContext context)
         {
             _context = context;
         }

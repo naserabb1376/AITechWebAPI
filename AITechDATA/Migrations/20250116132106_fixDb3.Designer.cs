@@ -11,7 +11,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace AITechDATA.Migrations
 {
-    [DbContext(typeof(AiITechContext))]
+    [DbContext(typeof(AITechContext))]
     [Migration("20250116132106_fixDb3")]
     partial class fixDb3
     {

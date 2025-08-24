@@ -3,7 +3,7 @@
 namespace AITechWebAPI.ViewModels
 {
     // Ticket: جدول تیکت‌ها
-    public class TicketVM : BaseEntity
+    public class TicketVM : BaseVM
     {
         public string Subject { get; set; } // موضوع تیکت
         public string Description { get; set; } // توضیحات تیکت

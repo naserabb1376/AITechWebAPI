@@ -3,7 +3,7 @@
 namespace AITechWebAPI.ViewModels
 {
     // TeacherResume: جدول رزومه اساتید
-    public class TeacherResumeVM : BaseEntity
+    public class TeacherResumeVM : BaseVM
     {
         public long UserId { get; set; } // کلید خارجی به User
         public string UserName { get; set; } // ارتباط با User

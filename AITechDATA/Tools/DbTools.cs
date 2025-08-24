@@ -1,15 +1,30 @@
 ﻿using AITechDATA.DataLayer;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Linq.Dynamic.Core;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
-using System.Linq.Dynamic.Core;
 
 namespace AITechDATA.Tools
 {
+
+    public static class SqlServerJsonFunctions
+    {
+        // JSON_VALUE(expression, path)  -> برمی‌گرداند string (یا null)
+        [DbFunction(name: "JSON_VALUE", IsBuiltIn = true)]
+        public static string? JsonValue(string? expression, string path)
+            => throw new NotSupportedException();
+
+        // JSON_QUERY(expression, path) -> برمی‌گرداند string JSON (یا null)
+        [DbFunction(name: "JSON_QUERY", IsBuiltIn = true)]
+        public static string? JsonQuery(string? expression, string path)
+            => throw new NotSupportedException();
+    }
+
     public static class DbTools
     {
 

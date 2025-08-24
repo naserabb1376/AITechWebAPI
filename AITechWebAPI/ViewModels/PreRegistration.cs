@@ -3,7 +3,7 @@ using AITechDATA.Tools;
 
 namespace AITechWebAPI.ViewModels
 {
-    public class PreRegistrationVM : BaseEntity
+    public class PreRegistrationVM : BaseVM
     {
         public long GroupId { get; set; } // کلید خارجی به Group
         public string GroupName { get; set; } // ارتباط با Group

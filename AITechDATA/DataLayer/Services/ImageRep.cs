@@ -14,9 +14,9 @@ namespace AITechDATA.DataLayer.Services
 {
     public class ImageRep : IImageRep
     {
-        private AiITechContext _context;
+        private AITechContext _context;
 
-        public ImageRep(AiITechContext context)
+        public ImageRep(AITechContext context)
         {
             _context = context;
         }

@@ -2,7 +2,7 @@
 
 namespace AITechWebAPI.ViewModels
 {  // Category: جدول دسته‌بندی‌ها
-    public class CategoryVM : BaseEntity
+    public class CategoryVM : BaseVM
     {
         public string CategoryName { get; set; }
 

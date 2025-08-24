@@ -49,7 +49,7 @@ namespace AITechWebAPI.Controllers
             {
                 return BadRequest(requestBody);
             }
-            var result = await _CityRep.GetAllCitiesAsync(requestBody.ParentId,requestBody.PageIndex,requestBody.PageSize,requestBody.SearchText,requestBody.SortQuery);
+            var result = await _CityRep.GetAllCitiesAsync(requestBody.ParentId,requestBody.Lang,requestBody.PageIndex,requestBody.PageSize,requestBody.SearchText,requestBody.SortQuery);
             if (result.Status)
             {
                 var resultVM = _mapper.Map<ListResultObject<CityVM>>(result);
@@ -65,7 +65,7 @@ namespace AITechWebAPI.Controllers
             {
                 return BadRequest(requestBody);
             }
-            var result = await _CityRep.GetCityByIdAsync(requestBody.ID);
+            var result = await _CityRep.GetCityByIdAsync(requestBody.ID,requestBody.Lang);
             if (result.Status)
             {
                 var resultVM = _mapper.Map<RowResultObject<CityVM>>(result);

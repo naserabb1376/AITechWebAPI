@@ -3,7 +3,7 @@
 namespace AITechWebAPI.ViewModels
 {
     // AdminReport: جدول گزارش‌های پرسنل به ادمین اصلی
-    public class AdminReportVM : BaseEntity
+    public class AdminReportVM : BaseVM
     {
         public string Title { get; set; } // عنوان گزارش
         public string Content { get; set; } // محتوای گزارش

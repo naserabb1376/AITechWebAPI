@@ -95,6 +95,7 @@ namespace AITechWebAPI.Controllers
                 LinkType = requestBody.LinkType,
                 CreatorId = requestBody.CreatorId ?? 0,
                 Description = requestBody.Description ?? "",
+                Title = requestBody.Title ?? "",
 
             };
             var result = await _LinkedEntityRep.AddLinkedEntityAsync(LinkedEntity);
@@ -145,6 +146,7 @@ namespace AITechWebAPI.Controllers
                 LinkType = requestBody.LinkType,
                 CreatorId = requestBody.CreatorId ?? 0,
                 Description = requestBody.Description ?? "",
+                Title = requestBody.Title ?? "",
 
             };
             result = await _LinkedEntityRep.EditLinkedEntityAsync(LinkedEntity);

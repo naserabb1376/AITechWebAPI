@@ -29,9 +29,11 @@ namespace AITechWebAPI.Models.LinkedEntity
         [Required(ErrorMessage = "لطفا {0} را وارد کنید")]
         public string EntityName { get; set; }
 
+        [Display(Name = "عنوان")]
+        public string? Title { get; set; }
+
         [Display(Name = "توضیحات")]
-        [Required(ErrorMessage = "لطفا {0} را وارد کنید")]
-        public string Description { get; set; }
+        public string? Description { get; set; }
 
         [Display(Name = "کاربر ایجاد کننده")]
         public long? CreatorId { get; set; }

@@ -14,9 +14,9 @@ namespace AITechDATA.DataLayer.Services
 {
     public class PaymentHistoryRep : IPaymentHistoryRep
     {
-        private AiITechContext _context;
+        private AITechContext _context;
 
-        public PaymentHistoryRep(AiITechContext context)
+        public PaymentHistoryRep(AITechContext context)
         {
             _context = context;
         }

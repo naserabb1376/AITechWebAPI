@@ -11,7 +11,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace AITechDATA.Migrations
 {
-    [DbContext(typeof(AiITechContext))]
+    [DbContext(typeof(AITechContext))]
     [Migration("20250112200040_fixaddressTable1")]
     partial class fixaddressTable1
     {

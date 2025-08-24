@@ -3,7 +3,7 @@ using AITechDATA.Domain;
 
 namespace AITechWebAPI.ViewModels
 {
-    public class AddressVM : BaseEntity
+    public class AddressVM : BaseVM
     {
         public string AddressStreet { get; set; }
         public string AddressPostalCode { get; set; }

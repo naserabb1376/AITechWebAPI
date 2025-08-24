@@ -13,9 +13,9 @@ namespace AITechDATA.DataLayer.Services
 {
     public class AdminReportRep : IAdminReportRep
     {
-        private AiITechContext _context;
+        private AITechContext _context;
 
-        public AdminReportRep(AiITechContext context)
+        public AdminReportRep(AITechContext context)
         {
             _context = context;
         }

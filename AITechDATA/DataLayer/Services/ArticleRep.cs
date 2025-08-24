@@ -14,9 +14,9 @@ namespace AITechDATA.DataLayer.Services
 {
     public class ArticleRep : IArticleRep
     {
-        private AiITechContext _context;
+        private AITechContext _context;
 
-        public ArticleRep(AiITechContext context)
+        public ArticleRep(AITechContext context)
         {
             _context = context;
         }

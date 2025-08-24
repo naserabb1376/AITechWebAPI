@@ -15,9 +15,9 @@ namespace AITechDATA.DataLayer.Services
 {
     public class FileUploadRep : IFileUploadRep
     {
-        private AiITechContext _context;
+        private AITechContext _context;
 
-        public FileUploadRep(AiITechContext context)
+        public FileUploadRep(AITechContext context)
         {
             _context = context;
         }

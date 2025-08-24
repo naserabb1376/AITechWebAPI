@@ -12,9 +12,9 @@ namespace AITechDATA.DataLayer.Services
 {
     public class GroupRep : IGroupRep
     {
-        private AiITechContext _context;
+        private AITechContext _context;
 
-        public GroupRep(AiITechContext context)
+        public GroupRep(AITechContext context)
         {
             _context = context;
         }

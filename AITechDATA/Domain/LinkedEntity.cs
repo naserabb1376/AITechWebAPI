@@ -14,7 +14,8 @@ namespace AITechDATA.Domain
         public long LinkedEntityId { get; set; } // کلید خارجی به رکورد مرتبط
         public int Priority { get; set; } // اولویت
         public string EntityName { get; set; } // نام جدول مرتبط (مثلاً "User", "Course", "Event")
-        public string Description { get; set; } = ""; // توضیحات تصویر
+        public string? Title { get; set; } 
+        public string? Description { get; set; } = ""; // توضیحات تصویر
         public long CreatorId { get; set; } = 0; // کاربر ایجاد کننده
     }
 }

@@ -3,7 +3,7 @@
 namespace AITechWebAPI.ViewModels
 {
     // PaymentHistory: جدول تاریخچه پرداخت‌ها
-    public class PaymentHistoryVM : BaseEntity
+    public class PaymentHistoryVM : BaseVM
     {
         public decimal Amount { get; set; }
         public DateTime PaymentDate { get; set; }

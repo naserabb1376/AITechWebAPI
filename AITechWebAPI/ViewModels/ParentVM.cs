@@ -3,7 +3,7 @@
 namespace AITechWebAPI.ViewModels
 {
     // Parent: جدول والدین
-    public class ParentVM : BaseEntity
+    public class ParentVM : BaseVM
     {
         public string Name { get; set; } // نام والد
         public string Job { get; set; } // شغل والد

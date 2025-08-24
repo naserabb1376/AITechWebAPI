@@ -13,9 +13,9 @@ namespace AITechDATA.DataLayer.Services
 {
     public class SessionRep : ISessionRep
     {
-        private AiITechContext _context;
+        private AITechContext _context;
 
-        public SessionRep(AiITechContext context)
+        public SessionRep(AITechContext context)
         {
             _context = context;
         }

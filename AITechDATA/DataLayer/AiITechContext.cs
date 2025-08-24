@@ -10,10 +10,13 @@ using AITechDATA.Tools;
 
 namespace AITechDATA.DataLayer
 {
-    public class AiITechContext : DbContext
+    public class AITechContext : DbContext
     {
-
-        public AiITechContext(DbContextOptions<AiITechContext> options)
+        //public AITechContext()
+        //{
+                
+        //}
+        public AITechContext(DbContextOptions<AITechContext> options)
       : base(options)
         {
         }
@@ -50,15 +53,32 @@ namespace AITechDATA.DataLayer
         public DbSet<TicketMessage> TicketMessages { get; set; }
         public DbSet<User> Users { get; set; }
         public DbSet<Token> Tokens { get; set; }
-        public DbSet<Content> Contents { get; set; }
         public DbSet<LinkedEntity> LinkedEntities { get; set; }
         public DbSet<Article> Articles { get; set; }
         public DbSet<JobRequest> JobRequests { get; set; }
+        ///     public DbSet<ClassForAi> ClassForAi { get; set; }
 
-     
+        //protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+        //{
+        //    ConfigurationHelper configurationHelper = new ConfigurationHelper();
+        //    optionsBuilder.UseSqlServer(configurationHelper.GetConnectionString("publicdb"));
+        //  //  base.OnConfiguring(optionsBuilder);
+        //}
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            modelBuilder
+          .HasDbFunction(typeof(SqlServerJsonFunctions)
+              .GetMethod(nameof(SqlServerJsonFunctions.JsonValue))!)
+          .HasName("JSON_VALUE")
+          .IsBuiltIn();
+
+            modelBuilder
+                .HasDbFunction(typeof(SqlServerJsonFunctions)
+                    .GetMethod(nameof(SqlServerJsonFunctions.JsonQuery))!)
+                .HasName("JSON_QUERY")
+                .IsBuiltIn();
+
             modelBuilder.Entity<StudentDetails>()
                 .HasOne(sd => sd.User) // یک StudentDetails به یک User تعلق دارد
                 .WithOne(u => u.StudentDetails) // یک User می‌تواند یک StudentDetails داشته باشد

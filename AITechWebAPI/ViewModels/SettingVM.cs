@@ -3,7 +3,7 @@
 namespace AITechWebAPI.ViewModels
 {
     // Setting: جدول تنظیمات اصلی سایت
-    public class SettingVM : BaseEntity
+    public class SettingVM : BaseVM
     {
         public string Key { get; set; } // کلید تنظیمات
         public string Value { get; set; } // مقدار تنظیمات

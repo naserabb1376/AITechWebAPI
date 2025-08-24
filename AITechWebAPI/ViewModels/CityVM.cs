@@ -2,7 +2,7 @@
 
 namespace AITechWebAPI.ViewModels
 {
-    public class CityVM : BaseEntity
+    public class CityVM : BaseVM
     {
         public long CityParentID { get; set; }
         public string CityName { get; set; }

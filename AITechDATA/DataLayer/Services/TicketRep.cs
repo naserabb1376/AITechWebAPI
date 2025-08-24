@@ -14,9 +14,9 @@ namespace AITechDATA.DataLayer.Services
 {
     public class TicketRep : ITicketRep
     {
-        private AiITechContext _context;
+        private AITechContext _context;
 
-        public TicketRep(AiITechContext context)
+        public TicketRep(AITechContext context)
         {
             _context = context;
         }
