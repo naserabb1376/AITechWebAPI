@@ -13,9 +13,9 @@ namespace AITechDATA.DataLayer.Services
 {
     public class LoginMethodRep : ILoginMethodRep
     {
-        private AiITechContext _context;
+        private AITechContext _context;
 
-        public LoginMethodRep(AiITechContext context)
+        public LoginMethodRep(AITechContext context)
         {
             _context = context;
         }

@@ -16,8 +16,8 @@ namespace AITechDATA.DataLayer.Services
     public class LogRep : ILogRep
     {
 
-        private AiITechContext _context;
-        public LogRep(AiITechContext context)
+        private AITechContext _context;
+        public LogRep(AITechContext context)
         {
             _context = context;
         }

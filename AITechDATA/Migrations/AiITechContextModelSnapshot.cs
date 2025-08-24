@@ -10,8 +10,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace AITechDATA.Migrations
 {
-    [DbContext(typeof(AiITechContext))]
-    partial class AiITechContextModelSnapshot : ModelSnapshot
+    [DbContext(typeof(AITechContext))]
+    partial class AITechContextModelSnapshot : ModelSnapshot
     {
         protected override void BuildModel(ModelBuilder modelBuilder)
         {
@@ -321,44 +321,6 @@ namespace AITechDATA.Migrations
                     b.ToTable("Comments");
                 });
 
-            modelBuilder.Entity("AITechDATA.Domain.Content", b =>
-                {
-                    b.Property<long>("ID")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("ID"));
-
-                    b.Property<DateTime?>("CreateDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("Description")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("EntityType")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<long>("ForeignKeyId")
-                        .HasColumnType("bigint");
-
-                    b.Property<bool>("HaveImage")
-                        .HasColumnType("bit");
-
-                    b.Property<string>("OtherLangs")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int?>("Priority")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime?>("UpdateDate")
-                        .HasColumnType("datetime2");
-
-                    b.HasKey("ID");
-
-                    b.ToTable("Contents");
-                });
-
             modelBuilder.Entity("AITechDATA.Domain.Course", b =>
                 {
                     b.Property<long>("ID")
@@ -663,7 +625,6 @@ namespace AITechDATA.Migrations
                         .HasColumnType("bigint");
 
                     b.Property<string>("Description")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("EntityName")
@@ -685,6 +646,9 @@ namespace AITechDATA.Migrations
 
                     b.Property<int>("Priority")
                         .HasColumnType("int");
+
+                    b.Property<string>("Title")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime?>("UpdateDate")
                         .HasColumnType("datetime2");

@@ -3,7 +3,7 @@
 namespace AITechWebAPI.ViewModels
 {
     // Course: جدول دوره‌ها
-    public class CourseVM : BaseEntity
+    public class CourseVM : BaseVM
     {
         public string Title { get; set; }
         public string Description { get; set; }

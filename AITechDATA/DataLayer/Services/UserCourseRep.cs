@@ -13,9 +13,9 @@ namespace AITechDATA.DataLayer.Services
 {
     public class UserCourseRep : IUserCourseRep
     {
-        private AiITechContext _context;
+        private AITechContext _context;
 
-        public UserCourseRep(AiITechContext context)
+        public UserCourseRep(AITechContext context)
         {
             _context = context;
         }

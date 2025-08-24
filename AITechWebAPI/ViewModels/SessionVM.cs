@@ -3,7 +3,7 @@
 namespace AITechWebAPI.ViewModels
 {
     // Session: جدول جلسات دوره‌ها
-    public class SessionVM : BaseEntity
+    public class SessionVM : BaseVM
     {
         public long GroupId { get; set; } // کلید خارجی به Group
         public string GroupName { get; set; } // ارتباط با Group

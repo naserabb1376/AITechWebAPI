@@ -13,9 +13,9 @@ namespace AITechDATA.DataLayer.Services
 {
     public class AttendanceRep : IAttendanceRep
     {
-        private AiITechContext _context;
+        private AITechContext _context;
 
-        public AttendanceRep(AiITechContext context)
+        public AttendanceRep(AITechContext context)
         {
             _context = context;
         }

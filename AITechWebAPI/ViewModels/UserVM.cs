@@ -3,7 +3,7 @@
 namespace AITechWebAPI.ViewModels
 {
     // User: جدول کاربران
-    public class UserVM : BaseEntity
+    public class UserVM : BaseVM
     {
         public string FullName { get; set; }
         public string Email { get; set; }
@@ -14,7 +14,7 @@ namespace AITechWebAPI.ViewModels
         public long? AddressId { get; set; } // کلید خارجی به Address    }
     }
 
-    public class TeacherVM : BaseEntity
+    public class TeacherVM : BaseVM
     {
         public string FullName { get; set; }
         public string Email { get; set; }

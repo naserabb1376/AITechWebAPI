@@ -10,8 +10,8 @@ namespace AITechDATA.DataLayer.Repositories
 {
     public interface ICityRep
     {
-        public Task<ListResultObject<City>> GetAllCitiesAsync(long parentId = 0, int pageIndex = 1, int pageSize = 20, string searchText = "",string sortQuery ="");
-        public Task<RowResultObject<City>> GetCityByIdAsync(long CityId);
+        public Task<ListResultObject<City>> GetAllCitiesAsync(long parentId = 0, string? lang = "fa", int pageIndex = 1, int pageSize = 20, string searchText = "",string sortQuery ="");
+        public Task<RowResultObject<City>> GetCityByIdAsync(long CityId, string? lang = "fa");
         public Task<BitResultObject> AddCityAsync(City City);
         public Task<BitResultObject> EditCityAsync(City City);
         public Task<BitResultObject> RemoveCityAsync(City City);

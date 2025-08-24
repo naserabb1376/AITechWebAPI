@@ -15,9 +15,9 @@ namespace AITechDATA.DataLayer.Services
 {
     public class LinkedEntityRep : ILinkedEntityRep
     {
-        private AiITechContext _context;
+        private AITechContext _context;
 
-        public LinkedEntityRep(AiITechContext context)
+        public LinkedEntityRep(AITechContext context)
         {
             _context = context;
         }

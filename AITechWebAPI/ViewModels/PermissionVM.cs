@@ -2,7 +2,7 @@
 
 namespace AITechWebAPI.ViewModels
 { // Permission: جدول دسترسی‌ها
-    public class PermissionVM : BaseEntity
+    public class PermissionVM : BaseVM
     {
         public string Name { get; set; } // نام دسترسی (مثلاً Create, Edit, Delete)
         public string Name_EN { get; set; }

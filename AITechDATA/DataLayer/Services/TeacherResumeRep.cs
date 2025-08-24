@@ -13,9 +13,9 @@ namespace AITechDATA.DataLayer.Services
 {
     public class TeacherResumeRep : ITeacherResumeRep
     {
-        private AiITechContext _context;
+        private AITechContext _context;
 
-        public TeacherResumeRep(AiITechContext context)
+        public TeacherResumeRep(AITechContext context)
         {
             _context = context;
         }

@@ -3,7 +3,7 @@
 namespace AITechWebAPI.ViewModels
 {
     // Assignment: جدول ارسال تمرین‌ها توسط دانش‌آموزان
-    public class AssignmentVM : BaseEntity
+    public class AssignmentVM : BaseVM
     {
         public string Title { get; set; } // عنوان تمرین
         public string Description { get; set; } // توضیحات تمرین

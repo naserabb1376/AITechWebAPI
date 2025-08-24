@@ -2,7 +2,7 @@
 
 namespace AITechWebAPI.ViewModels
 { // Permission: جدول دسترسی‌ها
-    public class PermissionRoleVM : BaseEntity
+    public class PermissionRoleVM : BaseVM
     {
         public long RoleId { get; set; }
         public string RoleName { get; set; }

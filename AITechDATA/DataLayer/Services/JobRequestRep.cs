@@ -13,9 +13,9 @@ namespace AITechDATA.DataLayer.Services
 {
     public class JobRequestRep : IJobRequestRep
     {
-        private AiITechContext _context;
+        private AITechContext _context;
 
-        public JobRequestRep(AiITechContext context)
+        public JobRequestRep(AITechContext context)
         {
             _context = context;
         }

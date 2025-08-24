@@ -13,9 +13,9 @@ namespace AITechDATA.DataLayer.Services
 {
     public class PreRegistrationRep : IPreRegistrationRep
     {
-        private AiITechContext _context;
+        private AITechContext _context;
 
-        public PreRegistrationRep(AiITechContext context)
+        public PreRegistrationRep(AITechContext context)
         {
             _context = context;
         }

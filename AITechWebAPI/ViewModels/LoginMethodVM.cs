@@ -3,7 +3,7 @@
 namespace AITechWebAPI.ViewModels
 {
     // LoginMethod: جدول روش‌های ورود
-    public class LoginMethodVM : BaseEntity
+    public class LoginMethodVM : BaseVM
     {
         public long UserId { get; set; } // کلید خارجی به User
         public string UserName { get; set; } // ارتباط با User

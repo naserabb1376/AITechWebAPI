@@ -1,15 +1,16 @@
-﻿using Microsoft.AspNetCore.Authentication;
+﻿using AITechDATA.Domain;
+using AITechDATA.Tools;
+using AITechWebAPI.Models.Authenticate;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.IdentityModel.Tokens;
-using AITechDATA.Domain;
 using System.IdentityModel.Tokens.Jwt;
-using System.Net.Mail;
 using System.Net;
+using System.Net.Mail;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
+using System.Text.Json;
 using VerifyCodeSMSService;
-using AITechDATA.Tools;
-using AITechWebAPI.Models.Authenticate;
 
 namespace AITechWebAPI.Tools
 {
@@ -271,4 +272,5 @@ namespace AITechWebAPI.Tools
 
 
     }
+
 }

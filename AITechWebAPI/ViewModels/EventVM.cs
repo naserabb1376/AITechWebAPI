@@ -3,7 +3,7 @@
 namespace AITechWebAPI.ViewModels
 {
     // Event: جدول اخبار و رویدادها
-    public class EventVM : BaseEntity
+    public class EventVM : BaseVM
     {
         public string Title { get; set; } // عنوان رویداد
         public string Description { get; set; } // توضیحات رویداد

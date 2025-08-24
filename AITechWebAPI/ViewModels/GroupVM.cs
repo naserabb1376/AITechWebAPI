@@ -2,7 +2,7 @@
 
 namespace AITechWebAPI.ViewModels
 {
-    public class GroupVM:BaseEntity
+    public class GroupVM:BaseVM
     {
         public string Name { get; set; } // نام گروه
         public string DayOfWeek { get; set; } // روز برگزاری (مثلاً شنبه)

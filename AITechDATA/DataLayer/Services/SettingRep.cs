@@ -15,9 +15,9 @@ namespace AITechDATA.DataLayer.Services
 {
     public class SettingRep : ISettingRep
     {
-        private AiITechContext _context;
+        private AITechContext _context;
 
-        public SettingRep(AiITechContext context)
+        public SettingRep(AITechContext context)
         {
             _context = context;
         }

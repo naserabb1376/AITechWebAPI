@@ -13,9 +13,9 @@ namespace AITechDATA.DataLayer.Services
 {
     public class PermissionRep : IPermissionRep
     {
-        private AiITechContext _context;
+        private AITechContext _context;
 
-        public PermissionRep(AiITechContext context)
+        public PermissionRep(AITechContext context)
         {
             _context = context;
         }

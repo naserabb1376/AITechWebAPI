@@ -124,7 +124,7 @@ namespace AITechWebAPI
 
             var configHelper = new ConfigurationHelper();
 
-            builder.Services.AddDbContext<AiITechContext>(options =>
+            builder.Services.AddDbContext<AITechContext>(options =>
                 options.UseSqlServer(configHelper.GetConnectionString("publicdb")));
 
 
@@ -163,7 +163,6 @@ namespace AITechWebAPI
             builder.Services.AddScoped<IUserCourseRep, UserCourseRep>();
             builder.Services.AddScoped<IUserGroupRep, UserGroupRep>();
             builder.Services.AddScoped<IUserRep, UserRep>();
-            builder.Services.AddScoped<IContentRep, ContentRep>();
             builder.Services.AddScoped<ILinkedEntityRep, LinkedEntityRep>();
             builder.Services.AddScoped<IJobRequestRep, JobRequestRep>();
             builder.Services.AddScoped<IArticleRep, ArticleRep>();
@@ -203,6 +202,8 @@ namespace AITechWebAPI
 
             #region Pipeline
 
+            app.UseStaticFiles();
+
             //if (app.Environment.IsDevelopment())
             //{
             app.UseSwagger();
@@ -211,6 +212,7 @@ namespace AITechWebAPI
                 c.DocExpansion(Swashbuckle.AspNetCore.SwaggerUI.DocExpansion.None);
                 c.SwaggerEndpoint("/swagger/v1/swagger.json", $"{apiTitle} {apiVersion}");
                 c.RoutePrefix = string.Empty; // روت اصلی سایت برای Swagger
+                c.InjectJavascript("/js/swagger-token.js");
             });
 
             //}

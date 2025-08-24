@@ -13,9 +13,9 @@ namespace AITechDATA.DataLayer.Services
 {
     public class NotificationRep : INotificationRep
     {
-        private AiITechContext _context;
+        private AITechContext _context;
 
-        public NotificationRep(AiITechContext context)
+        public NotificationRep(AITechContext context)
         {
             _context = context;
         }

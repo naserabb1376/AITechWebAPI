@@ -2,7 +2,5 @@
   "ConnectionStrings": {
     "publicdb": "Server=mtcoding.ir;Initial Catalog=mtcoding_AITechDb;User ID=mtcoding_nobatplus;Password=38o70&dcA;MultipleActiveResultSets=True;TrustServerCertificate=True;",
     "localdb": "Data Source =.;Initial Catalog=AITechDb;Integrated Security=True;MultipleActiveResultSets=True;TrustServerCertificate=True;",
-    "Tokenpublicdb": "Server=mtcoding.ir;Initial Catalog=mtcoding_AITechTokensDb;User ID=mtcoding_nobatplus;Password=38o70&dcA;MultipleActiveResultSets=True;TrustServerCertificate=True;",
-    "Tokenlocaldb": "Data Source =.;Initial Catalog=AITechTokensDb;Integrated Security=True;MultipleActiveResultSets=True;TrustServerCertificate=True;"
   }
 }

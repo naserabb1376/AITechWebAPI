@@ -15,9 +15,9 @@ namespace AITechDATA.DataLayer.Services
 {
     public class CommentRep : ICommentRep
     {
-        private AiITechContext _context;
+        private AITechContext _context;
 
-        public CommentRep(AiITechContext context)
+        public CommentRep(AITechContext context)
         {
             _context = context;
         }

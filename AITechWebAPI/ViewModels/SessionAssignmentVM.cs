@@ -3,7 +3,7 @@
 namespace AITechWebAPI.ViewModels
 {
     // SessionAssignment: جدول تمرین‌های مرتبط با جلسات
-    public class SessionAssignmentVM : BaseEntity
+    public class SessionAssignmentVM : BaseVM
     {
         public long SessionId { get; set; } // کلید خارجی به Session
         public string Title { get; set; } // عنوان تمرین

@@ -2,7 +2,7 @@
 
 namespace AITechWebAPI.ViewModels
 { // Permission: جدول دسترسی‌ها
-    public class UserGroupVM : BaseEntity
+    public class UserGroupVM : BaseVM
     {
         public long UserId { get; set; }
         public string UserName { get; set; }
