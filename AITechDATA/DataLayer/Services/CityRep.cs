@@ -95,7 +95,6 @@ namespace AITechDATA.DataLayer.Services
                        (x.UpdateDate.HasValue && x.UpdateDate.Value.ToString().Contains(searchText))
                    // || (!string.IsNullOrEmpty(x.Description) && x.Description.Contains(searchText))
                    );
-            }
 
                 results.TotalCount = query.Count();
                 results.PageCount = DbTools.GetPageCount(results.TotalCount, pageSize);
