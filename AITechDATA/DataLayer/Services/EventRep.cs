@@ -80,7 +80,8 @@ namespace AITechDATA.DataLayer.Services
             EventListCustomResponse<Event> results = new EventListCustomResponse<Event>();
             try
             {
-                var query = _context.Events.AsNoTracking().Select(a => new Event()
+                var query = _context.Events.AsNoTracking().Include(x => x.User)
+.Select(a => new Event()
                 {
                     ID = a.ID,
                     Title = a.Title,
@@ -110,7 +111,6 @@ namespace AITechDATA.DataLayer.Services
                 results.PageCount = DbTools.GetPageCount(results.TotalCount, pageSize);
                 results.Results = await query.OrderByDescending(x => x.EventDate)
                      .SortBy(sortQuery).ToPaging(pageIndex, pageSize)
-                     .Include(x=> x.User)
                     .ToListAsync();
 
                 results.ResultImages = results.Results

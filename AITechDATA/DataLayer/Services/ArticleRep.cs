@@ -80,7 +80,8 @@ namespace AITechDATA.DataLayer.Services
             ArticleListCustomResponse<Article> results = new ArticleListCustomResponse<Article>();
             try
             {
-                var query = _context.Articles.AsNoTracking()
+                var query = _context.Articles.AsNoTracking().Include(x => x.Category)
+
                      .Select(a => new Article()
                      {
                        ID =  a.ID,
@@ -107,7 +108,6 @@ namespace AITechDATA.DataLayer.Services
                 results.PageCount = DbTools.GetPageCount(results.TotalCount, pageSize);
                 results.Results = await query.OrderByDescending(x => x.CreateDate)
                      .SortBy(sortQuery).ToPaging(pageIndex, pageSize)
-                    .Include(x => x.Category)
                     .ToListAsync();
 
                 // Map images for each Article

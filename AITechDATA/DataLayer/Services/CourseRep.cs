@@ -80,7 +80,9 @@ namespace AITechDATA.DataLayer.Services
             CourseListCustomResponse<Course> results = new CourseListCustomResponse<Course>();
             try
             {
-                var query = _context.Courses.AsNoTracking().Select(a => new Course()
+                var query = _context.Courses.AsNoTracking().Include(x => x.Category)
+                    .Include(x => x.Groups)
+.Select(a => new Course()
                 {
                     ID = a.ID,
                     Title = a.Title,
@@ -108,8 +110,6 @@ namespace AITechDATA.DataLayer.Services
                 results.PageCount = DbTools.GetPageCount(results.TotalCount, pageSize);
                 results.Results = await query.OrderByDescending(x => x.CreateDate)
                      .SortBy(sortQuery).ToPaging(pageIndex, pageSize)
-                    .Include(x => x.Category)
-                    .Include(x => x.Groups)
                     .ToListAsync();
 
                 // Map images for each Course
