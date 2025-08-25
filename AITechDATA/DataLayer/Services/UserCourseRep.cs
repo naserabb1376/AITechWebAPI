@@ -85,11 +85,19 @@ namespace AITechDATA.DataLayer.Services
             ListResultObject<UserCourse> results = new ListResultObject<UserCourse>();
             try
             {
-                var query = _context.UserCourses
-                    .AsNoTracking()
-                    .Where(x =>
-                        (CourseId > 0 && x.CourseId == CourseId) ||
-                        (UserId > 0 && x.UserId == UserId) ||
+                var query = _context.UserCourses.AsNoTracking();
+
+                if (UserId > 0)
+                {
+                    query = query.Where(x => x.UserId == UserId);
+                }
+
+                if (CourseId > 0)
+                {
+                    query = query.Where(x => x.CourseId == CourseId);
+                }
+
+                query = query.Where(x =>
                        ( x.User.FullName.ToString().Contains(searchText) ||
                         x.Course.Title.ToString().Contains(searchText)
                     ));

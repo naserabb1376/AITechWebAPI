@@ -85,12 +85,18 @@ namespace AITechDATA.DataLayer.Services
             ListResultObject<Attendance> results = new ListResultObject<Attendance>();
             try
             {
-                var query = _context.Attendances
-                    .AsNoTracking()
-                    .Where(x =>
-                        ((userId == 0 || x.UserId == userId) && (sessionId == 0 || x.SessionId == sessionId)) &&
-                        ((x.User.ID.ToString().Contains(searchText) ||
-                        x.Session.ID.ToString().Contains(searchText))
+                var query = _context.Attendances.AsNoTracking();
+                if (userId > 0)
+                {
+                    query = query.Where(x => x.UserId == userId);
+                }
+                if (sessionId > 0)
+                {
+                    query = query.Where(x => x.SessionId == sessionId);
+                }
+                query =query.Where(x =>
+                        ((x.User.FullName.ToString().Contains(searchText) ||
+                        x.Session.SessionDate.ToString().Contains(searchText))
                     ));
 
                 results.TotalCount = query.Count();

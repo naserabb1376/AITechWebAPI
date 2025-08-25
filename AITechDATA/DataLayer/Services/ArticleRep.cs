@@ -80,11 +80,25 @@ namespace AITechDATA.DataLayer.Services
             ArticleListCustomResponse<Article> results = new ArticleListCustomResponse<Article>();
             try
             {
-                var query = _context.Articles
-                    .AsNoTracking()
-                    .Where(x =>
-                        (categoryId > 0 && x.CategoryId == categoryId)
-                        ||((!string.IsNullOrEmpty(x.Title) && x.Title.Contains(searchText)) ||
+                var query = _context.Articles.AsNoTracking()
+                     .Select(a => new Article()
+                     {
+                       ID =  a.ID,
+                       Title = a.Title,
+                       CategoryId = a.CategoryId,
+                       Category = a.Category,
+                       Note = a.Note,
+                       CreateDate = a.CreateDate,
+                       UpdateDate = a.UpdateDate,
+                       Description = "",
+                       OtherLangs = "",
+                     });
+                if (categoryId > 0)
+                {
+                    query = query.Where(x => x.CategoryId == categoryId);
+                }
+                query = query.Where(x =>
+                    ((!string.IsNullOrEmpty(x.Title) && x.Title.Contains(searchText)) ||
                         (!string.IsNullOrEmpty(x.Note) && x.Note.Contains(searchText)) ||
                         (!string.IsNullOrEmpty(x.Description) && x.Description.Contains(searchText)))
                     );

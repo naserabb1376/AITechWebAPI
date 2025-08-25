@@ -80,11 +80,27 @@ namespace AITechDATA.DataLayer.Services
             EventListCustomResponse<Event> results = new EventListCustomResponse<Event>();
             try
             {
-                var query = _context.Events
-                    .AsNoTracking()
-                    .Where(x =>
-                        (userId > 0 && x.UserId == userId)
-                        || ((!string.IsNullOrEmpty(x.Title) && x.Title.Contains(searchText)) ||
+                var query = _context.Events.AsNoTracking().Select(a => new Event()
+                {
+                    ID = a.ID,
+                    Title = a.Title,
+                    UserId = a.UserId,
+                    User = a.User,
+                    Note = a.Note,
+                    CreateDate = a.CreateDate,
+                    UpdateDate = a.UpdateDate,
+                    EventDate = a.EventDate,
+                    Keywords = a.Keywords,
+                    Description = "",
+                    OtherLangs = "",
+
+                });
+                if (userId > 0)
+                {
+                    query = query.Where(x => x.UserId == userId);
+                }
+                query = query.Where(x =>
+                        ((!string.IsNullOrEmpty(x.Title) && x.Title.Contains(searchText)) ||
                         (!string.IsNullOrEmpty(x.Note) && x.Note.Contains(searchText)) ||
                         (!string.IsNullOrEmpty(x.Description) && x.Description.Contains(searchText)) ||
                         (!string.IsNullOrEmpty(x.Keywords) && x.Keywords.Contains(searchText)))
@@ -94,6 +110,7 @@ namespace AITechDATA.DataLayer.Services
                 results.PageCount = DbTools.GetPageCount(results.TotalCount, pageSize);
                 results.Results = await query.OrderByDescending(x => x.EventDate)
                      .SortBy(sortQuery).ToPaging(pageIndex, pageSize)
+                     .Include(x=> x.User)
                     .ToListAsync();
 
                 results.ResultImages = results.Results

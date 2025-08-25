@@ -79,11 +79,15 @@ namespace AITechDATA.DataLayer.Services
             ListResultObject<PreRegistration> results = new ListResultObject<PreRegistration>();
             try
             {
-                var query = _context.PreRegistrations
-                    .AsNoTracking()
-                    .Where(x =>
-                        (groupId > 0 && x.GroupId == groupId)
-                     || ((!string.IsNullOrEmpty(x.FullName) && x.FullName.Contains(searchText)) ||
+                var query = _context.PreRegistrations.AsNoTracking();
+
+                if (groupId > 0)
+                {
+                    query = query.Where(x => x.GroupId == groupId);
+                }
+
+                query = query.Where(x =>
+                        ((!string.IsNullOrEmpty(x.FullName) && x.FullName.Contains(searchText)) ||
                         (!string.IsNullOrEmpty(x.Email) && x.Email.Contains(searchText)) ||
                         (!string.IsNullOrEmpty(x.PhoneNumber) && x.PhoneNumber.Contains(searchText)))
                     );

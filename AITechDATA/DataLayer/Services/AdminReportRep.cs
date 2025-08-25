@@ -79,11 +79,13 @@ namespace AITechDATA.DataLayer.Services
             ListResultObject<AdminReport> results = new ListResultObject<AdminReport>();
             try
             {
-                var query = _context.AdminReports
-                    .AsNoTracking()
-                    .Where(x =>
-                        (userId > 0 && x.AdminId == userId)
-                        || ((!string.IsNullOrEmpty(x.Title) && x.Title.Contains(searchText)) ||
+                var query = _context.AdminReports.AsNoTracking();
+                if(userId > 0)
+                {
+                    query = query.Where(x => x.AdminId == userId);
+                }
+                    query = query.Where(x =>
+                        ((!string.IsNullOrEmpty(x.Title) && x.Title.Contains(searchText)) ||
                         (!string.IsNullOrEmpty(x.Content) && x.Content.Contains(searchText))
                     ));
 

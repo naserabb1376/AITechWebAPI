@@ -85,12 +85,17 @@ namespace AITechDATA.DataLayer.Services
             ListResultObject<Assignment> results = new ListResultObject<Assignment>();
             try
             {
-                var query = _context.Assignments
-                    .AsNoTracking()
-                    .Where(x =>
-                         (sessionAssignmentId > 0 && x.SessionAssignmentId == sessionAssignmentId)
-                         || (UserId > 0 && x.UserId == UserId)
-                       || ((!string.IsNullOrEmpty(x.Title) && x.Title.Contains(searchText)) ||
+                var query = _context.Assignments.AsNoTracking();
+                if (UserId > 0)
+                {
+                    query = query.Where(x => x.UserId == UserId);
+                }
+                if (sessionAssignmentId > 0)
+                {
+                    query = query.Where(x => x.SessionAssignmentId == sessionAssignmentId);
+                }
+                query = query.Where(x =>
+                         ((!string.IsNullOrEmpty(x.Title) && x.Title.Contains(searchText)) ||
                         (!string.IsNullOrEmpty(x.Description) && x.Description.Contains(searchText)))
                     );
 

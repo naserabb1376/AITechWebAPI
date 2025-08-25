@@ -110,13 +110,17 @@ namespace Services
             ListResultObject<Token> results = new ListResultObject<Token>();
             try
             {
-                var query = _context.Tokens
-                .AsNoTracking()
-                .Where(x =>
-                    (UserId > 0 && x.UserId == UserId) ||
+                var query = _context.Tokens.AsNoTracking();
+
+                if (UserId > 0)
+                {
+                    query = query.Where(x => x.UserId == UserId);
+                }
+
+
+                query = query.Where(x =>
                     (!string.IsNullOrEmpty(x.TokenValue.ToString()) && x.TokenValue.ToString().Contains(searchText)) ||
                     (!string.IsNullOrEmpty(x.Type.ToString()) && x.Type.ToString().Contains(searchText)) ||
-
                     (x.ExpiryDate.ToString().Contains(searchText)) ||
                     (x.CreatedDate.ToString().Contains(searchText)) ||
                     (x.RevokedDate.HasValue && x.RevokedDate.Value.ToString().Contains(searchText))

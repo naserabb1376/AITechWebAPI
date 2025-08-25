@@ -79,10 +79,14 @@ namespace AITechDATA.DataLayer.Services
             ListResultObject<Notification> results = new ListResultObject<Notification>();
             try
             {
-                var query = _context.Notifications
-                    .AsNoTracking()
-                    .Where(x =>
-                    (userId > 0 && x.UserId == userId) ||
+                var query = _context.Notifications.AsNoTracking();
+
+                if (userId > 0)
+                {
+                    query = query.Where(x => x.UserId == userId);
+                }
+
+                query = query.Where(x =>
                         ((!string.IsNullOrEmpty(x.Message) && x.Message.Contains(searchText))
                         ));
 

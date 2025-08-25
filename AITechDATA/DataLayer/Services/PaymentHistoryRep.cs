@@ -80,11 +80,19 @@ namespace AITechDATA.DataLayer.Services
             ListResultObject<PaymentHistory> results = new ListResultObject<PaymentHistory>();
             try
             {
-                var query = _context.PaymentHistories
-                    .AsNoTracking()
-                .Where(x =>
-                (GroupId > 0 && x.GroupId == GroupId) || (UserId > 0 && x.UserId == UserId) ||
-                (x.Amount.ToString().Contains(searchText)) ||
+                var query = _context.PaymentHistories.AsNoTracking();
+
+                if (GroupId > 0)
+                {
+                    query = query.Where(x => x.GroupId == GroupId);
+                }
+                if (UserId > 0)
+                {
+                    query = query.Where(x => x.UserId == UserId);
+                }
+
+                query = query.Where(x =>
+                        (x.Amount.ToString().Contains(searchText)) ||
                         (!string.IsNullOrEmpty(x.User.FullName) && x.User.FullName.Contains(searchText)) ||
                         (!string.IsNullOrEmpty(x.Group.Name) && x.Group.Name.Contains(searchText))
                     );

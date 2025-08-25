@@ -86,14 +86,8 @@ namespace AITechDATA.DataLayer.Services
             ListResultObject<PermissionRole> results = new ListResultObject<PermissionRole>();
             try
             {
-                var query = _context.PermissionRoles.Include(x =>x.Role).Include(x=> x.Permission)
-                    .AsNoTracking()
-                    .Where(x =>
-                        x.Permission.Name.ToString().Contains(searchText) ||
-                        x.Permission.Routename.ToString().Contains(searchText) ||
-                        x.Role.Name.ToString().Contains(searchText)
-                    );
 
+                var query = _context.PermissionRoles.Include(x => x.Role).Include(x => x.Permission).AsNoTracking();
                 if (PerrmissionId > 0)
                 {
                     query = query.Where(x => x.PerrmissionId == PerrmissionId);
@@ -108,6 +102,12 @@ namespace AITechDATA.DataLayer.Services
                 {
                     query = query.Where(x => x.Permission.PermissionType == permissionType);
                 }
+
+                query = query.Where(x =>
+                        x.Permission.Name.ToString().Contains(searchText) ||
+                        x.Permission.Routename.ToString().Contains(searchText) ||
+                        x.Role.Name.ToString().Contains(searchText)
+                    );
 
 
                 results.TotalCount = query.Count();

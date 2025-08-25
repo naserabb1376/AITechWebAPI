@@ -82,10 +82,26 @@ namespace AITechDATA.DataLayer.Services
             NewsListCustomResponse<News> results = new NewsListCustomResponse<News>();
             try
             {
-                var query = _context.News
-                    .AsNoTracking()
-                    .Where(x =>
-                        (userId > 0 && x.UserId == userId) || 
+                var query = _context.News.AsNoTracking().Select(a => new News()
+                {
+                    ID = a.ID,
+                    Title = a.Title,
+                    UserId = a.UserId,
+                    User = a.User,
+                    Note = a.Note,
+                    Keywords = a.Keywords,
+                    PublishDate = a.PublishDate,
+                    Source = a.Source,
+                    CreateDate = a.CreateDate,
+                    UpdateDate = a.UpdateDate,
+                    Content = "",
+                    OtherLangs = "",
+                });
+                if (userId > 0)
+                {
+                    query = query.Where(x => x.UserId == userId);
+                }
+                query = query.Where(x =>
                         ((!string.IsNullOrEmpty(x.Title) && x.Title.Contains(searchText)) ||
                         (!string.IsNullOrEmpty(x.Content) && x.Content.Contains(searchText)) ||
                         (!string.IsNullOrEmpty(x.Source) && x.Source.Contains(searchText)) ||
@@ -97,6 +113,7 @@ namespace AITechDATA.DataLayer.Services
                 results.PageCount = DbTools.GetPageCount(results.TotalCount, pageSize);
                 results.Results = await query.OrderByDescending(x => x.PublishDate)
                      .SortBy(sortQuery).ToPaging(pageIndex, pageSize)
+                     .Include(x=> x.User)
                     .ToListAsync();
 
                 results.ResultImages = results.Results

@@ -85,26 +85,17 @@ namespace AITechDATA.DataLayer.Services
             {
                 IQueryable<City> query = _context.Cities.AsNoTracking();
 
-                if (parentId < 0)
+                if (parentId >= 0)
                 {
-                    query = query.Where(x =>
-                        (!string.IsNullOrEmpty(x.CityName) && x.CityName.Contains(searchText)) ||
-                        (x.CreateDate.HasValue && x.CreateDate.Value.ToString().Contains(searchText)) ||
-                        (x.UpdateDate.HasValue && x.UpdateDate.Value.ToString().Contains(searchText)) 
-                       // || (!string.IsNullOrEmpty(x.Description) && x.Description.Contains(searchText))
-                    );
+                    query = query.Where(x=> x.CityParentID == parentId);
                 }
-                else
-                {
-                    query = query.Where(x =>
-                        x.CityParentID == parentId &&
-                        ((!string.IsNullOrEmpty(x.CityName) && x.CityName.Contains(searchText)) ||
-                        (x.CreateDate.HasValue && x.CreateDate.Value.ToString().Contains(searchText)) ||
-                        (x.UpdateDate.HasValue && x.UpdateDate.Value.ToString().Contains(searchText))
-                   //   ||  (!string.IsNullOrEmpty(x.Description) && x.Description.Contains(searchText))
-                        )
-                    );
-                }
+                query = query.Where(x =>
+                       (!string.IsNullOrEmpty(x.CityName) && x.CityName.Contains(searchText)) ||
+                       (x.CreateDate.HasValue && x.CreateDate.Value.ToString().Contains(searchText)) ||
+                       (x.UpdateDate.HasValue && x.UpdateDate.Value.ToString().Contains(searchText))
+                   // || (!string.IsNullOrEmpty(x.Description) && x.Description.Contains(searchText))
+                   );
+            }
 
                 results.TotalCount = query.Count();
                 results.PageCount = DbTools.GetPageCount(results.TotalCount, pageSize);

@@ -80,11 +80,14 @@ namespace AITechDATA.DataLayer.Services
             TicketListCustomResponse<Ticket> results = new TicketListCustomResponse<Ticket>();
             try
             {
-                var query = _context.Tickets.Include(x=> x.Messages)
-                    .AsNoTracking()
-                    .Where(x =>
-                        (UserId > 0 && x.UserId == UserId) ||
+                var query = _context.Tickets.Include(x => x.Messages).AsNoTracking();
 
+                if (UserId > 0)
+                {
+                    query = query.Where(x => x.UserId == UserId);
+                }
+
+                query = query.Where(x =>
                         (!string.IsNullOrEmpty(x.Subject) && x.Subject.Contains(searchText)) ||
                         (!string.IsNullOrEmpty(x.Description) && x.Description.Contains(searchText))
                     );

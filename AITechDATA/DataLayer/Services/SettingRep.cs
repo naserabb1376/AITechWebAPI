@@ -91,10 +91,14 @@ namespace AITechDATA.DataLayer.Services
             SettingListCustomResponse<Setting> results = new SettingListCustomResponse<Setting>();
             try
             {
-                var query = _context.Settings
-                    .AsNoTracking()
-                    .Where(x =>
-                        (ParentId > 0 && x.ParentId == ParentId) ||
+                var query = _context.Settings.AsNoTracking();
+
+                if (ParentId > 0)
+                {
+                    query = query.Where(x => x.ParentId == ParentId);
+                }
+
+                query = query.Where(x =>
                         (!string.IsNullOrEmpty(key) && x.Key == key) ||
                         (!string.IsNullOrEmpty(x.Key) && x.Key.Contains(searchText)) ||
                         (!string.IsNullOrEmpty(x.Value) && x.Value.Contains(searchText))

@@ -79,10 +79,14 @@ namespace AITechDATA.DataLayer.Services
             ListResultObject<LoginMethod> results = new ListResultObject<LoginMethod>();
             try
             {
-                var query = _context.LoginMethods
-                    .AsNoTracking()
-                    .Where(x =>
-                        (userId > 0 && x.UserId == userId) ||
+                var query = _context.LoginMethods.AsNoTracking();
+
+                if (userId > 0)
+                {
+                    query = query.Where(x => x.UserId == userId);
+                }
+
+                query = query.Where(x =>
                        ( (!string.IsNullOrEmpty(x.Method) && x.Method.Contains(searchText)) ||
                         (!string.IsNullOrEmpty(x.Token) && x.Token.Contains(searchText))
                     ));
