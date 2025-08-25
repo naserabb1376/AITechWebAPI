@@ -117,7 +117,7 @@ namespace AITechDATA.DataLayer.Services
                .AnyAsync(x => x.Username == userName && x.PasswordHash == password.ToHash());
                             if (result.Status)
                             {
-                                var loginRow = await _context.Users.Include(x=> x.Role)
+                                var loginRow = await _context.Users.Include(x=> x.Role).Include(x => x.StudentDetails)
                             .AsNoTracking()
                             .SingleOrDefaultAsync(x => x.Username == userName && x.PasswordHash == password.ToHash());
                                 if (loginRow != null)
@@ -141,7 +141,7 @@ namespace AITechDATA.DataLayer.Services
                         break;
                     case 2:
                         {
-                            result.Status = await _context.Users.Include(x => x.Role)
+                            result.Status = await _context.Users.Include(x => x.Role).Include(x=> x.StudentDetails)
                .AsNoTracking()
                .AnyAsync(x => x.Username == userName);
                             if (result.Status)

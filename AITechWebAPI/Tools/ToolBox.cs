@@ -129,6 +129,7 @@ namespace AITechWebAPI.Tools
             new Claim("userId", login.ID.ToString()),
             new Claim("FullName", login.FullName),
             new Claim("Role", login.RoleId.ToString()),
+            new Claim("StudentId", login.StudentDetails?.ID.ToString() ?? "0"),
             new Claim("PermissionsJson", permissionsJson)
             };
         }

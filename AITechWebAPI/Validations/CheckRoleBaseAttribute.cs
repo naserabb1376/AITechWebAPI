@@ -52,6 +52,7 @@ namespace AITechWebAPI.Validations
             // 4) نقش کاربر (تک RoleId)
             var user = httpCtx.User;
             int userRoleId = GetUserRoleId(user);
+            int userStudentId = GetUserStudentId(user);
             bool hasAllowedRole = _allowedRoles.Count > 0 && _allowedRoles.Contains(userRoleId);
 
             // 5) Delete فقط با نقش مجاز
@@ -106,6 +107,15 @@ namespace AITechWebAPI.Validations
                     await next();
                     return;
                 }
+
+                var requeststudentIds = ExtractStudentIds(context);
+                bool isSelfAccessByStudentId = requeststudentIds.Any() && requeststudentIds.All(r => r == userStudentId);
+
+                if (isSelfAccessByStudentId)
+                {
+                    await next();
+                    return;
+                }
             }
             // === END NEW ===
 
@@ -123,7 +133,18 @@ namespace AITechWebAPI.Validations
             }
             return int.Parse(roleIdClaim.Value); 
         
-        } 
+        }
+
+        private static int GetUserStudentId(ClaimsPrincipal user)
+        {
+            var studentIdClaim = user.FindFirst("StudentId");
+            if (studentIdClaim == null || !int.TryParse(studentIdClaim.Value, out var roleId))
+            {
+                return 0;
+            }
+            return int.Parse(studentIdClaim.Value);
+
+        }
         private static long GetUserId(ClaimsPrincipal user)
         { 
             var userIdClaim = user.FindFirst("userId");
@@ -206,10 +227,37 @@ namespace AITechWebAPI.Validations
             return result;
         }
 
+        private static HashSet<long> ExtractStudentIds(ActionExecutingContext ctx)
+        {
+            var result = new HashSet<long>();
+
+            foreach (var (argName, argVal) in ctx.ActionArguments)
+            {
+                if (argVal is null) continue;
+
+                if (IsSimple(argVal))
+                {
+                    if (IsStudentKey(argName) && TryToLong(argVal, out var v))
+                        result.Add(v);
+                    continue;
+                }
+
+                ScanObjectForStudentId(argVal, result);
+            }
+
+            return result;
+        }
+
         private static bool IsRoleKey(string name)
         {
             return !string.IsNullOrEmpty(name) &&
                    name.Equals("roleId", StringComparison.OrdinalIgnoreCase);
+        }
+
+        private static bool IsStudentKey(string name)
+        {
+            return !string.IsNullOrEmpty(name) &&
+                   name.Equals("studentdetailsId", StringComparison.OrdinalIgnoreCase);
         }
 
         private static void ScanObjectForRoleId(object obj, ISet<int> sink)
@@ -243,6 +291,41 @@ namespace AITechWebAPI.Validations
                 else
                 {
                     ScanObjectForRoleId(val, sink);
+                }
+            }
+        }
+
+        private static void ScanObjectForStudentId(object obj, ISet<long> sink)
+        {
+            if (obj is null) return;
+
+            if (obj is System.Collections.IEnumerable en && obj is not string)
+            {
+                foreach (var item in en)
+                    if (item != null) ScanObjectForStudentId(item, sink);
+                return;
+            }
+
+            var type = obj.GetType();
+            if (IsSimple(obj)) return;
+
+            foreach (var prop in type.GetProperties(System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance))
+            {
+                if (!prop.CanRead) continue;
+                object? val;
+                try { val = prop.GetValue(obj); }
+                catch { continue; }
+
+                if (val == null) continue;
+
+                if (IsSimple(val))
+                {
+                    if (IsStudentKey(prop.Name) && TryToLong(val, out var v))
+                        sink.Add(v);
+                }
+                else
+                {
+                    ScanObjectForStudentId(val, sink);
                 }
             }
         }

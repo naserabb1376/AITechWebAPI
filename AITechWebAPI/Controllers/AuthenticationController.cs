@@ -33,9 +33,10 @@ namespace AITechWebAPI.Controllers
         private readonly ITokenRep _tokenRep;
         private readonly IPermissionRep _permissionRep;
         private readonly IPermissionRoleRep _permissionRoleRep;
+        private readonly IStudentDetailsRep _studentDetailsRep;
         private readonly IMapper _mapper;
 
-        public AuthenticationController(IConfiguration configuration,ILoginMethodRep loginRep, IUserRep userRep,IAddressRep addressRep,ILogRep logRep,ITokenRep tokenRep,IPermissionRep permissionRep,IPermissionRoleRep permissionRole,IMapper mapper)
+        public AuthenticationController(IConfiguration configuration,ILoginMethodRep loginRep, IUserRep userRep,IAddressRep addressRep,ILogRep logRep,ITokenRep tokenRep,IPermissionRep permissionRep,IPermissionRoleRep permissionRole,IStudentDetailsRep studentDetailsRep,IMapper mapper)
         {
             _configuration = configuration;
             _loginRep = loginRep;
@@ -45,6 +46,7 @@ namespace AITechWebAPI.Controllers
             _tokenRep = tokenRep;
             _permissionRep = permissionRep;
             _permissionRoleRep = permissionRole;
+            _studentDetailsRep = studentDetailsRep;
             _mapper = mapper;  
         }
 
@@ -90,6 +92,19 @@ namespace AITechWebAPI.Controllers
 
                 if (authenticateResult.Status)
                 {
+                    if (authenticateResult.Result.StudentDetails == null)
+                    {
+                        var newStudent = new StudentDetails()
+                        {
+                            CreateDate = DateTime.Now.ToShamsi(),
+                            UpdateDate = DateTime.Now.ToShamsi(),
+                            UserId = authenticateResult.Result.ID
+                        };
+
+                        await _studentDetailsRep.AddStudentDetailsAsync(newStudent);
+
+                        authenticateResult.Result.StudentDetails = newStudent;
+                    }
                     var refreshToken = ToolBox.GenerateToken(); // تولید رفرش توکن
                     var permissionObj = await _permissionRep.GetAllPermissionsAsync(authenticateResult.Result.RoleId, "action", 1, 0);
                     var permissionsJson = JsonConvert.SerializeObject(permissionObj.Results.Select(x => x.Routename).ToList()).ToHash();
@@ -330,15 +345,15 @@ namespace AITechWebAPI.Controllers
                     UpdateDate = DateTime.Now.ToShamsi(),
                     AddressId = (address != null && address.ID > 0) ? address.ID : null,
                 };
-                if(user.RoleId == 1) // user is student
+                //if(user.RoleId == 1) // user is student
+                //{
+                StudentDetails studentDetails = new StudentDetails()
                 {
-                    StudentDetails studentDetails = new StudentDetails()
-                    {
-                        CreateDate = DateTime.Now.ToShamsi(),
-                        UpdateDate = DateTime.Now.ToShamsi(),
-                    };
-                    user.StudentDetails = studentDetails;
-                }
+                    CreateDate = DateTime.Now.ToShamsi(),
+                    UpdateDate = DateTime.Now.ToShamsi(),
+                };
+                user.StudentDetails = studentDetails;
+                //}
                 result = await _userRep.AddUserAsync(user);
 
                 if (result.Status)
