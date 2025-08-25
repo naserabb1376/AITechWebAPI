@@ -79,10 +79,13 @@ namespace AITechDATA.DataLayer.Services
             ListResultObject<TeacherResume> results = new ListResultObject<TeacherResume>();
             try
             {
-                var query = _context.TeacherResumes
-                    .AsNoTracking()
+                var query = _context.TeacherResumes.AsNoTracking();
+                if (UserId > 0)
+                {
+                    query = query.Where(x=> x.UserId == UserId);
+                }
+                query = query
                     .Where(x =>
-                        (UserId > 0 && x.UserId == UserId) ||
                         (!string.IsNullOrEmpty(x.Title) && x.Title.Contains(searchText)) ||
                         (!string.IsNullOrEmpty(x.Description) && x.Description.Contains(searchText))
                     );

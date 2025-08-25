@@ -16,6 +16,7 @@
 
   <ItemGroup>
     <Content Remove="DataSetting.json" />
+    <Content Remove="wwwroot\js\swagger-token.js" />
   </ItemGroup>
 
   <ItemGroup>
