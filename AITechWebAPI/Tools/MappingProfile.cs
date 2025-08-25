@@ -114,7 +114,8 @@ namespace AITechWebAPI.Tools
 .ForMember(dest => dest.CourseName, opt => opt.MapFrom(src => src.Course.Title));
 
             CreateMap<User, UserVM>()
-.ForMember(dest => dest.RoleName, opt => opt.MapFrom(src => src.Role.Name));
+.ForMember(dest => dest.RoleName, opt => opt.MapFrom(src => src.Role.Name))
+.ForMember(dest => dest.StudentDetailsId, opt => opt.MapFrom(src => src.StudentDetails.ID));
 
 
 
