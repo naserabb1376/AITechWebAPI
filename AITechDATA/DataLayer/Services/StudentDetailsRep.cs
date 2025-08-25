@@ -79,10 +79,14 @@ namespace AITechDATA.DataLayer.Services
             ListResultObject<StudentDetails> results = new ListResultObject<StudentDetails>();
             try
             {
-                var query = _context.StudentDetails
-                    .AsNoTracking()
-                    .Where(x =>
-                        (UserId > 0 && x.UserId == UserId) ||
+                var query = _context.StudentDetails.AsNoTracking();
+
+                if (UserId>0)
+                {
+                    query = query.Where(x => x.UserId == UserId);
+                }
+               
+                 query = query.Where(x =>
                         (!string.IsNullOrEmpty(x.User.FullName) && x.User.FullName.Contains(searchText))
                     );
 
