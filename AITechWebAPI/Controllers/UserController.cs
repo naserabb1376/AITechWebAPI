@@ -202,7 +202,7 @@ namespace AITechWebAPI.Controllers
                 Username = requestBody.UserName ?? theRow.Result.Username,
                 AddressId = (requestBody.AdressId > 0) ? requestBody.AdressId : theRow.Result.AddressId,
                 FullName = requestBody.FullName ?? theRow.Result.FullName,
-                PasswordHash = requestBody.Password?.ToHash() ?? theRow.Result.PasswordHash,
+                PasswordHash = theRow.Result.PasswordHash,
                 RoleId = requestBody.RoleId ?? theRow.Result.RoleId,
                 OtherLangs = requestBody.OtherLangs ?? "",
 
@@ -306,7 +306,7 @@ namespace AITechWebAPI.Controllers
         }
 
         [HttpPut("EditUser")]
-        public async Task<ActionResult<BitResultObject>> EditUser(AddEditUserProRequestBody requestBody)
+        public async Task<ActionResult<BitResultObject>> EditUser(EditUserProRequestBody requestBody)
         {
             var result = new BitResultObject();
             if (!ModelState.IsValid)
@@ -359,8 +359,8 @@ namespace AITechWebAPI.Controllers
                     Username = requestBody.UserName,
                     AddressId = (address != null && address.ID > 0) ? address.ID : null,
                     FullName = requestBody.FullName,
-                    PasswordHash = requestBody.Password.ToHash(),
-                    RoleId = requestBody.RoleId,
+                    PasswordHash = theRow.Result.PasswordHash,
+                    RoleId = requestBody.RoleId ?? theRow.Result.RoleId,
                     OtherLangs = requestBody.OtherLangs ?? "",
                 };
                 result = await _UserRep.EditUserAsync(User);
