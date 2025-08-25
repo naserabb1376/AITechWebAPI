@@ -51,7 +51,7 @@ namespace AITechWebAPI.Controllers
             var result = await _PermissionRoleRep.GetAllPermissionRolesAsync(requestBody.RoleId, requestBody.PermissionId, requestBody.PermissionType ?? "",requestBody.PageIndex,requestBody.PageSize,requestBody.SearchText,requestBody.SortQuery);
             if (result.Status)
             {
-                var resultVM = _mapper.Map<ListResultObject<SessionAssignmentVM>>(result);
+                var resultVM = _mapper.Map<ListResultObject<PermissionRoleVM>>(result);
                 return Ok(resultVM);
             }
             return BadRequest(result);
