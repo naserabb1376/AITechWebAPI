@@ -30,7 +30,7 @@ namespace AITechWebAPI.Models.JobRequest
 
         [Display(Name = "عنوان دوره")]
         [Required(ErrorMessage = "لطفا {0} را وارد کنید")]
-        public string CouurseTitle { get; set; }
+        public string CourseTitle { get; set; }
 
         [Display(Name = "شرح درخواست")]
         public string? Description { get; set; } = "";

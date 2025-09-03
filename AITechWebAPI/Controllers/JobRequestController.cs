@@ -105,7 +105,7 @@ namespace AITechWebAPI.Controllers
                 Email = requestBody.Email,
                 FullName = requestBody.FullName,
                 PhoneNumber = requestBody.PhoneNumber,
-                CourseTitle = requestBody.CouurseTitle,
+                CourseTitle = requestBody.CourseTitle,
                 RequestedPosition = requestBody.RequestedPosition,
                 OtherLangs = requestBody.OtherLangs ?? "",
                 Description = requestBody.Description ?? "",
