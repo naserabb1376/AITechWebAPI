@@ -103,7 +103,7 @@ namespace AITechWebAPI.Controllers
                 AdminId = requestBody.AdminId,
                 Title= requestBody.Title,
                 Content = requestBody.Content,
-                ReportDate = requestBody.ReportDate.StringToDate(),
+                ReportDate = requestBody.ReportDate.StringToDate().Value,
                 OtherLangs = requestBody.OtherLangs ?? "",
 
             };
@@ -153,7 +153,7 @@ namespace AITechWebAPI.Controllers
                 AdminId = requestBody.AdminId,
                 Title = requestBody.Title,
                 Content = requestBody.Content,
-                ReportDate = requestBody.ReportDate.StringToDate(),
+                ReportDate = requestBody.ReportDate.StringToDate().Value,
                 OtherLangs = requestBody.OtherLangs ?? "",
 
             };

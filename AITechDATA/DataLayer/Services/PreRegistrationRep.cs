@@ -87,7 +87,8 @@ namespace AITechDATA.DataLayer.Services
                 }
 
                 query = query.Where(x =>
-                        ((!string.IsNullOrEmpty(x.FullName) && x.FullName.Contains(searchText)) ||
+                        ((!string.IsNullOrEmpty(x.FirstName) && x.FirstName.Contains(searchText)) ||
+                        (!string.IsNullOrEmpty(x.LastName) && x.LastName.Contains(searchText)) ||
                         (!string.IsNullOrEmpty(x.Email) && x.Email.Contains(searchText)) ||
                         (!string.IsNullOrEmpty(x.PhoneNumber) && x.PhoneNumber.Contains(searchText)))
                     );

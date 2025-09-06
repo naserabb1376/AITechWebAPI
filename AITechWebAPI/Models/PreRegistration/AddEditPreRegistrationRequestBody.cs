@@ -6,9 +6,13 @@ namespace AITechWebAPI.Models.PreRegistration
     {
         public long ID { get; set; } = 0;
 
-        [Display(Name = "نام دانشجو")]
+        [Display(Name = "نام")]
         [Required(ErrorMessage = "لطفا {0} را وارد کنید")]
-        public string FullName { get; set; } // عنوان دانشجو
+        public string FirstName { get; set; }
+
+        [Display(Name = "نام خانوادگی")]
+        [Required(ErrorMessage = "لطفا {0} را وارد کنید")]
+        public string LastName { get; set; }
 
         [Display(Name = "ایمیل دانشجو")]
         [Required(ErrorMessage = "لطفا {0} را وارد کنید")]

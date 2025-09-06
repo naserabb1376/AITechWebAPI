@@ -30,6 +30,7 @@ public class FileCenterController : ControllerBase
     }
 
     [HttpPost("uploadfile")]
+    [AllowAnonymous]
     public async Task<IActionResult> UploadFile(IFormFile file, [FromQuery] bool isPublic, [FromQuery] string entityName, [FromQuery] string fileType, [FromQuery] long rowId)
     {
         try
@@ -39,10 +40,11 @@ public class FileCenterController : ControllerBase
 
             fileType = fileType.ToLower();
             entityName = entityName.ToLower();
+            bool isJobRequest = entityName.ToLower() == "jobrequest";
 
             string fileName = "", fullPath=""; long RowNumber =0;    
-            var userId = User?.FindFirst("userId")?.Value;
-            if (string.IsNullOrEmpty(userId)) return Unauthorized();
+            var userId = !isJobRequest ? User?.FindFirst("userId")?.Value : "0";
+            if ((string.IsNullOrEmpty(userId) || userId == "0") && !isJobRequest) return Unauthorized();
 
             string savePath = isPublic
                 ? Path.Combine(_env.ContentRootPath, "FileCenter", entityName, fileType, "Public")

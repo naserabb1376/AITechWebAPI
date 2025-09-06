@@ -192,10 +192,10 @@ namespace AITechDATA.Tools
             return new DateTime(year, month, day, hour, minute, second, pc);
         }
 
-        public static DateTime StringToDate(this string stringDateTime)
+        public static DateTime? StringToDate(this string stringDateTime)
         {
             if (string.IsNullOrWhiteSpace(stringDateTime))
-                throw new ArgumentNullException(nameof(stringDateTime));
+                return  null;
 
             string[] stringTimeArr = { "00", "00", "00" };
             var arr = stringDateTime.Split(' ');

@@ -101,7 +101,7 @@ namespace AITechWebAPI.Controllers
                 CreateDate = DateTime.Now.ToShamsi(),
                 UpdateDate = DateTime.Now.ToShamsi(),
                 GroupId = requestBody.GroupId,
-                SessionDate = requestBody.SessionDate.StringToDate(),
+                SessionDate = requestBody.SessionDate.StringToDate().Value,
             };
             var result = await _SessionRep.AddSessionAsync(Session);
             if (result.Status)
@@ -147,7 +147,7 @@ namespace AITechWebAPI.Controllers
                 UpdateDate = DateTime.Now.ToShamsi(),
                 ID = requestBody.ID,
                 GroupId = requestBody.GroupId,
-                SessionDate = requestBody.SessionDate.StringToDate(),
+                SessionDate = requestBody.SessionDate.StringToDate().Value,
             };
             result = await _SessionRep.EditSessionAsync(Session);
             if (result.Status)

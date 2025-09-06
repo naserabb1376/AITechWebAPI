@@ -82,7 +82,14 @@ namespace AITechDATA.DataLayer.Services
                 var query = _context.JobRequests
                     .AsNoTracking()
                     .Where(x =>
-                        (!string.IsNullOrEmpty(x.FullName) && x.FullName.Contains(searchText)) ||
+                        (!string.IsNullOrEmpty(x.FirstName) && x.FirstName.Contains(searchText)) ||
+                        (!string.IsNullOrEmpty(x.LastName) && x.LastName.Contains(searchText)) ||
+                        (!string.IsNullOrEmpty(x.FatherName) && x.FatherName.Contains(searchText)) ||
+                        (!string.IsNullOrEmpty(x.BirthDate.ToString()) && x.BirthDate.ToString().Contains(searchText)) ||
+                        (!string.IsNullOrEmpty(x.UniversityName) && x.UniversityName.Contains(searchText)) ||
+                        (!string.IsNullOrEmpty(x.LastAcademicLicense) && x.LastAcademicLicense.Contains(searchText)) ||
+                        (!string.IsNullOrEmpty(x.EducationalLevel) && x.EducationalLevel.Contains(searchText)) ||
+                        (!string.IsNullOrEmpty(x.EducationStatus) && x.EducationStatus.Contains(searchText)) ||
                         (!string.IsNullOrEmpty(x.Email) && x.Email.Contains(searchText)) ||
                         (!string.IsNullOrEmpty(x.PhoneNumber) && x.PhoneNumber.Contains(searchText)) ||
                         (!string.IsNullOrEmpty(x.RequestedPosition) && x.RequestedPosition.Contains(searchText)) ||

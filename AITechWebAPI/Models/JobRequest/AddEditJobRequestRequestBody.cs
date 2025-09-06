@@ -7,9 +7,23 @@ namespace AITechWebAPI.Models.JobRequest
     {
         public long ID { get; set; } = 0;
 
-        [Display(Name = "نام کامل")]
+        [Display(Name = "نام")]
         [Required(ErrorMessage = "لطفا {0} را وارد کنید")]
-        public string FullName { get; set; }
+        public string FirstName { get; set; }
+
+        [Display(Name = "نام خانوادگی")]
+        [Required(ErrorMessage = "لطفا {0} را وارد کنید")]
+        public string LastName { get; set; }
+
+        [Display(Name = "کد ملی")]
+        [ValidateOptional(@"^([0-9]{10})$", ErrorMessage = "مقدار {0} باید 10 رقمی و فقط شامل اعداد باشد")]
+        [MaxLength(10)]
+        //[Required(ErrorMessage = "لطفا {0} را وارد کنید")]
+        public string? NationalCode { get; set; }
+
+        [Display(Name = "نام پدر")]
+        // [Required(ErrorMessage = "لطفا {0} را وارد کنید")]
+        public string? FatherName { get; set; }
 
         [Required(ErrorMessage = "لطفا {0} را وارد کنید ")]
         [MaxLength(200)]
@@ -23,6 +37,25 @@ namespace AITechWebAPI.Models.JobRequest
         [MaxLength(11)]
         public string PhoneNumber { get; set; }
 
+        [Display(Name = "تاریخ تولد")]
+        // [Required(ErrorMessage = "لطفا {0} را وارد کنید")]
+        public string? BirthDate { get; set; }
+
+        [Display(Name = "دانشگاه محل تحصیل")]
+        // [Required(ErrorMessage = "لطفا {0} را وارد کنید")]
+        public string? UniversityName { get; set; }
+
+        [Display(Name = "آخرین مدرک تحصیلی")]
+        // [Required(ErrorMessage = "لطفا {0} را وارد کنید")]
+        public string? LastAcademicLicense { get; set; }
+
+        [Display(Name = "مقطع تحصیلی")]
+        // [Required(ErrorMessage = "لطفا {0} را وارد کنید")]
+        public string? EducationalLevel { get; set; }
+
+        [Display(Name = "وضعیت تحصیلی")]
+        // [Required(ErrorMessage = "لطفا {0} را وارد کنید")]
+        public string? EducationStatus { get; set; }
 
         [Display(Name = "شغل درخواستی")]
         [Required(ErrorMessage = "لطفا {0} را وارد کنید")]

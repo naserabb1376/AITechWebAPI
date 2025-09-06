@@ -14,7 +14,7 @@ namespace AITechDATA.DataLayer
     {
         //public AITechContext()
         //{
-                
+
         //}
         public AITechContext(DbContextOptions<AITechContext> options)
       : base(options)
@@ -62,7 +62,7 @@ namespace AITechDATA.DataLayer
         //{
         //    ConfigurationHelper configurationHelper = new ConfigurationHelper();
         //    optionsBuilder.UseSqlServer(configurationHelper.GetConnectionString("publicdb"));
-        //  //  base.OnConfiguring(optionsBuilder);
+        //    //  base.OnConfiguring(optionsBuilder);
         //}
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)

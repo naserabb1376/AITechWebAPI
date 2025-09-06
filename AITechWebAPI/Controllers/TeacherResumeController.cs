@@ -103,7 +103,7 @@ namespace AITechWebAPI.Controllers
             {
                 CreateDate = DateTime.Now.ToShamsi(),
                 UpdateDate = DateTime.Now.ToShamsi(),
-                DateAchieved = !string.IsNullOrEmpty(requestBody.DateAchieved) ? requestBody.DateAchieved.StringToDate() : DateTime.Now.ToShamsi(),
+                DateAchieved = !string.IsNullOrEmpty(requestBody.DateAchieved) ? requestBody.DateAchieved.StringToDate().Value : DateTime.Now.ToShamsi(),
                 Description = requestBody.Description ?? "",
                 Title = requestBody.Title,
                 UserId = requestBody.UserId,
@@ -153,7 +153,7 @@ namespace AITechWebAPI.Controllers
                 CreateDate = theRow.Result.CreateDate,
                 UpdateDate = DateTime.Now.ToShamsi(),
                 ID = requestBody.ID,
-                DateAchieved = !string.IsNullOrEmpty(requestBody.DateAchieved) ? requestBody.DateAchieved.StringToDate() : DateTime.Now.ToShamsi(),
+                DateAchieved = !string.IsNullOrEmpty(requestBody.DateAchieved) ? requestBody.DateAchieved.StringToDate().Value : DateTime.Now.ToShamsi(),
                 Description = requestBody.Description ?? "",
                 Title = requestBody.Title,
                 UserId = requestBody.UserId,
