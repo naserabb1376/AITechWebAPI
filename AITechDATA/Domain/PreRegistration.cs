@@ -9,8 +9,8 @@ namespace AITechDATA.Domain
 {
     public class PreRegistration : BaseEntity
     {
-        public long GroupId { get; set; } // کلید خارجی به Group
-        public Group Group { get; set; } // ارتباط با Group
+        public long ForeignKeyId { get; set; } // کلید خارجی به رکورد اصلی
+        public string EntityType { get; set; } // نوع جدول مرتبط (مثلاً "User", "Course", "Event")
 
         public string FirstName { get; set; }
         public string LastName { get; set; }

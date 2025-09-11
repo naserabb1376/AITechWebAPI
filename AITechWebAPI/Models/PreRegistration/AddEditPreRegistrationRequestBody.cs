@@ -28,10 +28,14 @@ namespace AITechWebAPI.Models.PreRegistration
 
         public string PhoneNumber { get; set; }
 
-        [Display(Name = "کد گروه")]
+        [Display(Name = "کلید خارجی")]
         [Required(ErrorMessage = "لطفا {0} را وارد کنید")]
         [Range(1, long.MaxValue, ErrorMessage = "مقدار {0} باید بزرگتر از 0 باشد")]
-        public long GroupId { get; set; }
+        public long ForeignKeyId { get; set; }
+
+        [Display(Name = "نام جدول")]
+        [Required(ErrorMessage = "لطفا {0} را وارد کنید")]
+        public string EntityType { get; set; }
 
         [Display(Name = "تاریخ ثبت نام")]
         public string? RegistrationDate { get; set; } // تاریخ ثبت نام

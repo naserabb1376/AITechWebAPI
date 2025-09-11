@@ -21,7 +21,7 @@ namespace AITechDATA.Domain
         public decimal Fee { get; set; } // هزینه گروه
         public GroupStatus Status { get; set; } // وضعیت گروه (پیش‌ثبت‌نام، در حال اجرا، پایان یافته)
         public ICollection<Session> Sessions { get; set; } // جلسات مرتبط با گروه
-        public ICollection<PreRegistration> PreRegistrations { get; set; } // پیش‌ثبت‌نام‌های مرتبط با گروه
+    //    public ICollection<PreRegistration> PreRegistrations { get; set; } // پیش‌ثبت‌نام‌های مرتبط با گروه
         public long TeacherId { get; set; } // کلید خارجی به استاد
         public User Teacher { get; set; } // ارتباط با استاد
         public ICollection<UserGroup> Students { get; set; } // دانش‌آموزان ثبت‌نام‌شده در گروه

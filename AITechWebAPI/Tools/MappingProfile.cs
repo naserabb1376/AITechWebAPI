@@ -87,9 +87,6 @@ namespace AITechWebAPI.Tools
 .ForMember(dest => dest.RouteName, opt => opt.MapFrom(src => src.Permission.Routename))
 .ForMember(dest => dest.PermissionType, opt => opt.MapFrom(src => src.Permission.PermissionType));
 
-            CreateMap<PreRegistration, PreRegistrationVM>()
-.ForMember(dest => dest.GroupName, opt => opt.MapFrom(src => src.Group.Name));
-
             CreateMap<Session, SessionVM>()
 .ForMember(dest => dest.GroupName, opt => opt.MapFrom(src => src.Group.Name));
 

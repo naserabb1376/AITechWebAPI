@@ -1,8 +1,9 @@
 ﻿using AITechDATA.DataLayer.Repositories;
 using AITechDATA.Domain;
 using AITechDATA.ResultObjects;
-using Microsoft.EntityFrameworkCore;
 using AITechDATA.Tools;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -74,17 +75,18 @@ namespace AITechDATA.DataLayer.Services
             return result;
         }
 
-        public async Task<ListResultObject<PreRegistration>> GetAllPreRegistrationsAsync(long groupId = 0, int pageIndex = 1, int pageSize = 20, string searchText = "",string sortQuery ="")
+        public async Task<ListResultObject<PreRegistration>> GetAllPreRegistrationsAsync(long foreignkeyId = 0, string entityType = "", int pageIndex = 1, int pageSize = 20, string searchText = "",string sortQuery ="")
         {
             ListResultObject<PreRegistration> results = new ListResultObject<PreRegistration>();
             try
             {
                 var query = _context.PreRegistrations.AsNoTracking();
 
-                if (groupId > 0)
-                {
-                    query = query.Where(x => x.GroupId == groupId);
-                }
+                if (!string.IsNullOrEmpty(entityType))
+                    query = query.Where(x => x.EntityType == entityType);
+
+                if (foreignkeyId > 0)
+                    query = query.Where(x => x.ForeignKeyId == foreignkeyId);
 
                 query = query.Where(x =>
                         ((!string.IsNullOrEmpty(x.FirstName) && x.FirstName.Contains(searchText)) ||
@@ -97,7 +99,6 @@ namespace AITechDATA.DataLayer.Services
                 results.PageCount = DbTools.GetPageCount(results.TotalCount, pageSize);
                 results.Results = await query.OrderByDescending(x => x.RegistrationDate)
                      .SortBy(sortQuery).ToPaging(pageIndex, pageSize)
-                    .Include(x => x.Group)
                     .ToListAsync();
             }
             catch (Exception ex)
@@ -115,7 +116,6 @@ namespace AITechDATA.DataLayer.Services
             {
                 result.Result = await _context.PreRegistrations
                     .AsNoTracking()
-                    .Include(x => x.Group)
                     .SingleOrDefaultAsync(x => x.ID == preRegistrationId);
             }
             catch (Exception ex)

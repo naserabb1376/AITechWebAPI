@@ -5,7 +5,10 @@ namespace AITechWebAPI.Models.PreRegistration
 {
     public class GetPreRegistrationListRequestBody : GetListRequestBody
     {
-        [Display(Name = "کد گروه")]
-        public long GroupId { get; set; } = 0;
+        [Display(Name = "کلید خارجی")]
+        public long ForeignKeyId { get; set; } = 0;
+
+        [Display(Name = "نام شی")]
+        public string EntityType { get; set; } = "";
     }
 }

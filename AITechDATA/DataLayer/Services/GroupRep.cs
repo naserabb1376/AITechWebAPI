@@ -93,7 +93,7 @@ namespace AITechDATA.DataLayer.Services
                     .Include(x => x.Course)
                     .Include(x => x.Teacher)
                     .Include(x => x.Sessions)
-                    .Include(x => x.PreRegistrations)
+                   // .Include(x => x.PreRegistrations)
                     .Include(x => x.Students);
 
                 // اگر studentId داده شده، فقط گروه‌های مرتبط با آن کاربر
@@ -160,7 +160,7 @@ namespace AITechDATA.DataLayer.Services
                     .Include(x => x.Course)
                     .Include(x => x.Teacher)
                     .Include(x => x.Sessions)
-                    .Include(x => x.PreRegistrations)
+                 //   .Include(x => x.PreRegistrations)
                     .Include(x => x.Students)
                     .SingleOrDefaultAsync(x => x.ID == groupId);
             }

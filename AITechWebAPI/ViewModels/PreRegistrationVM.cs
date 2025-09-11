@@ -5,8 +5,8 @@ namespace AITechWebAPI.ViewModels
 {
     public class PreRegistrationVM : BaseVM
     {
-        public long GroupId { get; set; } // کلید خارجی به Group
-        public string GroupName { get; set; } // ارتباط با Group
+        public long ForeignKeyId { get; set; } // کلید خارجی به رکورد اصلی
+        public string EntityType { get; set; } // نوع جدول مرتبط (مثلاً "User", "Course", "Event")
 
         public string FullName { get; set; } // نام کامل دانشجو
         public string Email { get; set; } // ایمیل

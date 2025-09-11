@@ -180,11 +180,7 @@ namespace AITechDATA.DataLayer
          .HasForeignKey(x => x.GroupId)
          .OnDelete(DeleteBehavior.Cascade);
 
-            modelBuilder.Entity<PreRegistration>()
-        .HasOne(x => x.Group)
-        .WithMany(x => x.PreRegistrations)
-        .HasForeignKey(x => x.GroupId)
-        .OnDelete(DeleteBehavior.Cascade);
+           
 
             modelBuilder.Entity<PaymentHistory>()
    .HasOne(x => x.Group)

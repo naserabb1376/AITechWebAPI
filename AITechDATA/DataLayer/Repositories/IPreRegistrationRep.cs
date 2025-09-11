@@ -10,7 +10,7 @@ namespace AITechDATA.DataLayer.Repositories
 {
     public interface IPreRegistrationRep
     {
-        Task<ListResultObject<PreRegistration>> GetAllPreRegistrationsAsync(long groupId = 0, int pageIndex = 1, int pageSize = 20, string searchText = "",string sortQuery ="");
+        Task<ListResultObject<PreRegistration>> GetAllPreRegistrationsAsync(long foreignkeyId = 0,string entityType ="", int pageIndex = 1, int pageSize = 20, string searchText = "",string sortQuery ="");
 
         Task<RowResultObject<PreRegistration>> GetPreRegistrationByIdAsync(long preRegistrationId);
 

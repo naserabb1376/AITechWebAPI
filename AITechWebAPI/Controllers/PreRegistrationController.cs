@@ -48,7 +48,7 @@ namespace AITechWebAPI.Controllers
             {
                 return BadRequest(requestBody);
             }
-            var result = await _PreRegistrationRep.GetAllPreRegistrationsAsync(requestBody.GroupId,requestBody.PageIndex,requestBody.PageSize,requestBody.SearchText,requestBody.SortQuery);
+            var result = await _PreRegistrationRep.GetAllPreRegistrationsAsync(requestBody.ForeignKeyId,requestBody.EntityType,requestBody.PageIndex,requestBody.PageSize,requestBody.SearchText,requestBody.SortQuery);
             if (result.Status)
             {
                 var resultVM = _mapper.Map<ListResultObject<PreRegistrationVM>>(result);
@@ -105,7 +105,8 @@ namespace AITechWebAPI.Controllers
                 FirstName = requestBody.FirstName,
                 LastName = requestBody.LastName,
                 PhoneNumber = requestBody.PhoneNumber,
-                GroupId = requestBody.GroupId,
+                ForeignKeyId = requestBody.ForeignKeyId,
+                EntityType = requestBody.EntityType,
                 RegistrationDate = requestBody.RegistrationDate.StringToDate().Value,
                 OtherLangs = requestBody.OtherLangs ?? "",
                 // Description = requestBody.Description,
@@ -156,7 +157,8 @@ namespace AITechWebAPI.Controllers
                 FirstName = requestBody.FirstName,
                 LastName = requestBody.LastName,
                 PhoneNumber = requestBody.PhoneNumber,
-                GroupId = requestBody.GroupId,
+                ForeignKeyId = requestBody.ForeignKeyId,
+                EntityType = requestBody.EntityType,
                 RegistrationDate = requestBody.RegistrationDate.StringToDate().Value,
                 ID = requestBody.ID,
                 OtherLangs = requestBody.OtherLangs ?? "",
