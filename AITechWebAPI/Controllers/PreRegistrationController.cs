@@ -91,6 +91,7 @@ namespace AITechWebAPI.Controllers
         }
 
         [HttpPost("AddPreRegistration_Base")]
+        [AllowAnonymous]
         public async Task<ActionResult<BitResultObject>> AddPreRegistration_Base(AddEditPreRegistrationRequestBody requestBody)
         {
             if (!ModelState.IsValid)

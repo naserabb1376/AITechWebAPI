@@ -5,6 +5,7 @@ using AITechDATA.ResultObjects;
 using AITechWebAPI.ViewModels;
 using AutoMapper;
 using Microsoft.AspNetCore.JsonPatch.Adapters;
+using Microsoft.JSInterop;
 
 
 
@@ -40,13 +41,13 @@ namespace AITechWebAPI.Tools
                 .ForMember(dest => dest.CityName, opt => opt.MapFrom(src => src.City.CityName));
 
             CreateMap<AdminReport, AdminReportVM>()
-               .ForMember(dest => dest.AdminUserName, opt => opt.MapFrom(src => src.Admin.FullName));
+               .ForMember(dest => dest.AdminUserName, opt => opt.MapFrom(src => $"{src.Admin.FirstName} {src.Admin.LastName}"));
 
             CreateMap<Assignment, AssignmentVM>()
-               .ForMember(dest => dest.UserName, opt => opt.MapFrom(src => src.User.FullName));
+               .ForMember(dest => dest.UserName, opt => opt.MapFrom(src => $"{src.User.FirstName} {src.User.LastName}"));
 
             CreateMap<Attendance, AttendanceVM>()
-              .ForMember(dest => dest.UserName, opt => opt.MapFrom(src => src.User.FullName));
+              .ForMember(dest => dest.UserName, opt => opt.MapFrom(src => $"{src.User.FirstName} {src.User.LastName}"));
 
             CreateMap<Category, CategoryVM>();
             CreateMap<City, CityVM>();
@@ -64,22 +65,22 @@ namespace AITechWebAPI.Tools
             .ForMember(dest => dest.CategoryName, opt => opt.MapFrom(src => src.Category.CategoryName));
 
             CreateMap<Event, EventVM>()
-  .ForMember(dest => dest.UserName, opt => opt.MapFrom(src => src.User.FullName));
+  .ForMember(dest => dest.UserName, opt => opt.MapFrom(src => $"{src.User.FirstName} {src.User.LastName}"));
 
             CreateMap<LoginMethod, LoginMethodVM>()
-.ForMember(dest => dest.UserName, opt => opt.MapFrom(src => src.User.FullName));
+.ForMember(dest => dest.UserName, opt => opt.MapFrom(src => $"{src.User.FirstName} {src.User.LastName}"));
 
             CreateMap<News, NewsVM>()
-.ForMember(dest => dest.UserName, opt => opt.MapFrom(src => src.User.FullName));
+.ForMember(dest => dest.UserName, opt => opt.MapFrom(src => $"{src.User.FirstName} {src.User.LastName}"));
 
             CreateMap<Notification, NotificationVM>()
-.ForMember(dest => dest.UserName, opt => opt.MapFrom(src => src.User.FullName));
+.ForMember(dest => dest.UserName, opt => opt.MapFrom(src => $"{src.User.FirstName} {src.User.LastName}"));
 
             CreateMap<Parent, ParentVM>()
-.ForMember(dest => dest.StudentName, opt => opt.MapFrom(src => src.StudentDetails.User.FullName));
+.ForMember(dest => dest.StudentName, opt => opt.MapFrom(src => $"{src.StudentDetails.User.FirstName} {src.StudentDetails.User.LastName}"));
 
             CreateMap<PaymentHistory, PaymentHistoryVM>()
-.ForMember(dest => dest.UserName, opt => opt.MapFrom(src => src.User.FullName));
+.ForMember(dest => dest.UserName, opt => opt.MapFrom(src => $"{src.User.FirstName} {src.User.LastName}"));
 
             CreateMap<PermissionRole, PermissionRoleVM>()
 .ForMember(dest => dest.PermissionName, opt => opt.MapFrom(src => src.Permission.Name))
@@ -91,23 +92,23 @@ namespace AITechWebAPI.Tools
 .ForMember(dest => dest.GroupName, opt => opt.MapFrom(src => src.Group.Name));
 
             CreateMap<StudentDetails, StudentDetailsVM>()
-.ForMember(dest => dest.UserName, opt => opt.MapFrom(src => src.User.FullName));
+.ForMember(dest => dest.UserName, opt => opt.MapFrom(src => $"{src.User.FirstName} {src.User.LastName}"));
 
             CreateMap<TeacherResume, TeacherResumeVM>()
-.ForMember(dest => dest.UserName, opt => opt.MapFrom(src => src.User.FullName));
+.ForMember(dest => dest.UserName, opt => opt.MapFrom(src => $"{src.User.FirstName} {src.User.LastName}"));
 
             CreateMap<TicketMessage, TicketMessageVM>()
-.ForMember(dest => dest.UserName, opt => opt.MapFrom(src => src.User.FullName));
+.ForMember(dest => dest.UserName, opt => opt.MapFrom(src => $"{src.User.FirstName} {src.User.LastName}"));
 
             CreateMap<Ticket, TicketVM>()
-.ForMember(dest => dest.UserName, opt => opt.MapFrom(src => src.User.FullName));
+.ForMember(dest => dest.UserName, opt => opt.MapFrom(src => $"{src.User.FirstName} {src.User.LastName}"));
 
             CreateMap<UserGroup, UserGroupVM>()
-.ForMember(dest => dest.UserName, opt => opt.MapFrom(src => src.User.FullName))
+.ForMember(dest => dest.UserName, opt => opt.MapFrom(src => $"{src.User.FirstName} {src.User.LastName}"))
 .ForMember(dest => dest.GroupName, opt => opt.MapFrom(src => src.Group.Name));
 
             CreateMap<UserCourse, UserCourseVM>()
-.ForMember(dest => dest.UserName, opt => opt.MapFrom(src => src.User.FullName))
+.ForMember(dest => dest.UserName, opt => opt.MapFrom(src => $"{src.User.FirstName} {src.User.LastName}"))
 .ForMember(dest => dest.CourseName, opt => opt.MapFrom(src => src.Course.Title));
 
             CreateMap<User, UserVM>()

@@ -5,7 +5,8 @@ namespace AITechWebAPI.ViewModels
     // User: جدول کاربران
     public class UserVM : BaseVM
     {
-        public string FullName { get; set; }
+        public string FirstName { get; set; }
+        public string LastName { get; set; }
         public string Email { get; set; }
         public string NationalCode { get; set; }
         public string Username { get; set; }
@@ -17,7 +18,8 @@ namespace AITechWebAPI.ViewModels
 
     public class TeacherVM : BaseVM
     {
-        public string FullName { get; set; }
+        public string FirstName { get; set; }
+        public string LastName { get; set; }
         public string Email { get; set; }
     }
 }

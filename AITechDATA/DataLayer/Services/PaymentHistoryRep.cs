@@ -80,7 +80,7 @@ namespace AITechDATA.DataLayer.Services
             ListResultObject<PaymentHistory> results = new ListResultObject<PaymentHistory>();
             try
             {
-                var query = _context.PaymentHistories.AsNoTracking();
+                var query = _context.PaymentHistories.Include(x=> x.User).AsNoTracking();
 
                 if (GroupId > 0)
                 {
@@ -93,7 +93,8 @@ namespace AITechDATA.DataLayer.Services
 
                 query = query.Where(x =>
                         (x.Amount.ToString().Contains(searchText)) ||
-                        (!string.IsNullOrEmpty(x.User.FullName) && x.User.FullName.Contains(searchText)) ||
+                       (!string.IsNullOrEmpty(x.User.FirstName) && x.User.FirstName.Contains(searchText)) ||
+                       (!string.IsNullOrEmpty(x.User.LastName) && x.User.LastName.Contains(searchText)) ||
                         (!string.IsNullOrEmpty(x.Group.Name) && x.Group.Name.Contains(searchText))
                     );
 

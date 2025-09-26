@@ -79,7 +79,7 @@ namespace AITechDATA.DataLayer.Services
             ListResultObject<StudentDetails> results = new ListResultObject<StudentDetails>();
             try
             {
-                var query = _context.StudentDetails.AsNoTracking();
+                var query = _context.StudentDetails.Include(x=> x.User).AsNoTracking();
 
                 if (UserId>0)
                 {
@@ -87,7 +87,8 @@ namespace AITechDATA.DataLayer.Services
                 }
                
                  query = query.Where(x =>
-                        (!string.IsNullOrEmpty(x.User.FullName) && x.User.FullName.Contains(searchText))
+                       (!string.IsNullOrEmpty(x.User.FirstName) && x.User.FirstName.Contains(searchText)) ||
+                       (!string.IsNullOrEmpty(x.User.LastName) && x.User.LastName.Contains(searchText))
                     );
 
                 results.TotalCount = query.Count();

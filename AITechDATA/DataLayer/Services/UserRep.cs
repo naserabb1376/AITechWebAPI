@@ -191,7 +191,8 @@ namespace AITechDATA.DataLayer.Services
                    .Where(x =>
                          ((AddressId > 0 ? x.AddressId == AddressId : true) &&
                       (RoleId > 0 ? x.RoleId == RoleId : true)) &&
-                       ((!string.IsNullOrEmpty(x.FullName) && x.FullName.Contains(searchText)) ||
+                       ((!string.IsNullOrEmpty(x.FirstName) && x.FirstName.Contains(searchText)) ||
+                       (!string.IsNullOrEmpty(x.LastName) && x.LastName.Contains(searchText)) ||
                        (!string.IsNullOrEmpty(x.Email) && x.Email.Contains(searchText)) ||
                        (!string.IsNullOrEmpty(x.Username) && x.Username.Contains(searchText)))
                    );
@@ -204,7 +205,8 @@ namespace AITechDATA.DataLayer.Services
                    .Where(x =>
                         ((AddressId > 0 ? x.AddressId == AddressId : true) &&
                       (RoleId > 0 ? x.RoleId == RoleId : true)) &&
-                       ((!string.IsNullOrEmpty(x.FullName) && x.FullName.Contains(searchText)) ||
+                       ((!string.IsNullOrEmpty(x.FirstName) && x.FirstName.Contains(searchText)) ||
+                       (!string.IsNullOrEmpty(x.LastName) && x.LastName.Contains(searchText)) ||
                        (!string.IsNullOrEmpty(x.Email) && x.Email.Contains(searchText)) ||
                        (!string.IsNullOrEmpty(x.Username) && x.Username.Contains(searchText)))
                    );
@@ -216,7 +218,8 @@ namespace AITechDATA.DataLayer.Services
                    .Where(x =>
                       ((AddressId > 0 ? x.AddressId == AddressId : true) &&
                       (RoleId > 0 ? x.RoleId == RoleId : true)) &&
-                       ((!string.IsNullOrEmpty(x.FullName) && x.FullName.Contains(searchText)) ||
+                       ((!string.IsNullOrEmpty(x.FirstName) && x.FirstName.Contains(searchText)) ||
+                       (!string.IsNullOrEmpty(x.LastName) && x.LastName.Contains(searchText)) ||
                        (!string.IsNullOrEmpty(x.Email) && x.Email.Contains(searchText)) ||
                        (!string.IsNullOrEmpty(x.Username) && x.Username.Contains(searchText)))
                    );
@@ -228,7 +231,8 @@ namespace AITechDATA.DataLayer.Services
                    .Where(x =>
                          ((AddressId > 0 ? x.AddressId == AddressId : true) &&
                       (RoleId > 0 ? x.RoleId == RoleId : true)) &&
-                       ((!string.IsNullOrEmpty(x.FullName) && x.FullName.Contains(searchText)) ||
+                       ((!string.IsNullOrEmpty(x.FirstName) && x.FirstName.Contains(searchText)) ||
+                       (!string.IsNullOrEmpty(x.LastName) && x.LastName.Contains(searchText)) ||
                        (!string.IsNullOrEmpty(x.Email) && x.Email.Contains(searchText)) ||
                        (!string.IsNullOrEmpty(x.Username) && x.Username.Contains(searchText)))
                    );
@@ -240,9 +244,10 @@ namespace AITechDATA.DataLayer.Services
                 .Where(x =>
                      ((AddressId > 0 ? x.AddressId == AddressId : true) &&
                       (RoleId > 0 ? x.RoleId == RoleId : true)) &&
-                    ((!string.IsNullOrEmpty(x.FullName) && x.FullName.Contains(searchText)) ||
-                    (!string.IsNullOrEmpty(x.Email) && x.Email.Contains(searchText)) ||
-                    (!string.IsNullOrEmpty(x.Username) && x.Username.Contains(searchText)))
+                       ((!string.IsNullOrEmpty(x.FirstName) && x.FirstName.Contains(searchText)) ||
+                       (!string.IsNullOrEmpty(x.LastName) && x.LastName.Contains(searchText)) ||
+                        (!string.IsNullOrEmpty(x.Email) && x.Email.Contains(searchText)) ||
+                        (!string.IsNullOrEmpty(x.Username) && x.Username.Contains(searchText)))
                 );
                 }
 

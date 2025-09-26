@@ -129,7 +129,9 @@ namespace AITechDATA.DataLayer.Services
                     query = query.Where(x =>
                         (!string.IsNullOrEmpty(x.Name) && x.Name.Contains(searchText)) ||
                         (!string.IsNullOrEmpty(x.Note) && x.Note.Contains(searchText)) ||
-                        (x.Teacher != null && x.Teacher.FullName.Contains(searchText)));
+                       (x.Teacher != null && (!string.IsNullOrEmpty(x.Teacher.FirstName) && x.Teacher.FirstName.Contains(searchText))) ||
+                       (x.Teacher != null && (!string.IsNullOrEmpty(x.Teacher.LastName) && x.Teacher.LastName.Contains(searchText)))
+                       );
                 }
 
                 results.TotalCount = await query.CountAsync();

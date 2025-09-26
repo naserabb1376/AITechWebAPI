@@ -85,7 +85,7 @@ namespace AITechDATA.DataLayer.Services
             ListResultObject<UserCourse> results = new ListResultObject<UserCourse>();
             try
             {
-                var query = _context.UserCourses.AsNoTracking();
+                var query = _context.UserCourses.Include(x => x.User).Include(x=> x.Course).AsNoTracking();
 
                 if (UserId > 0)
                 {
@@ -98,7 +98,9 @@ namespace AITechDATA.DataLayer.Services
                 }
 
                 query = query.Where(x =>
-                       ( x.User.FullName.ToString().Contains(searchText) ||
+                       (
+                       (!string.IsNullOrEmpty(x.User.FirstName) && x.User.FirstName.Contains(searchText)) ||
+                       (!string.IsNullOrEmpty(x.User.LastName) && x.User.LastName.Contains(searchText)) ||
                         x.Course.Title.ToString().Contains(searchText)
                     ));
 

@@ -86,14 +86,15 @@ namespace AITechDATA.DataLayer.Services
             ListResultObject<Parent> results = new ListResultObject<Parent>();
             try
             {
-                var query = _context.Parents.AsNoTracking();
+                var query = _context.Parents.Include(x=> x.StudentDetails).ThenInclude(x=> x.User).AsNoTracking();
                 if(StudentDetailsId > 0)
                 {
                     query = query.Where(x=> x.StudentDetailsId == StudentDetailsId);
                 }
                 query = query.Where(x =>
                         (!string.IsNullOrEmpty(x.Name) && x.Name.Contains(searchText)) ||
-                        (!string.IsNullOrEmpty(x.StudentDetails.User.FullName) && x.StudentDetails.User.FullName.Contains(searchText)) ||
+                       (!string.IsNullOrEmpty(x.StudentDetails.User.FirstName) && x.StudentDetails.User.FirstName.Contains(searchText)) ||
+                       (!string.IsNullOrEmpty(x.StudentDetails.User.LastName) &&  x.StudentDetails.User.LastName.Contains(searchText)) ||
                         (!string.IsNullOrEmpty(x.Job) && x.Job.Contains(searchText)) ||
                         (!string.IsNullOrEmpty(x.ContactNumber) && x.ContactNumber.Contains(searchText))
                     );

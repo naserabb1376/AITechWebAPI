@@ -127,7 +127,7 @@ namespace AITechWebAPI.Tools
             new Claim(JwtRegisteredClaimNames.Sub, login.Username),
                 new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
             new Claim("userId", login.ID.ToString()),
-            new Claim("FullName", login.FullName),
+            new Claim("FullName", $"{login.FirstName} {login.LastName}"),
             new Claim("Role", login.RoleId.ToString()),
             new Claim("StudentId", login.StudentDetails?.ID.ToString() ?? "0"),
             new Claim("PermissionsJson", permissionsJson)

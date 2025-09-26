@@ -18,10 +18,13 @@ namespace AITechWebAPI.Models.User
         [Range(1, long.MaxValue, ErrorMessage = "مقدار {0} باید بزرگتر از 0 باشد")]
         public long RoleId { get; set; }
 
-        [Display(Name = "نام کامل")]
+        [Display(Name = "نام")]
         [Required(ErrorMessage = "لطفا {0} را وارد کنید")]
-        public string FullName { get; set; }
+        public string FirstName { get; set; }
 
+        [Display(Name = "نام خانوادگی")]
+        [Required(ErrorMessage = "لطفا {0} را وارد کنید")]
+        public string LastName { get; set; }
         //[Display(Name = "نام خانوادگی")]
         //[Required(ErrorMessage = "لطفا {0} را وارد کنید")]
         //public string LastName { get; set; }
@@ -66,9 +69,13 @@ namespace AITechWebAPI.Models.User
     {
         public long ID { get; set; } = 0;
 
-        [Display(Name = "نام کامل")]
+        [Display(Name = "نام")]
         [Required(ErrorMessage = "لطفا {0} را وارد کنید")]
-        public string FullName { get; set; }
+        public string FirstName { get; set; }
+
+        [Display(Name = "نام خانوادگی")]
+        [Required(ErrorMessage = "لطفا {0} را وارد کنید")]
+        public string LastName { get; set; }
 
         [Required(ErrorMessage = "لطفا {0} را وارد کنید ")]
         [MaxLength(200)]
@@ -135,9 +142,13 @@ namespace AITechWebAPI.Models.User
         [Display(Name = "نقش")]
         [Range(1, long.MaxValue, ErrorMessage = "مقدار {0} باید بزرگتر از 0 باشد")]
         public long? RoleId { get; set; }
+        [Display(Name = "نام")]
+      //  [Required(ErrorMessage = "لطفا {0} را وارد کنید")]
+        public string? FirstName { get; set; }
 
-        [Display(Name = "نام کامل")]
-        public string? FullName { get; set; }
+        [Display(Name = "نام خانوادگی")]
+        //[Required(ErrorMessage = "لطفا {0} را وارد کنید")]
+        public string? LastName { get; set; }
 
         [MaxLength(200)]
         [RegularExpression(@"[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,4}", ErrorMessage = "پست الکترونیک معتبر نیست")]
@@ -176,8 +187,13 @@ namespace AITechWebAPI.Models.User
         [Range(1, long.MaxValue, ErrorMessage = "مقدار {0} باید بزرگتر از 0 باشد")]
         public long? RoleId { get; set; }
 
-        [Display(Name = "نام کامل")]
-        public string? FullName { get; set; }
+        [Display(Name = "نام")]
+       // [Required(ErrorMessage = "لطفا {0} را وارد کنید")]
+        public string? FirstName { get; set; }
+
+        [Display(Name = "نام خانوادگی")]
+       // [Required(ErrorMessage = "لطفا {0} را وارد کنید")]
+        public string? LastName { get; set; }
 
         [MaxLength(200)]
         [RegularExpression(@"[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,4}", ErrorMessage = "پست الکترونیک معتبر نیست")]

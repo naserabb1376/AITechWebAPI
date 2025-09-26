@@ -85,7 +85,7 @@ namespace AITechDATA.DataLayer.Services
             ListResultObject<Attendance> results = new ListResultObject<Attendance>();
             try
             {
-                var query = _context.Attendances.AsNoTracking();
+                var query = _context.Attendances.Include(x=> x.User).AsNoTracking();
                 if (userId > 0)
                 {
                     query = query.Where(x => x.UserId == userId);
@@ -95,9 +95,11 @@ namespace AITechDATA.DataLayer.Services
                     query = query.Where(x => x.SessionId == sessionId);
                 }
                 query =query.Where(x =>
-                        ((x.User.FullName.ToString().Contains(searchText) ||
+                       (
+                       (!string.IsNullOrEmpty(x.User.FirstName) && x.User.FirstName.Contains(searchText)) ||
+                       (!string.IsNullOrEmpty(x.User.LastName) && x.User.LastName.Contains(searchText)) ||
                         x.Session.SessionDate.ToString().Contains(searchText))
-                    ));
+                    );
 
                 results.TotalCount = query.Count();
                 results.PageCount = DbTools.GetPageCount(results.TotalCount, pageSize);

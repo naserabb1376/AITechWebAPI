@@ -335,7 +335,8 @@ namespace AITechWebAPI.Controllers
             {
                 User user = new User()
                 {
-                    FullName = signupRequestBody.FullName,
+                    FirstName = signupRequestBody.FirstName,
+                    LastName = signupRequestBody.LastName,
                     Username = signupRequestBody.UserName,
                     RoleId = 1,
                     Email = signupRequestBody.Email,
@@ -537,7 +538,7 @@ namespace AITechWebAPI.Controllers
                         if (saverefreshToken.Status)
                         {
 
-                            var fullName = user.Result.FullName;
+                            var fullName = $"{user.Result.FirstName} {user.Result.LastName}";
                             var messageText = ToolBox.MakeResetPasswordMessage(fullName, resetToken);
                             bool sentState = ToolBox.SendEmail(requestBody.Email, "بازنشانی کلمه عبور", messageText);
 

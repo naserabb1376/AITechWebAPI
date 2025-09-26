@@ -94,7 +94,7 @@ namespace AITechDATA.DataLayer.Services
                 searchText = (searchText ?? string.Empty).Trim();
 
                 // 1) پایه‌ی فیلتر
-                var baseQuery = _context.UserGroups.AsNoTracking();
+                var baseQuery = _context.UserGroups.Include(x => x.User).AsNoTracking();
 
                 if (userId > 0)
                     baseQuery = baseQuery.Where(ug => ug.UserId == userId);
@@ -114,16 +114,18 @@ namespace AITechDATA.DataLayer.Services
                     else if (groupId > 0 && userId == 0)
                     {
                         // وقتی دنبال کاربران یک گروه می‌گردیم، روی اطلاعات کاربر سرچ کن
-                        baseQuery = baseQuery.Where(ug =>
-                            (ug.User.FullName ?? "").Contains(searchText) ||
-                            (ug.User.Email ?? "").Contains(searchText));
+                        baseQuery = baseQuery.Where(x =>
+                       (!string.IsNullOrEmpty(x.User.FirstName) && x.User.FirstName.Contains(searchText)) ||
+                       (!string.IsNullOrEmpty(x.User.LastName) && x.User.LastName.Contains(searchText)) ||
+                            (x.User.Email ?? "").Contains(searchText));
                     }
                     else
                     {
                         // حالت عمومی: روی هر دو طرف
-                        baseQuery = baseQuery.Where(ug =>
-                            (ug.User.FullName ?? "").Contains(searchText) ||
-                            (ug.Group.Name ?? "").Contains(searchText));
+                        baseQuery = baseQuery.Where(x =>
+                       (!string.IsNullOrEmpty(x.User.FirstName) && x.User.FirstName.Contains(searchText)) ||
+                       (!string.IsNullOrEmpty(x.User.LastName) && x.User.LastName.Contains(searchText)) ||
+                            (x.Group.Name ?? "").Contains(searchText));
                     }
                 }
 
@@ -156,7 +158,7 @@ namespace AITechDATA.DataLayer.Services
                     if (userId > 0 && groupId == 0)
                         ordered = withIncludes.OrderBy(ug => ug.Group.Name);
                     else if (groupId > 0 && userId == 0)
-                        ordered = withIncludes.OrderBy(ug => ug.User.FullName);
+                        ordered = withIncludes.OrderBy(ug => ug.User.LastName);
                     else
                         ordered = withIncludes.OrderByDescending(ug => ug.ID);
                 }

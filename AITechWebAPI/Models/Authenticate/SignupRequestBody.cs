@@ -26,7 +26,11 @@ namespace AITechWebAPI.Models.Authenticate
 
         [Display(Name = "نام")]
         [Required(ErrorMessage = "لطفا {0} را وارد کنید")]
-        public string FullName { get; set; }
+        public string FirstName { get; set; }
+
+        [Display(Name = "نام خانوادگی")]
+        [Required(ErrorMessage = "لطفا {0} را وارد کنید")]
+        public string LastName { get; set; }
 
         [Required(ErrorMessage = "لطفا {0} را وارد کنید ")]
         [MaxLength(200)]
