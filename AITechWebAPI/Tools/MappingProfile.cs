@@ -73,6 +73,23 @@ namespace AITechWebAPI.Tools
             CreateMap<News, NewsVM>()
 .ForMember(dest => dest.UserName, opt => opt.MapFrom(src => $"{src.User.FirstName} {src.User.LastName}"));
 
+            CreateMap<InterviewTime, InterviewTimeVM>()
+.ForMember(dest => dest.UniversityName, opt => opt.MapFrom(src => src.JobRequest.UniversityName))
+.ForMember(dest => dest.CourseTitle, opt => opt.MapFrom(src => src.JobRequest.CourseTitle))
+.ForMember(dest => dest.EducationalLevel, opt => opt.MapFrom(src => src.JobRequest.EducationalLevel))
+.ForMember(dest => dest.EducationStatus, opt => opt.MapFrom(src => src.JobRequest.EducationStatus))
+.ForMember(dest => dest.LastAcademicLicense, opt => opt.MapFrom(src => src.JobRequest.LastAcademicLicense))
+.ForMember(dest => dest.RequestedPosition, opt => opt.MapFrom(src => src.JobRequest.RequestedPosition))
+.ForMember(dest => dest.BirthDate, opt => opt.MapFrom(src => src.JobRequest.BirthDate))
+.ForMember(dest => dest.FirstName, opt => opt.MapFrom(src => src.JobRequest.FirstName))
+.ForMember(dest => dest.LastName, opt => opt.MapFrom(src => src.JobRequest.LastName))
+.ForMember(dest => dest.FatherName, opt => opt.MapFrom(src => src.JobRequest.FirstName))
+.ForMember(dest => dest.NationalCode, opt => opt.MapFrom(src => src.JobRequest.NationalCode))
+.ForMember(dest => dest.Email, opt => opt.MapFrom(src => src.JobRequest.Email))
+.ForMember(dest => dest.PhoneNumber, opt => opt.MapFrom(src => src.JobRequest.PhoneNumber))
+;
+
+
             CreateMap<Notification, NotificationVM>()
 .ForMember(dest => dest.UserName, opt => opt.MapFrom(src => $"{src.User.FirstName} {src.User.LastName}"));
 

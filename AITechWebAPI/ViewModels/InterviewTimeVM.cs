@@ -1,9 +1,8 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using AITechDATA.Domain;
 
-namespace AITechDATA.Domain
+namespace AITechWebAPI.ViewModels
 {
-    // JobRequest: جدول درخواست شغل
-    public class JobRequest : BaseEntity
+    public class InterviewTimeVM : BaseVM
     {
         public string FirstName { get; set; }
         public string LastName { get; set; }
@@ -18,7 +17,8 @@ namespace AITechDATA.Domain
         public string? EducationalLevel { get; set; }
         public string? EducationStatus { get; set; }
         public string? CourseTitle { get; set; } = "";
-        public string CheckStatus { get; set; }
-        public string? Description { get; set; } = ""; // توضیحات
+        public string InterviewDate { get; set; }
+        public string InterviewStartTime { get; set; }
+        public string InterviewEndTime { get; set; }
     }
 }

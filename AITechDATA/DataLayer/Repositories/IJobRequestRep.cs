@@ -17,6 +17,7 @@ namespace AITechDATA.DataLayer.Repositories
         Task<BitResultObject> AddJobRequestAsync(JobRequest JobRequest);
 
         Task<BitResultObject> EditJobRequestAsync(JobRequest JobRequest);
+        Task<BitResultObject> ChangeCheckStatus(long JobRequestId,string CheckStatus);
 
         Task<BitResultObject> RemoveJobRequestAsync(JobRequest JobRequest);
 

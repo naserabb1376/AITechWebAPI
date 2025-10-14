@@ -65,6 +65,10 @@ namespace AITechWebAPI.Models.JobRequest
         [Required(ErrorMessage = "لطفا {0} را وارد کنید")]
         public string CourseTitle { get; set; }
 
+        [Display(Name = "وضعیت بررسی")]
+        [Required(ErrorMessage = "لطفا {0} را وارد کنید")]
+        public string CheckStatus { get; set; }
+
         [Display(Name = "شرح درخواست")]
         public string? Description { get; set; } = "";
 
@@ -72,5 +76,14 @@ namespace AITechWebAPI.Models.JobRequest
         public string? OtherLangs { get; set; } = "";
 
 
+    }
+
+    public class ChangeCheckStatusJobRequestRequestBody
+    {
+        public long ID { get; set; } = 0;
+
+        [Display(Name = "وضعیت بررسی")]
+        [Required(ErrorMessage = "لطفا {0} را وارد کنید")]
+        public string CheckStatus { get; set; }
     }
 }

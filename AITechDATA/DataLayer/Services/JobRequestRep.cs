@@ -38,6 +38,23 @@ namespace AITechDATA.DataLayer.Services
             return result;
         }
 
+        public async Task<BitResultObject> ChangeCheckStatus(long JobRequestId,string CheckStatus)
+        {
+            BitResultObject result = new BitResultObject();
+            try
+            {
+                var JobRequest = await GetJobRequestByIdAsync(JobRequestId);
+                JobRequest.Result.CheckStatus = CheckStatus;
+                result = await EditJobRequestAsync(JobRequest.Result);
+            }
+            catch (Exception ex)
+            {
+                result.Status = false;
+                result.ErrorMessage = $"{ex.Message} - {ex.InnerException?.Message}";
+            }
+            return result;
+        }
+
         public async Task<BitResultObject> EditJobRequestAsync(JobRequest JobRequest)
         {
             BitResultObject result = new BitResultObject();
@@ -93,6 +110,7 @@ namespace AITechDATA.DataLayer.Services
                         (!string.IsNullOrEmpty(x.Email) && x.Email.Contains(searchText)) ||
                         (!string.IsNullOrEmpty(x.PhoneNumber) && x.PhoneNumber.Contains(searchText)) ||
                         (!string.IsNullOrEmpty(x.RequestedPosition) && x.RequestedPosition.Contains(searchText)) ||
+                        (!string.IsNullOrEmpty(x.CheckStatus) && x.CheckStatus.Contains(searchText)) ||
                         (!string.IsNullOrEmpty(x.Description) && x.Description.Contains(searchText))
                     );
 

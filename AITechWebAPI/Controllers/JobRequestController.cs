@@ -117,6 +117,7 @@ namespace AITechWebAPI.Controllers
                 LastAcademicLicense = requestBody.LastAcademicLicense ?? "",
                 UniversityName = requestBody.UniversityName ?? "",
                 NationalCode = requestBody.NationalCode ?? "",
+                CheckStatus = requestBody.CheckStatus,
             };
             var result = await _JobRequestRep.AddJobRequestAsync(JobRequest);
             if (result.Status)
@@ -175,8 +176,48 @@ namespace AITechWebAPI.Controllers
                 LastAcademicLicense = requestBody.LastAcademicLicense ?? "",
                 UniversityName = requestBody.UniversityName ?? "",
                 NationalCode = requestBody.NationalCode ?? "",
+                CheckStatus = requestBody.CheckStatus,
             };
             result = await _JobRequestRep.EditJobRequestAsync(JobRequest);
+            if (result.Status)
+            {
+
+                #region AddLog
+
+                Log log = new Log()
+                {
+                    CreateDate = DateTime.Now.ToShamsi(),
+                    UpdateDate = DateTime.Now.ToShamsi(),
+                    LogTime = DateTime.Now.ToShamsi(),
+                    ActionName = this.ControllerContext.RouteData.Values["action"].ToString(),
+
+                };
+                await _logRep.AddLogAsync(log);
+
+                #endregion
+
+                return Ok(result);
+            }
+            return BadRequest(result);
+        }
+
+        [HttpPut("ChangeCheckStatusJobRequest_Base")]
+        public async Task<ActionResult<BitResultObject>> ChangeCheckStatusJobRequest_Base(ChangeCheckStatusJobRequestRequestBody requestBody)
+        {
+            var result = new BitResultObject();
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(requestBody);
+            }
+            var theRow = await _JobRequestRep.GetJobRequestByIdAsync(requestBody.ID);
+            if (!theRow.Status)
+            {
+                result.Status = theRow.Status;
+                result.ErrorMessage = theRow.ErrorMessage;
+            }
+
+           
+            result = await _JobRequestRep.ChangeCheckStatus(requestBody.ID,requestBody.CheckStatus);
             if (result.Status)
             {
 
