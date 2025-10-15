@@ -166,6 +166,8 @@ namespace AITechWebAPI
             builder.Services.AddScoped<ILinkedEntityRep, LinkedEntityRep>();
             builder.Services.AddScoped<IJobRequestRep, JobRequestRep>();
             builder.Services.AddScoped<IArticleRep, ArticleRep>();
+            builder.Services.AddScoped<ISMSMessageRep, SMSMessageRep>();
+            builder.Services.AddScoped<IInterviewTimeRep, InterviewTimeRep>();
 
 
             #endregion ImportDbServices

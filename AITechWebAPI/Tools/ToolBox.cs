@@ -11,6 +11,7 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using VerifyCodeSMSService;
+using static AITechWebAPI.Tools.ApiCaller;
 
 namespace AITechWebAPI.Tools
 {
@@ -95,6 +96,33 @@ namespace AITechWebAPI.Tools
                 currect = false;
             }
             return currect;
+        }
+
+        public async static Task<bool> SendSMSMessage(string mobileNumber, string message)
+        {
+            string AppName = Configuration["Jwt:Issuer"];
+            string UserName = Configuration["VerifyCode:PanelUserName"];
+            string Password = Configuration["VerifyCode:PanelPassword"];
+            string lineNumber = Configuration["VerifyCode:PanelLineNumber"];
+            string apiUrl = $"https://RayganSMS.com/SendMessageWithUrl.ashx?Username={UserName}&Password={Password}&PhoneNumber={lineNumber}&MessageBody={message}&RecNumber={mobileNumber}&Smsclass=1";
+
+            List<ReqHeader> reqHeaders = new List<ReqHeader>();
+
+            bool send = false;
+            try
+            {
+                ApiCaller apiCaller = new ApiCaller();
+
+                var SendSmsMessageResponse = await apiCaller.Call<long>(apiUrl, "GET", "", reqHeaders, Encoding.UTF8);
+                if (SendSmsMessageResponse > 2000) send = true;
+                else send = false;
+
+            }
+            catch (Exception ex)
+            {
+                send = false;
+            }
+            return send;
         }
 
         // تابع تولید Access Token (JWT)

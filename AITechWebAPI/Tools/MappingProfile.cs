@@ -6,6 +6,7 @@ using AITechWebAPI.ViewModels;
 using AutoMapper;
 using Microsoft.AspNetCore.JsonPatch.Adapters;
 using Microsoft.JSInterop;
+using NobatPlusDATA.Domain;
 
 
 
@@ -132,7 +133,9 @@ namespace AITechWebAPI.Tools
 .ForMember(dest => dest.RoleName, opt => opt.MapFrom(src => src.Role.Name))
 .ForMember(dest => dest.StudentDetailsId, opt => opt.MapFrom(src => src.StudentDetails.ID));
 
-
+            CreateMap<SMSMessage, SMSMessageVM>()
+.ForMember(dest => dest.UserFullName, opt => opt.MapFrom(src => src.User.FirstName + " " + src.User.LastName))
+    ;
 
         }
     }
