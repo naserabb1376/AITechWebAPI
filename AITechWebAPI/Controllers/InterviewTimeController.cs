@@ -4,7 +4,7 @@ using AITechDATA.Domain;
 using AITechDATA.ResultObjects;
 using AITechDATA.Tools;
 using AITechWebAPI.Models;
-using AITechWebAPI.Models.News;
+using AITechWebAPI.Models.InterviewTime;
 using AITechWebAPI.Models.InterviewTime;
 using AITechWebAPI.Models.Public;
 using AITechWebAPI.Validations;
@@ -19,6 +19,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 using static AITechWebAPI.Tools.ToolBox;
+using AITechWebAPI.Tools;
 
 namespace AITechWebAPI.Controllers
 {
@@ -32,25 +33,27 @@ namespace AITechWebAPI.Controllers
     public class InterviewTimeController : ControllerBase
     {
         IInterviewTimeRep _InterviewTimeRep;
+        IJobRequestRep _jobRequestRep;
         ILogRep _logRep;
         private readonly IMapper _mapper;
 
 
-        public InterviewTimeController(IInterviewTimeRep InterviewTimeRep,ILogRep logRep,IMapper mapper)
+        public InterviewTimeController(IInterviewTimeRep InterviewTimeRep,IJobRequestRep jobRequestRep,ILogRep logRep,IMapper mapper)
         {
            _InterviewTimeRep = InterviewTimeRep;
+            _jobRequestRep = jobRequestRep;
            _logRep = logRep;
             _mapper = mapper;
         }
 
         [HttpPost("GetAllInterviewTimes_Base")]
-        public async Task<ActionResult<ListResultObject<InterviewTimeVM>>> GetAllInterviewTimes_Base(GetNewsListRequestBody requestBody)
+        public async Task<ActionResult<ListResultObject<InterviewTimeVM>>> GetAllInterviewTimes_Base(GetInterviewTimeListRequestBody requestBody)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(requestBody);
             }
-            var result = await _InterviewTimeRep.GetAllInterviewTimesAsync(requestBody.UserId,requestBody.PageIndex,requestBody.PageSize,requestBody.SearchText,requestBody.SortQuery);
+            var result = await _InterviewTimeRep.GetAllInterviewTimesAsync(requestBody.JobRequestId,requestBody.PageIndex,requestBody.PageSize,requestBody.SearchText,requestBody.SortQuery);
             if (result.Status)
             {
                 var resultVM = _mapper.Map<ListResultObject<InterviewTimeVM>>(result);
@@ -90,14 +93,52 @@ namespace AITechWebAPI.Controllers
             return BadRequest(result);
         }
 
-        [HttpPost("AddInterviewTime_Base")]
+        [HttpPost("GetInterviewTimesInDay_Base")]
         [AllowAnonymous]
-        public async Task<ActionResult<BitResultObject>> AddInterviewTime_Base(AddEditInterviewTimeRequestBody requestBody)
+        public async Task<ActionResult<ListResultObject<InterviewSlot>>> GetInterviewTimesInDay_Base(GetInterviewTimesInDayRequestBody requestBody)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(requestBody);
             }
+            var result = await _InterviewTimeRep.GetInterviewTimesInDayAsync(requestBody.InterviewDate, requestBody.InterviewStartTime, requestBody.InterviewEndTime, requestBody.InterviewMinutes, requestBody.PageIndex, requestBody.PageSize);
+            if (result.Status)
+            {
+                return Ok(result);
+            }
+            return BadRequest(result);
+        }
+
+        [HttpPost("AddInterviewTime_Base")]
+        [AllowAnonymous]
+        public async Task<ActionResult<BitResultObject>> AddInterviewTime_Base(AddEditInterviewTimeRequestBody requestBody)
+        {
+            BitResultObject result = new BitResultObject();
+            JobRequest jobRequest = new JobRequest();
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(requestBody);
+            }
+
+            var theInterview = await _InterviewTimeRep.GetAllInterviewTimesAsync(requestBody.JobRequestId, 1, 0);
+            if (requestBody.JobRequestId > 0)
+            {
+                var theJobReq = await _jobRequestRep.GetJobRequestByIdAsync(requestBody.JobRequestId);
+                jobRequest = theJobReq.Result;
+            }
+            else if (!string.IsNullOrEmpty(requestBody.PhoneNumber))
+            {
+                var theJobReq = await _jobRequestRep.GetAllJobRequestsAsync(1,0,requestBody.PhoneNumber);
+                jobRequest = theJobReq.Results.LastOrDefault();
+            }
+
+            if (jobRequest.ID <= 0)
+            {
+                result.Status = false;
+                result.ErrorMessage = "این درخواست نامعتبر است";
+                return BadRequest(result);
+            }
+
             InterviewTime InterviewTime = new InterviewTime()
             {
                 CreateDate = DateTime.Now.ToShamsi(),
@@ -108,9 +149,21 @@ namespace AITechWebAPI.Controllers
                 InterviewStartTime = requestBody.InterviewStartTime,
                 InterviewEndTime = requestBody.InterviewEndTime,
             };
-            var result = await _InterviewTimeRep.AddInterviewTimeAsync(InterviewTime);
+
+            if (theInterview.Results.Count > 0)
+            {
+                InterviewTime.ID = theInterview.Results.FirstOrDefault().ID;
+            }
+
+            result = await _InterviewTimeRep.EditInterviewTimeAsync(InterviewTime);
             if (result.Status)
             {
+                string smsMsg = $@"{jobRequest.FirstName} {jobRequest.LastName} عزیز
+وقت مصاحبه شما برای ساعت {InterviewTime.InterviewStartTime} روز {InterviewTime.InterviewDate}
+تنظیم شد
+";
+                var sentSms = await ToolBox.SendSMSMessage(jobRequest.PhoneNumber,smsMsg);
+
                 #region AddLog
 
                 Log log = new Log()

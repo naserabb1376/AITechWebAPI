@@ -15,6 +15,8 @@ namespace AITechDATA.DataLayer.Repositories
 
         Task<RowResultObject<InterviewTime>> GetInterviewTimeByIdAsync(long InterviewTimeId);
 
+        Task<ListResultObject<InterviewSlot>> GetInterviewTimesInDayAsync(string interviewDate,string interviewStartTime,string interViewEndTime,int slotMinutes, int pageIndex = 1, int pageSize = 20);
+
         Task<BitResultObject> AddInterviewTimeAsync(InterviewTime InterviewTime);
 
         Task<BitResultObject> EditInterviewTimeAsync(InterviewTime InterviewTime);

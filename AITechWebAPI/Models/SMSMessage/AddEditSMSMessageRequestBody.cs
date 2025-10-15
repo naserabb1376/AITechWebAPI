@@ -17,8 +17,7 @@ namespace AITechWebAPI.Models.SMSMessage
 
         [Display(Name = "تاریخ ارسال")]
         public string? SentDate { get; set; }
-        public string? Description { get; set; }
-
+        public string? OtherLangs { get; set; }
         public bool PhoneNumberExists { get; set; }
     }
 }

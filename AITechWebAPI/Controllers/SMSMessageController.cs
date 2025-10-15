@@ -14,6 +14,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
+using NobatPlusDATA.Domain;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
@@ -51,7 +52,7 @@ namespace AITechAPI.Controllers
             {
                 return BadRequest(requestBody);
             }
-            var result = await _SMSMessageRep.GetAllSMSMessagesAsync(requestBody.PersonId,requestBody.PageIndex,requestBody.PageSize,requestBody.SearchText,requestBody.SortQuery);
+            var result = await _SMSMessageRep.GetAllSMSMessagesAsync(requestBody.UserId,requestBody.PageIndex,requestBody.PageSize,requestBody.SearchText,requestBody.SortQuery);
             if (result.Status)
             {
                 var resultVM = _mapper.Map<ListResultObject<SMSMessageVM>>(result);
@@ -131,10 +132,10 @@ namespace AITechAPI.Controllers
                 CreateDate = DateTime.Now.ToShamsi(),
                 UpdateDate = DateTime.Now.ToShamsi(),
                 PhoneNumber = requestBody.PhoneNumber,
-                PersonID = validPhoneNumber.ID,
+                UserID = validPhoneNumber.ID > 0 ? validPhoneNumber.ID : null,
                 Message = requestBody.Message,
-                SentDate = string.IsNullOrEmpty(requestBody.SentDate) ? DateTime.Now.ToShamsi() : requestBody.SentDate.StringToDate(),
-                Description = requestBody.Description,
+                SentDate = string.IsNullOrEmpty(requestBody.SentDate) ? DateTime.Now.ToShamsi() : requestBody.SentDate.StringToDate().Value,
+                OtherLangs = requestBody.OtherLangs ?? "",
                 SentStatus = sentstatus,
             };
              result = await _SMSMessageRep.AddSMSMessageAsync(SMSMessage);
@@ -177,7 +178,7 @@ namespace AITechAPI.Controllers
                 return BadRequest(requestBody);
             }
 
-            var validPhoneNumber = await _LoginRep.ExistLoginAsync(requestBody.PhoneNumber, "PhoneNumber");
+            var validPhoneNumber = await _userRep.ExistUserAsync(requestBody.PhoneNumber, "username");
 
             var theRow = await _SMSMessageRep.GetSMSMessageByIdAsync(requestBody.ID);
             if (!theRow.Status)
@@ -192,10 +193,11 @@ namespace AITechAPI.Controllers
                 UpdateDate = DateTime.Now.ToShamsi(),
                 ID = requestBody.ID,
                 PhoneNumber = requestBody.PhoneNumber,
-                PersonID = validPhoneNumber.ID,
+                UserID = validPhoneNumber.ID > 0 ? validPhoneNumber.ID : null,
                 Message = requestBody.Message,
-                SentDate = string.IsNullOrEmpty(requestBody.SentDate) ? DateTime.Now.ToShamsi() : requestBody.SentDate.StringToDate(),
-                Description = requestBody.Description,
+                SentDate = string.IsNullOrEmpty(requestBody.SentDate) ? DateTime.Now.ToShamsi() : requestBody.SentDate.StringToDate().Value,
+                SentStatus = theRow.Result.SentStatus,
+                OtherLangs = requestBody.OtherLangs ?? "",
             };
             result = await _SMSMessageRep.EditSMSMessageAsync(SMSMessage);
             if (result.Status)

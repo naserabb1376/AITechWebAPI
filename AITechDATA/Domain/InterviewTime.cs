@@ -11,4 +11,12 @@ namespace AITechDATA.Domain
         public long JobRequestId { get; set; }
         public JobRequest JobRequest { get; set; }
     }
+
+    public class InterviewSlot
+    {
+        public string InterviewDate { get; set; }
+        public string InterviewStartTime { get; set; }
+        public string InterviewEndTime { get; set; }
+        public bool IsReserved { get; set; }
+    }
 }

@@ -1,11 +1,15 @@
-﻿using AITechWebAPI.Validations;
+﻿using AITechWebAPI.Models.Public;
 using System.ComponentModel.DataAnnotations;
 
 namespace AITechWebAPI.Models.InterviewTime
 {
-    public class AddEditInterviewTimeRequestBody
+    public class GetInterviewTimesInDayRequestBody
     {
-        public long ID { get; set; } = 0;
+        public int PageIndex { get; set; } = 1;
+
+        [Display(Name = "اندازه صفحه")]
+        [Required(ErrorMessage = "لطفا {0} را وارد کنید")]
+        public int PageSize { get; set; }
 
         [Display(Name = "تاریخ مصاحبه")]
         [Required(ErrorMessage = "لطفا {0} را وارد کنید")]
@@ -19,19 +23,10 @@ namespace AITechWebAPI.Models.InterviewTime
         [Required(ErrorMessage = "لطفا {0} را وارد کنید")]
         public string InterviewEndTime { get; set; }
 
-        [Display(Name = "کد درخواست")]
+        [Display(Name = "مدت زمان مصاحبه (به دقیقه)")]
         [Required(ErrorMessage = "لطفا {0} را وارد کنید")]
-        [Range(1, long.MaxValue, ErrorMessage = "مقدار {0} باید بزرگتر از 0 باشد")]
-        public long JobRequestId { get; set; }
-
-        [Display(Name = "شماره تماس درخواست کننده")]
-        public string? PhoneNumber { get; set; }
-
-        [Display(Name = "شرح")]
-        public string? Description { get; set; } = "";
-
-        [Display(Name = "زبان های دیگر")]
-        public string? OtherLangs { get; set; } = "";
+        [Range(1, 60, ErrorMessage = "مقدار {0} باید بزرگتر از 0 باشد")]
+        public int InterviewMinutes { get; set; }
 
 
     }

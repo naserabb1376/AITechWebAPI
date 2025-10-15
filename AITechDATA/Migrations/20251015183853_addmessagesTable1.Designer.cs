@@ -4,6 +4,7 @@ using AITechDATA.DataLayer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace AITechDATA.Migrations
 {
     [DbContext(typeof(AITechContext))]
-    partial class AITechContextModelSnapshot : ModelSnapshot
+    [Migration("20251015183853_addmessagesTable1")]
+    partial class addmessagesTable1
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -1544,7 +1547,7 @@ namespace AITechDATA.Migrations
                     b.Property<DateTime?>("UpdateDate")
                         .HasColumnType("datetime2");
 
-                    b.Property<long?>("UserID")
+                    b.Property<long>("UserID")
                         .HasColumnType("bigint");
 
                     b.HasKey("ID");
@@ -1901,7 +1904,9 @@ namespace AITechDATA.Migrations
                 {
                     b.HasOne("AITechDATA.Domain.User", "User")
                         .WithMany()
-                        .HasForeignKey("UserID");
+                        .HasForeignKey("UserID")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("User");
                 });

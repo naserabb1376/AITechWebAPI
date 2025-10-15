@@ -6,6 +6,7 @@ using AITechDATA.Tools;
 using AITechWebAPI.Models;
 using AITechWebAPI.Models.JobRequest;
 using AITechWebAPI.Models.Public;
+using AITechWebAPI.Tools;
 using AITechWebAPI.Validations;
 using AITechWebAPI.ViewModels;
 using AutoMapper;
@@ -15,6 +16,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
+using System.Net;
 using System.Security.Claims;
 using System.Text;
 using static AITechWebAPI.Tools.ToolBox;
@@ -220,6 +222,13 @@ namespace AITechWebAPI.Controllers
             result = await _JobRequestRep.ChangeCheckStatus(requestBody.ID,requestBody.CheckStatus);
             if (result.Status)
             {
+
+                string smsMsg = $@"{theRow.Result.FirstName} {theRow.Result.LastName} عزیز
+درخواست همکاری شما تایید شد
+لطفا جهت تعیین زمان مصاحبه به سایت مراجعه نمایید
+";
+                var sentSms = await ToolBox.SendSMSMessage(theRow.Result.PhoneNumber, smsMsg);
+
 
                 #region AddLog
 

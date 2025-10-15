@@ -1,13 +1,15 @@
 ﻿using AITechDATA.DataLayer.Repositories;
 using AITechDATA.Domain;
 using AITechDATA.ResultObjects;
-using Microsoft.EntityFrameworkCore;
 using AITechDATA.Tools;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using static System.Reflection.Metadata.BlobBuilder;
 
 namespace AITechDATA.DataLayer.Services
 {
@@ -121,6 +123,62 @@ namespace AITechDATA.DataLayer.Services
             return results;
         }
 
+        public async Task<ListResultObject<InterviewSlot>> GetInterviewTimesInDayAsync(string interviewDate, string interviewStartTime, string interViewEndTime, int slotMinutes, int pageIndex = 1, int pageSize = 20)
+        {
+            ListResultObject<InterviewSlot> results = new ListResultObject<InterviewSlot>();
+            try
+            {
+                // 🗓 تبدیل تاریخ شمسی به میلادی
+                PersianCalendar pc = new PersianCalendar();
+                var dateParts = interviewDate.Split('/');
+                int year = int.Parse(dateParts[0]);
+                int month = int.Parse(dateParts[1]);
+                int day = int.Parse(dateParts[2]);
+
+                DateTime baseDate = pc.ToDateTime(year, month, day, 0, 0, 0, 0);
+
+                // ⏰ تبدیل ساعت شروع و پایان به DateTime
+                var startParts = interviewStartTime.Split(':');
+                var endParts = interViewEndTime.Split(':');
+                DateTime startDateTime = new DateTime(baseDate.Year, baseDate.Month, baseDate.Day,
+                    int.Parse(startParts[0]), int.Parse(startParts[1]), 0);
+                DateTime endDateTime = new DateTime(baseDate.Year, baseDate.Month, baseDate.Day,
+                    int.Parse(endParts[0]), int.Parse(endParts[1]), 0);
+
+                // 🟡 دریافت وقت‌های رزرو شده از دیتابیس
+                var reservedTimes = await _context.InterviewTimes
+                    .Where(x => x.InterviewDate == interviewDate)
+                    .Select(x => x.InterviewStartTime)
+                    .ToListAsync();
+
+                // ⏳ ایجاد بازه‌های مصاحبه
+                DateTime current = startDateTime;
+                while (current.AddMinutes(slotMinutes) <= endDateTime)
+                {
+                    var slotStart = current.ToString("HH:mm");
+                    var slotEnd = current.AddMinutes(slotMinutes).ToString("HH:mm");
+                    var slot = new InterviewSlot
+                    {
+                        InterviewDate = interviewDate,
+                        InterviewStartTime = slotStart,
+                        InterviewEndTime = slotEnd,
+                        IsReserved = reservedTimes.Contains(slotStart)  // 🟢 بررسی رزرو بودن
+                    };
+                    results.Results.Add(slot);
+                    current = current.AddMinutes(slotMinutes);
+                }
+                var query = results.Results.AsQueryable();  
+                results.TotalCount = query.Count();
+                results.PageCount = DbTools.GetPageCount(results.TotalCount, pageSize);
+                results.Results = query.ToPaging(pageIndex, pageSize).ToList();
+            }
+            catch (Exception ex)
+            {
+                results.Status = false;
+                results.ErrorMessage = $"{ex.Message} - {ex.InnerException?.Message}";
+            }
+            return results;
+        }
         public async Task<RowResultObject<InterviewTime>> GetInterviewTimeByIdAsync(long InterviewTimeId)
         {
             RowResultObject<InterviewTime> result = new RowResultObject<InterviewTime>();

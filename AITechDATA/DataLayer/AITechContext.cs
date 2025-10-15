@@ -13,15 +13,15 @@ namespace AITechDATA.DataLayer
 {
     public class AITechContext : DbContext
     {
-        public AITechContext()
+        //public AITechContext()
+        //{
+
+        //}
+
+        public AITechContext(DbContextOptions<AITechContext> options)
+      : base(options)
         {
-
         }
-
-      //  public AITechContext(DbContextOptions<AITechContext> options)
-      //: base(options)
-      //  {
-      //  }
 
         public DbSet<Address> Addresses { get; set; }
         public DbSet<AdminReport> AdminReports { get; set; }
@@ -65,12 +65,12 @@ namespace AITechDATA.DataLayer
 
         ///     public DbSet<ClassForAi> ClassForAi { get; set; }
 
-        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-        {
-            ConfigurationHelper configurationHelper = new ConfigurationHelper();
-            optionsBuilder.UseSqlServer(configurationHelper.GetConnectionString("publicdb"));
-            //  base.OnConfiguring(optionsBuilder);
-        }
+        //protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+        //{
+        //    ConfigurationHelper configurationHelper = new ConfigurationHelper();
+        //    optionsBuilder.UseSqlServer(configurationHelper.GetConnectionString("publicdb"));
+        //    //  base.OnConfiguring(optionsBuilder);
+        //}
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

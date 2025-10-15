@@ -1,6 +1,7 @@
 ﻿using AITechDATA.Domain;
 using AITechDATA.Tools;
 using AITechWebAPI.Models.Authenticate;
+using AITechWebAPI.ViewModels;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
@@ -101,11 +102,11 @@ namespace AITechWebAPI.Tools
         public async static Task<bool> SendSMSMessage(string mobileNumber, string message)
         {
             string AppName = Configuration["Jwt:Issuer"];
-            string UserName = Configuration["VerifyCode:PanelUserName"];
-            string Password = Configuration["VerifyCode:PanelPassword"];
-            string lineNumber = Configuration["VerifyCode:PanelLineNumber"];
-            string apiUrl = $"https://RayganSMS.com/SendMessageWithUrl.ashx?Username={UserName}&Password={Password}&PhoneNumber={lineNumber}&MessageBody={message}&RecNumber={mobileNumber}&Smsclass=1";
-
+            string UserName = "z.kamali";
+            string Password = "dN3VRWdY7RFRyKx";
+            string lineNumber = "50004001049819";
+            string apiUrl = $"http://rest.payamak-panel.com/api/SendSMS/SendSMS";
+            var formBody = $"username={UserName}&password={Password}&to={mobileNumber}&from={lineNumber}&text={message}&isflash=false";
             List<ReqHeader> reqHeaders = new List<ReqHeader>();
 
             bool send = false;
@@ -113,8 +114,8 @@ namespace AITechWebAPI.Tools
             {
                 ApiCaller apiCaller = new ApiCaller();
 
-                var SendSmsMessageResponse = await apiCaller.Call<long>(apiUrl, "GET", "", reqHeaders, Encoding.UTF8);
-                if (SendSmsMessageResponse > 2000) send = true;
+                var SendSmsMessageResponse = await apiCaller.Call<object>(apiUrl, "POST", formBody, reqHeaders, Encoding.UTF8, "application/x-www-form-urlencoded");
+                if (SendSmsMessageResponse.ToString().ToLower().Contains("\"ok\"")) send = true;
                 else send = false;
 
             }
