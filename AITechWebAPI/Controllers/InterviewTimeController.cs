@@ -145,7 +145,7 @@ namespace AITechWebAPI.Controllers
                 UpdateDate = DateTime.Now.ToShamsi(),
                 OtherLangs = requestBody.OtherLangs,
                 InterviewDate = requestBody.InterviewDate,
-                JobRequestId = requestBody.JobRequestId,
+                JobRequestId = jobRequest.ID,
                 InterviewStartTime = requestBody.InterviewStartTime,
                 InterviewEndTime = requestBody.InterviewEndTime,
             };

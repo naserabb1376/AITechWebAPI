@@ -21,14 +21,11 @@ namespace AITechWebAPI.Models.InterviewTime
 
         [Display(Name = "کد درخواست")]
         [Required(ErrorMessage = "لطفا {0} را وارد کنید")]
-        [Range(1, long.MaxValue, ErrorMessage = "مقدار {0} باید بزرگتر از 0 باشد")]
+       // [Range(1, long.MaxValue, ErrorMessage = "مقدار {0} باید بزرگتر از 0 باشد")]
         public long JobRequestId { get; set; }
 
         [Display(Name = "شماره تماس درخواست کننده")]
         public string? PhoneNumber { get; set; }
-
-        [Display(Name = "شرح")]
-        public string? Description { get; set; } = "";
 
         [Display(Name = "زبان های دیگر")]
         public string? OtherLangs { get; set; } = "";
