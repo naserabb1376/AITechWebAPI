@@ -17,6 +17,7 @@ using Microsoft.IdentityModel.Tokens;
 using NobatPlusDATA.Domain;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
+using System.ServiceModel.Channels;
 using System.Text;
 using static AITechWebAPI.Tools.ToolBox;
 
@@ -34,15 +35,17 @@ namespace AITechAPI.Controllers
         ISMSMessageRep _SMSMessageRep;
         ILogRep _logRep;
         IUserRep _userRep;
+        IJobRequestRep _jobRep;
         private readonly IMapper _mapper;
 
 
-        public SMSMessageController(ISMSMessageRep SMSMessageRep,IUserRep userRep,ILogRep logRep, IMapper mapper)
+        public SMSMessageController(ISMSMessageRep SMSMessageRep,IUserRep userRep,ILogRep logRep, IMapper mapper,IJobRequestRep requestRep)
         {
            _SMSMessageRep = SMSMessageRep;
            _logRep = logRep;
             _userRep = userRep;
             _mapper = mapper;
+            _jobRep = requestRep;
         }
 
         [HttpPost("GetAllSMSMessages_Base")]
@@ -168,6 +171,80 @@ namespace AITechAPI.Controllers
             }
             return BadRequest(result);
         }
+
+//        [HttpPost("SendGroupInviteSMSMessage_Base")]
+//        public async Task<ActionResult<BitResultObject>> SendGroupInviteSMSMessage_Base()
+//        {
+//            var result = new BitResultObject();
+//            if (!ModelState.IsValid)
+//            {
+//                return BadRequest();
+//            }
+
+//            string messageBody = $@"*شرکت‌کننده محترم،*
+
+//ضمن قدردانی از درخواست همکاری صمیمانه شما، خواهشمند است از میان ساعت‌های اعلام‌شده در سایت، زمان مطلوب خود را برای انجام مصاحبه انتخاب فرمایید.
+
+//برای  انتخاب ساعت های مصاحبه وارد سایت آموزشگاه آیتک شده و در صفحه ارسال رزومه بخش گرفتن نوبت را پر کنید.
+
+//از توجه، همکاری و همراهی ارزشمند شما صمیمانه سپاسگزاریم.
+
+//مرکز تخصصی تحقیقات و آموزش هوش مصنوعی آیتک
+
+//لغو 11";
+
+//           var jobRequests = await _jobRep.GetAllJobRequestsAsync(1,0);
+
+//            int allCount = jobRequests.TotalCount;
+//            int sentCount = 0;
+
+//            foreach (var item in jobRequests.Results)
+//            {
+                
+//                var existUser = await _userRep.ExistUserAsync(item.PhoneNumber, "username");
+
+//                bool sentstatus = await ToolBox.SendSMSMessage(item.PhoneNumber, messageBody);
+
+//                SMSMessage SMSMessage = new SMSMessage()
+//                {
+//                    CreateDate = DateTime.Now.ToShamsi(),
+//                    UpdateDate = DateTime.Now.ToShamsi(),
+//                    PhoneNumber = item.PhoneNumber,
+//                    UserID = existUser.ID > 0 ? existUser.ID : null,
+//                    Message = messageBody,
+//                    SentDate = DateTime.Now.ToShamsi(),
+//                    OtherLangs =  "",
+//                    SentStatus = sentstatus,
+//            }
+//            ;
+//            result = await _SMSMessageRep.AddSMSMessageAsync(SMSMessage);
+//            if (result.Status)
+//            {
+//                #region AddLog
+
+//                Log log = new Log()
+//                {
+//                    CreateDate = DateTime.Now.ToShamsi(),
+//                    UpdateDate = DateTime.Now.ToShamsi(),
+//                    LogTime = DateTime.Now.ToShamsi(),
+//                    ActionName = this.ControllerContext.RouteData.Values["action"].ToString(),
+
+//                };
+//                await _logRep.AddLogAsync(log);
+
+//                #endregion
+//            }
+
+
+//            if (sentstatus)
+//                {
+//                    sentCount++;
+//                }
+                
+//            }
+//            result.ErrorMessage = $"{sentCount}/{allCount}  Sent!";
+//            return Ok(result);
+//        }
 
         [HttpPut("EditSMSMessage_Base")]
         public async Task<ActionResult<BitResultObject>> EditSMSMessage_Base(AddEditSMSMessageRequestBody requestBody)
