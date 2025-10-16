@@ -120,7 +120,6 @@ namespace AITechWebAPI.Controllers
                 return BadRequest(requestBody);
             }
 
-            var theInterview = await _InterviewTimeRep.GetAllInterviewTimesAsync(requestBody.JobRequestId, 1, 0);
             if (requestBody.JobRequestId > 0)
             {
                 var theJobReq = await _jobRequestRep.GetJobRequestByIdAsync(requestBody.JobRequestId);
@@ -128,7 +127,7 @@ namespace AITechWebAPI.Controllers
             }
             else if (!string.IsNullOrEmpty(requestBody.PhoneNumber))
             {
-                var theJobReq = await _jobRequestRep.GetAllJobRequestsAsync(1,0,requestBody.PhoneNumber);
+                var theJobReq = await _jobRequestRep.GetAllJobRequestsAsync(1,0, requestBody.PhoneNumber);
                 jobRequest = theJobReq.Results.LastOrDefault();
             }
 
@@ -149,6 +148,9 @@ namespace AITechWebAPI.Controllers
                 InterviewStartTime = requestBody.InterviewStartTime,
                 InterviewEndTime = requestBody.InterviewEndTime,
             };
+
+            var theInterview = await _InterviewTimeRep.GetAllInterviewTimesAsync(jobRequest.ID, 1, 0);
+
 
             if (theInterview.Results.Count > 0)
             {
