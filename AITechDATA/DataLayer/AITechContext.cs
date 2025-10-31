@@ -59,6 +59,7 @@ namespace AITechDATA.DataLayer
         public DbSet<LinkedEntity> LinkedEntities { get; set; }
         public DbSet<Article> Articles { get; set; }
         public DbSet<JobRequest> JobRequests { get; set; }
+        public DbSet<Award> Awards { get; set; }
         public DbSet<InterviewTime> InterviewTimes { get; set; }
         public DbSet<SMSMessage> SMSMessages { get; set; }
 

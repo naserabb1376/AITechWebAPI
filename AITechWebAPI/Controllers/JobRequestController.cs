@@ -161,6 +161,7 @@ namespace AITechWebAPI.Controllers
 
             JobRequest JobRequest = new JobRequest()
             {
+                ID = requestBody.ID,
                 CreateDate = theRow.Result.CreateDate,
                 UpdateDate = DateTime.Now.ToShamsi(),
                 Email = requestBody.Email,
