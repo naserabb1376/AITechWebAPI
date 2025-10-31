@@ -8,16 +8,16 @@ namespace AITechWebAPI.Models.Award
         public long ID { get; set; } = 0;
 
         [Display(Name = "عنوان جایزه")]
-        [Required(ErrorMessage = "لطفا {0} را وارد کنید")]
-        public string AwardTitle { get; set; }
+       // [Required(ErrorMessage = "لطفا {0} را وارد کنید")]
+        public string? AwardTitle { get; set; }
 
         [Display(Name = "نام")]
-        [Required(ErrorMessage = "لطفا {0} را وارد کنید")]
-        public string FirstName { get; set; }
+       // [Required(ErrorMessage = "لطفا {0} را وارد کنید")]
+        public string? FirstName { get; set; }
 
         [Display(Name = "نام خانوادگی")]
-        [Required(ErrorMessage = "لطفا {0} را وارد کنید")]
-        public string LastName { get; set; }
+      //  [Required(ErrorMessage = "لطفا {0} را وارد کنید")]
+        public string? LastName { get; set; }
 
         [MaxLength(200)]
         [RegularExpression(@"[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,4}", ErrorMessage = "پست الکترونیک معتبر نیست")]
