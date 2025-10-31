@@ -133,6 +133,7 @@ namespace AITechWebAPI
             builder.Services.AddScoped<IAddressRep, AddressRep>();
             builder.Services.AddScoped<IAdminReportRep, AdminReportRep>();
             builder.Services.AddScoped<IAssignmentRep, AssignmentRep>();
+            builder.Services.AddScoped<IAwardRep, AwardRep>();
             builder.Services.AddScoped<IAttendanceRep, AttendanceRep>();
             builder.Services.AddScoped<ICategoryRep, CategoryRep>();
             builder.Services.AddScoped<ICityRep, CityRep>();
