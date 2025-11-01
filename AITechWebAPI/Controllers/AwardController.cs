@@ -78,13 +78,14 @@ namespace AITechWebAPI.Controllers
 
 
         [HttpPost("ExistAward_Base")]
-        public async Task<ActionResult<BitResultObject>> ExistAward_Base(GetRowRequestBody requestBody)
+        [AllowAnonymous]
+        public async Task<ActionResult<BitResultObject>> ExistAward_Base(ExistAwardRequestBody requestBody)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(requestBody);
             }
-            var result = await _AwardRep.ExistAwardAsync(requestBody.ID);
+            var result = await _AwardRep.ExistAwardAsync(requestBody.FieldValue, requestBody.FieldName); ;
             if (string.IsNullOrEmpty(result.ErrorMessage))
             {
                 return Ok(result);

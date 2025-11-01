@@ -22,6 +22,6 @@ namespace AITechDATA.DataLayer.Repositories
 
         Task<BitResultObject> RemoveAwardAsync(long AwardId);
 
-        Task<BitResultObject> ExistAwardAsync(long AwardId);
+        Task<BitResultObject> ExistAwardAsync(string fieldValue, string fieldName);
     }
 }

@@ -38,7 +38,7 @@ namespace AITechDATA.DataLayer.Services
             return result;
         }
 
-      
+
 
         public async Task<BitResultObject> EditAwardAsync(Award Award)
         {
@@ -58,15 +58,30 @@ namespace AITechDATA.DataLayer.Services
             return result;
         }
 
-        public async Task<BitResultObject> ExistAwardAsync(long AwardId)
+        public async Task<BitResultObject> ExistAwardAsync(string fieldValue, string fieldName)
         {
             BitResultObject result = new BitResultObject();
+            long awardId = 0;
             try
             {
-                result.Status = await _context.Awards
-                    .AsNoTracking()
-                    .AnyAsync(x => x.ID == AwardId);
-                result.ID = AwardId;
+                switch (fieldName.ToLower().Trim())
+                {
+                    case "id":
+                    default:
+                        {
+                            var theAward = await _context.Awards.AsNoTracking().FirstOrDefaultAsync(x => x.ID == long.Parse(fieldValue)) ?? new Award();
+                            awardId = theAward.ID;
+                            break;
+                        }
+                    case "phonenumber":
+                        {
+                            var theAward = await _context.Awards.AsNoTracking().FirstOrDefaultAsync(x => x.PhoneNumber == fieldValue) ?? new Award();
+                            awardId = theAward.ID;
+                            break;
+                        }
+                }
+                result.ID = awardId;
+                result.Status = awardId > 0;
             }
             catch (Exception ex)
             {
