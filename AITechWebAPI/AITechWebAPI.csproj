@@ -16,7 +16,6 @@
 
   <ItemGroup>
     <Content Remove="DataSetting.json" />
-    <Content Remove="wwwroot\js\swagger-token.js" />
   </ItemGroup>
 
   <ItemGroup>
@@ -30,6 +29,10 @@
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.11" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="8.0.11" />
     <PackageReference Include="Microsoft.IdentityModel.Tokens" Version="8.3.0" />
+    <PackageReference Include="Parbad" Version="3.11.3" />
+    <PackageReference Include="Parbad.AspNetCore" Version="1.5.0" />
+    <PackageReference Include="Parbad.Gateway.ZarinPal" Version="1.7.1" />
+    <PackageReference Include="Parbad.Storage.Cache" Version="1.5.0" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.4.0" />
     <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.3.0" />
     <PackageReference Include="System.ServiceModel.Duplex" Version="6.0.0" />
@@ -108,7 +111,6 @@
     <Folder Include="FileCenter\UserGroup\Images\Public\" />
     <Folder Include="FileCenter\User\Files\Public\" />
     <Folder Include="FileCenter\User\Images\Public\" />
-    <Folder Include="wwwroot\js\" />
   </ItemGroup>
 
 </Project>

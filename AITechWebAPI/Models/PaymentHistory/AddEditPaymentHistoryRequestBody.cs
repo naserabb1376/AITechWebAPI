@@ -21,7 +21,11 @@ namespace AITechWebAPI.Models.PaymentHistory
         public decimal Amount { get; set; }
 
         [Display(Name = "تاریخ پرداخت")]
-        [Required(ErrorMessage = "لطفا {0} را وارد کنید")]
+        //[Required(ErrorMessage = "لطفا {0} را وارد کنید")]
         public string? PaymentDate { get; set; }
+
+        [Display(Name = "وضعیت پرداخت")]
+        public bool PaymentStatus { get; set; } // وضعیت پرداخت
+
     }
 }

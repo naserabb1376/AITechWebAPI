@@ -9,6 +9,9 @@ using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using Parbad.Builder;
+using Parbad.Gateway.ParbadVirtual;
+using Parbad.Gateway.ZarinPal;
 using Repositories;
 using Services;
 using System.Text;
@@ -76,6 +79,29 @@ namespace AITechWebAPI
 
             var apiVersion = ToolBox.CalculateAppVersionNo();
             var apiTitle = builder.Environment.ApplicationName;
+
+            #region PaymentGetWay
+
+            builder.Services.AddParbad()
+                    .ConfigureGateways(gateways =>
+                    {
+    
+                        gateways
+                               .AddZarinPal()
+                               .WithAccounts(accounts =>
+                               {
+                                   accounts.AddInMemory(account =>
+                                   {
+                                       account.MerchantId = "b2b8419a-2de7-42f5-b44f-67d1e6c18aba";
+                                       account.IsSandbox = false;
+                                   });
+                               });
+                    })
+                     .ConfigureHttpContext(httpContextBuilder => httpContextBuilder.UseDefaultAspNetCore())
+                   .ConfigureStorage(storageBuilder => storageBuilder.UseMemoryCache());
+
+            #endregion
+
 
             builder.Services.AddControllers(options =>
             {
@@ -232,6 +258,8 @@ namespace AITechWebAPI
             app.UseRouting();
             app.UseAuthentication();
             app.UseAuthorization();
+
+         //   app.UseParbadVirtualGateway();
 
             //Controller/Action/Id?
             app.UseEndpoints(endpoints =>

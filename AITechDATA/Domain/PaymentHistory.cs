@@ -11,5 +11,6 @@ namespace AiTech.Domains
         public User User { get; set; } // ارتباط با User
         public long GroupId { get; set; } // کلید خارجی به Group
         public Group Group { get; set; } // ارتباط با Group
+        public bool PaymentStatus { get; set; } // وضعیت پرداخت
     }
 }
