@@ -106,6 +106,13 @@ namespace AITechWebAPI.Controllers
                 FirstName = requestBody.FirstName,
                 LastName = requestBody.LastName,
                 PhoneNumber = requestBody.PhoneNumber,
+
+                EducationalClass = requestBody.EducationalClass,
+                SchoolName = requestBody.SchoolName,
+                FavoriteField = requestBody.FavoriteField,
+                RecognitionLevel = requestBody.RecognitionLevel,
+                ProgrammingSkillLevel = requestBody.ProgrammingSkillLevel,
+
                 ForeignKeyId = requestBody.ForeignKeyId,
                 EntityType = requestBody.EntityType,
                 RegistrationDate = requestBody.RegistrationDate.StringToDate().Value,
@@ -158,6 +165,13 @@ namespace AITechWebAPI.Controllers
                 FirstName = requestBody.FirstName,
                 LastName = requestBody.LastName,
                 PhoneNumber = requestBody.PhoneNumber,
+
+                EducationalClass = requestBody.EducationalClass,
+                SchoolName = requestBody.SchoolName,
+                FavoriteField = requestBody.FavoriteField,
+                RecognitionLevel = requestBody.RecognitionLevel,
+                ProgrammingSkillLevel = requestBody.ProgrammingSkillLevel,
+
                 ForeignKeyId = requestBody.ForeignKeyId,
                 EntityType = requestBody.EntityType,
                 RegistrationDate = requestBody.RegistrationDate.StringToDate().Value,

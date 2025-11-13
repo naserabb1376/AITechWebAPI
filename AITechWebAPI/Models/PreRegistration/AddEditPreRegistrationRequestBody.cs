@@ -37,6 +37,22 @@ namespace AITechWebAPI.Models.PreRegistration
         [Required(ErrorMessage = "لطفا {0} را وارد کنید")]
         public string EntityType { get; set; }
 
+        [Display(Name = "پایه تحصیلی")]
+        public string? EducationalClass { get; set; } // پایه تحصیلی
+
+        [Display(Name = "نام مدرسه")]
+        public string? SchoolName { get; set; } // نام مدرسه
+
+        [Display(Name = "حوزه علاقمندی")]
+        public string? FavoriteField { get; set; } // حوزه علاقمندی
+
+        [Display(Name = "میزان آشنایی با حوزه علاقمندی")]
+        public string? RecognitionLevel { get; set; } // میزان آشنایی با حوزه علاقمندی
+      
+        [Display(Name = "میزان تسلط به زبان های برنامه نویسی")]
+        public string? ProgrammingSkillLevel { get; set; } // میزان تسلط به زبان های برنامه نویسی
+
+
         [Display(Name = "تاریخ ثبت نام")]
         public string? RegistrationDate { get; set; } // تاریخ ثبت نام
 

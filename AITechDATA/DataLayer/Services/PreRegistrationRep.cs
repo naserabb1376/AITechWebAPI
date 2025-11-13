@@ -92,7 +92,14 @@ namespace AITechDATA.DataLayer.Services
                         ((!string.IsNullOrEmpty(x.FirstName) && x.FirstName.Contains(searchText)) ||
                         (!string.IsNullOrEmpty(x.LastName) && x.LastName.Contains(searchText)) ||
                         (!string.IsNullOrEmpty(x.Email) && x.Email.Contains(searchText)) ||
-                        (!string.IsNullOrEmpty(x.PhoneNumber) && x.PhoneNumber.Contains(searchText)))
+                        (!string.IsNullOrEmpty(x.PhoneNumber) && x.PhoneNumber.Contains(searchText)) ||
+                        (!string.IsNullOrEmpty(x.EducationalClass) && x.EducationalClass.Contains(searchText)) ||
+                        (!string.IsNullOrEmpty(x.SchoolName) && x.SchoolName.Contains(searchText)) ||
+                        (!string.IsNullOrEmpty(x.FavoriteField) && x.FavoriteField.Contains(searchText)) ||
+                        (!string.IsNullOrEmpty(x.RecognitionLevel) && x.RecognitionLevel.Contains(searchText)) ||
+                        (!string.IsNullOrEmpty(x.ProgrammingSkillLevel) && x.ProgrammingSkillLevel.Contains(searchText))
+                        
+                        )
                     );
 
                 results.TotalCount = query.Count();
