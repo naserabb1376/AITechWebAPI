@@ -19,6 +19,9 @@ namespace AITechWebAPI.Models.LoginMethod
         [Required(ErrorMessage = "لطفا {0} را وارد کنید")]
         public string Method { get; set; }
 
+        [Display(Name = "شماره موبایل کاربر")]
+        public string? MobileNumber { get; set; } // شماره موبایل کاربر
+
         [Display(Name = "کلمه عبور")]
         [Required(ErrorMessage = "لطفا {0} را وارد کنید")]
         [MaxLength(20)]

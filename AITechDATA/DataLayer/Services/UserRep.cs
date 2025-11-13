@@ -141,12 +141,12 @@ namespace AITechDATA.DataLayer.Services
                         break;
                     case 2:
                         {
-                            result.Status = await _context.Users.Include(x => x.Role).Include(x=> x.StudentDetails)
+                            result.Status = await _context.Users
                .AsNoTracking()
                .AnyAsync(x => x.Username == userName);
                             if (result.Status)
                             {
-                                var loginRow = await _context.Users
+                                var loginRow = await _context.Users.Include(x => x.Role).Include(x => x.StudentDetails)
                .AsNoTracking()
                .SingleOrDefaultAsync(x => x.Username == userName);
                                 if (loginRow != null)

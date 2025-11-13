@@ -88,12 +88,13 @@ namespace AITechDATA.DataLayer.Services
 
                 query = query.Where(x =>
                        ( (!string.IsNullOrEmpty(x.Method) && x.Method.Contains(searchText)) ||
+                        (!string.IsNullOrEmpty(x.MobileNumber) && x.MobileNumber.Contains(searchText)) ||
                         (!string.IsNullOrEmpty(x.Token) && x.Token.Contains(searchText))
                     ));
 
                 results.TotalCount = query.Count();
                 results.PageCount = DbTools.GetPageCount(results.TotalCount, pageSize);
-                results.Results = await query.OrderByDescending(x => x.ExpirationDate)
+                results.Results = await query.OrderByDescending(x => x.CreateDate)
                      .SortBy(sortQuery).ToPaging(pageIndex, pageSize)
                     .Include(x => x.User)
                     .ToListAsync();

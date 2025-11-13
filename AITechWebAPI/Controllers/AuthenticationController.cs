@@ -1,4 +1,5 @@
 ﻿using AITechDATA.DataLayer.Repositories;
+using AITechDATA.DataLayer.Services;
 using AITechDATA.Domain;
 using AITechDATA.ResultObjects;
 using AITechDATA.Tools;
@@ -73,7 +74,8 @@ namespace AITechWebAPI.Controllers
                             return BadRequest(result);
                         }
                         var storedVerifyCode = HttpContext.Session.GetString("VerifyCode") ?? "";
-                        bool validCode = await ToolBox.CheckCode(authenticationRequestBody.UserName, authenticationRequestBody.Password,storedVerifyCode);
+                        var checkCodeResult = await CheckSMSCodeInternal(authenticationRequestBody.UserName,true,authenticationRequestBody.Password);
+                        bool validCode = checkCodeResult.Status;
                         if (validCode)
                         {
                             authenticateResult = await _userRep.AuthenticateAsync(authenticationRequestBody.UserName, authenticationRequestBody.Password, authenticationRequestBody.LoginType);
@@ -412,13 +414,51 @@ namespace AITechWebAPI.Controllers
 
             var sendCodeResult = await ToolBox.SendCode(sendCodeRequestBody.PhoneNumber);
 
-            result.Status = sendCodeResult.SendStatus;
-            HttpContext.Session.SetString("VerifyCode", sendCodeResult.Code);
 
-            if (result.Status)
+
+            if (sendCodeResult.SendStatus)
             {
+                HttpContext.Session.SetString("VerifyCode", sendCodeResult.Code);
                 result.ErrorMessage = $"کد تایید ارسال شد";
-                return Ok(result);
+
+                LoginMethod loginMethod = new LoginMethod()
+                {
+                    CreateDate = DateTime.Now.ToShamsi(),
+                    UpdateDate = DateTime.Now.ToShamsi(),
+                    UserId = null,
+                    ExpirationDate = DateTime.Now.ToShamsi().AddMinutes(5),
+                    Method = "Send VerifyCode",
+                    Token = "",
+                    MobileNumber = sendCodeRequestBody.PhoneNumber,
+                };
+
+                var saveLogin = await _loginRep.AddLoginMethodAsync(loginMethod);
+                if (saveLogin.Status)
+                {
+
+                    #region AddLog
+                    Log log = new Log()
+                    {
+                        CreateDate = DateTime.Now.ToShamsi(),
+                        UpdateDate = DateTime.Now.ToShamsi(),
+                        LogTime = DateTime.Now.ToShamsi(),
+                        ActionName = this.ControllerContext.RouteData.Values["action"].ToString(),
+                    };
+                    await _logRep.AddLogAsync(log);
+                    #endregion
+
+
+
+                    return Ok(result);
+                }
+                else
+                {
+                    result.Status = saveLogin.Status;
+                    result.ErrorMessage = saveLogin.ErrorMessage;
+
+                    return Ok(result);
+                }
+
             }
             result.ErrorMessage = $"در ارسال کد مشکلی بوجود آمد";
 
@@ -435,40 +475,15 @@ namespace AITechWebAPI.Controllers
 
             BitResultObject result = new BitResultObject();
 
-            var validPhoneNumber = await _userRep.ExistUserAsync(checkCodeRequestBody.PhoneNumber, "username");
-            if (checkCodeRequestBody.Exists)
-            {
-                if (!validPhoneNumber.Status && string.IsNullOrEmpty(validPhoneNumber.ErrorMessage))
-                {
-                    result.Status = validPhoneNumber.Status;
-                    result.ErrorMessage = "نام کاربری (شماره موبایل) نامعتبر است";
-                    return BadRequest(result);
-                }
-            }
+            if (!ModelState.IsValid)
+                return BadRequest(checkCodeRequestBody);
 
-            else
-            {
-                if (validPhoneNumber.Status)
-                {
-                    result.Status = !validPhoneNumber.Status;
-                    result.ErrorMessage = "نام کاربری (شماره موبایل) تکراری است";
-                    return BadRequest(result);
-                }
-            }
-
-            var storedVerifyCode = HttpContext.Session.GetString("VerifyCode") ?? "";
-            result.Status = await ToolBox.CheckCode(checkCodeRequestBody.PhoneNumber,checkCodeRequestBody.VerifyCode, storedVerifyCode);
+            result = await CheckSMSCodeInternal(checkCodeRequestBody.PhoneNumber,checkCodeRequestBody.Exists,checkCodeRequestBody.VerifyCode);
 
             if (result.Status)
-            {
-                result.ErrorMessage = $"کد تایید صحیح است";
                 return Ok(result);
-            }
-            else 
-            {
-                result.ErrorMessage = $"کد تایید صحیح نیست";
+            else
                 return BadRequest(result);
-            }
         }
 
 
@@ -618,7 +633,10 @@ namespace AITechWebAPI.Controllers
                 }
 
                 var storedVerifyCode = HttpContext.Session.GetString("VerifyCode") ?? "";
-                result.Status = await ToolBox.CheckCode(requestBody.PhoneNumber, requestBody.VerifyCode, storedVerifyCode);
+                var checkCodeResult = await CheckSMSCodeInternal(requestBody.PhoneNumber, true, requestBody.VerifyCode);
+
+                bool validCode = checkCodeResult.Status;
+                result.Status = validCode;
 
 
                 if (result.Status)
@@ -796,5 +814,59 @@ namespace AITechWebAPI.Controllers
 
                 return Ok(result);
         }
+
+        private async Task<BitResultObject> CheckSMSCodeInternal(string reqMobileNumber,bool reqExists,string reqVerifyCode)
+        {
+            BitResultObject result = new BitResultObject();
+
+            var validPhoneNumber = await _userRep.ExistUserAsync(reqMobileNumber, "username");
+            if (reqExists)
+            {
+                if (!validPhoneNumber.Status && string.IsNullOrEmpty(validPhoneNumber.ErrorMessage))
+                {
+                    result.Status = validPhoneNumber.Status;
+                    result.ErrorMessage = "نام کاربری (شماره موبایل) نامعتبر است";
+                    return result;
+                }
+            }
+            else
+            {
+                if (validPhoneNumber.Status)
+                {
+                    result.Status = !validPhoneNumber.Status;
+                    result.ErrorMessage = "نام کاربری (شماره موبایل) تکراری است";
+                    return result;
+                }
+            }
+
+            var storedVerifyCode = HttpContext.Session.GetString("VerifyCode") ?? "";
+            var loginMethod = await _loginRep.GetAllLoginMethodsAsync(0, 1, 1, reqMobileNumber);
+            result.Status = await ToolBox.CheckCode(reqMobileNumber, reqVerifyCode, storedVerifyCode, loginMethod.Results.FirstOrDefault());
+
+            if (result.Status)
+            {
+                result.ErrorMessage = $"کد تایید صحیح است";
+                var removeLoginresult = await _loginRep.RemoveLoginMethodAsync(loginMethod.Results.FirstOrDefault().ID);
+                if (removeLoginresult.Status)
+                {
+                    Log log = new Log()
+                    {
+                        CreateDate = DateTime.Now.ToShamsi(),
+                        UpdateDate = DateTime.Now.ToShamsi(),
+                        LogTime = DateTime.Now.ToShamsi(),
+                        ActionName = this.ControllerContext.RouteData.Values["action"].ToString(),
+                    };
+                    await _logRep.AddLogAsync(log);
+                }
+            }
+            else
+            {
+                result.ErrorMessage = $"کد تایید صحیح نیست";
+            }
+
+            return result;
+        }
+
+
     }
 }

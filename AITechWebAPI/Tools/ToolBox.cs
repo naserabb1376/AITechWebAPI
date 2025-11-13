@@ -35,32 +35,36 @@ namespace AITechWebAPI.Tools
           .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true);
             Configuration = builder.Build();
         }
+
+
         public async static Task<VerifyCodeResult> SendCode(string mobileNumber)
         {
             var result = new VerifyCodeResult();
             string theCode = "";
             string AppName = Configuration["Jwt:Issuer"];
-            string UserName = Configuration["VerifyCode:PanelUserName"];
-            string Password = Configuration["VerifyCode:PanelPassword"];
-            bool GenerateVerifyCode = bool.Parse(Configuration["VerifyCode:GenerateVerifyCode"]);
-
+            bool GenerateVerifyCode = bool.Parse(Configuration["SmsSender:GenerateVerifyCode"]);
             bool send = false;
             try
             {
-                AutoSendCodeResponse autoSendCode = null;
-                SendMessageWithCodeResponse sendMessageWithCode = null;
-                using (FastSendSoapClient client = new FastSendSoapClient(FastSendSoapClient.EndpointConfiguration.FastSendSoap))
+                if (GenerateVerifyCode)
                 {
-                    if (GenerateVerifyCode)
+                    theCode = GenerateVerifyCodeManualy();
+                    string smsMessage = $@" کد تایید شما:
+{theCode}
+آیتک
+";
+                    send = await SendSMSMessage(mobileNumber, smsMessage);
+
+                }
+                else
+                {
+                    string mtPanelUserName = "mimtavoosi", mtPanelPassword = "569022mt";
+                    AutoSendCodeResponse x = null;
+                    using (FastSendSoapClient client = new FastSendSoapClient(FastSendSoapClient.EndpointConfiguration.FastSendSoap))
                     {
-                       theCode = GenerateVerifyCodeManualy();
-                       sendMessageWithCode = await client.SendMessageWithCodeAsync(UserName, Password, mobileNumber, theCode);
+                        x = await client.AutoSendCodeAsync(mtPanelUserName, mtPanelPassword, mobileNumber, AppName);
+                        send = true;
                     }
-                    else
-                    {
-                        autoSendCode = await client.AutoSendCodeAsync(UserName, Password, mobileNumber, AppName);
-                    }
-                    send = true;
                 }
             }
             catch (Exception ex)
@@ -72,22 +76,25 @@ namespace AITechWebAPI.Tools
             return result;
         }
 
-        public async static Task<bool> CheckCode(string mobileNumber, string code,string savedCode)
+        public async static Task<bool> CheckCode(string mobileNumber, string code,string savedCode, LoginMethod loginMethod)
         {
-            string UserName = Configuration["VerifyCode:PanelUserName"];
-            string Password = Configuration["VerifyCode:PanelPassword"];
+            bool GenerateVerifyCode = bool.Parse(Configuration["SmsSender:GenerateVerifyCode"]);
+
             bool currect = false;
             try
             {
-                if (!string.IsNullOrEmpty(savedCode))
+                if (GenerateVerifyCode)
                 {
-                    currect = savedCode == code;
+                    currect = string.IsNullOrEmpty(loginMethod.Token) && loginMethod.ExpirationDate >= DateTime.Now.ToShamsi() && code == savedCode;
                 }
+
                 else
                 {
+                    string mtPanelUserName = "mimtavoosi", mtPanelPassword = "569022mt";
+
                     using (FastSendSoapClient client = new FastSendSoapClient(FastSendSoapClient.EndpointConfiguration.FastSendSoap))
                     {
-                        CheckSendCodeResponse response = await client.CheckSendCodeAsync(UserName, Password, mobileNumber, code);
+                        CheckSendCodeResponse response = await client.CheckSendCodeAsync(mtPanelUserName, mtPanelPassword, mobileNumber, code);
                         currect = response.Body.CheckSendCodeResult;
                     }
                 }
@@ -102,10 +109,10 @@ namespace AITechWebAPI.Tools
         public async static Task<bool> SendSMSMessage(string mobileNumber, string message)
         {
             string AppName = Configuration["Jwt:Issuer"];
-            string UserName = "z.kamali";
-            string Password = "dN3VRWdY7RFRyKx";
-            string lineNumber = "50004001049819";
-            string apiUrl = $"http://rest.payamak-panel.com/api/SendSMS/SendSMS";
+            string UserName = Configuration["SmsSender:PanelUserName"];
+            string Password = Configuration["SmsSender:PanelPassword"];
+            string lineNumber = Configuration["SmsSender:PanelLineNumber"];
+            string apiUrl = Configuration["SmsSender:PanelApiUrl"];
             var formBody = $"username={UserName}&password={Password}&to={mobileNumber}&from={lineNumber}&text={message}&isflash=false";
             List<ReqHeader> reqHeaders = new List<ReqHeader>();
 

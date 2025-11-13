@@ -106,6 +106,7 @@ namespace AITechWebAPI.Controllers
                 UserId = requestBody.UserID,
                 Token = requestBody.Token,
                 Method = requestBody.Method,
+                MobileNumber = requestBody.MobileNumber,
                // Description = requestBody.Description,
             };
             var result = await _LoginMethodRep.AddLoginMethodAsync(LoginMethod);
@@ -154,6 +155,7 @@ namespace AITechWebAPI.Controllers
                 UserId = requestBody.UserID,
                 Token = requestBody.Token,
                 Method = requestBody.Method,
+                MobileNumber = requestBody.MobileNumber,
                 ID = requestBody.ID,
                 // Description = requestBody.Description,
 

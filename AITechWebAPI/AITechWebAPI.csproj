@@ -47,6 +47,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Folder Include="Connected Services\" />
     <Folder Include="FileCenter\Address\Files\Public\" />
     <Folder Include="FileCenter\Address\Images\Public\" />
     <Folder Include="FileCenter\AdminReport\Files\Public\" />
