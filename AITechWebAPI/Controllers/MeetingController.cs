@@ -1,11 +1,10 @@
-﻿using AITechDATA.CustomResponses;
-using AITechDATA.DataLayer.Repositories;
+﻿using AITechDATA.DataLayer.Repositories;
 using AITechDATA.DataLayer.Services;
 using AITechDATA.Domain;
 using AITechDATA.ResultObjects;
 using AITechDATA.Tools;
 using AITechWebAPI.Models;
-using AITechWebAPI.Models.News;
+using AITechWebAPI.Models.Meeting;
 using AITechWebAPI.Models.Public;
 using AITechWebAPI.Validations;
 using AITechWebAPI.ViewModels;
@@ -22,69 +21,67 @@ using static AITechWebAPI.Tools.ToolBox;
 
 namespace AITechWebAPI.Controllers
 {
-    [Route("News")]
+    [Route("Meeting")]
     [ApiController]
-    [Authorize]
     [Produces("application/json")]
+    [Authorize]
     [CheckRoleBase(new[] { (int)BaseRole.MiddleAdmin, (int)BaseRole.GeneralAdmin, (int)BaseRole.ContentAdmin })]
 
-
-    public class NewsController : ControllerBase
+    public class MeetingController : ControllerBase
     {
-        INewsRep _NewsRep;
-        ILogRep _logRep;
+        private IMeetingRep _MeetingRep;
         private readonly IMapper _mapper;
+        private ILogRep _logRep;
 
-
-        public NewsController(INewsRep NewsRep,ILogRep logRep,IMapper mapper)
+        public MeetingController(IMeetingRep MeetingRep, ILogRep logRep,IMapper mapper)
         {
-           _NewsRep = NewsRep;
-           _logRep = logRep;
+            _MeetingRep = MeetingRep;
+            _logRep = logRep;
             _mapper = mapper;
         }
 
-        [AllowAnonymous]
-        [HttpPost("GetAllNews_Base")]
-        public async Task<ActionResult<NewsListCustomResponse<NewsVM>>> GetAllNews_Base(GetNewsListRequestBody requestBody)
+        [HttpPost("GetAllMeetings_Base")]
+        public async Task<ActionResult<ListResultObject<MeetingVM>>> GetAllMeetings_Base(GetMeetingListRequestBody requestBody)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(requestBody);
             }
-            var result = await _NewsRep.GetAllNewsAsync(requestBody.UserId,requestBody.PageIndex,requestBody.PageSize,requestBody.SearchText,requestBody.SortQuery);
+            var result = await _MeetingRep.GetAllMeetingsAsync(requestBody.PageIndex, requestBody.PageSize, requestBody.SearchText, requestBody.SortQuery);
             if (result.Status)
             {
-                var resultVM = _mapper.Map<NewsListCustomResponse<NewsVM>>(result);
+                var resultVM = _mapper.Map<ListResultObject<MeetingVM>>(result);
                 return Ok(resultVM);
             }
             return BadRequest(result);
         }
 
-        [AllowAnonymous]
-        [HttpPost("GetNewsById_Base")]
-        public async Task<ActionResult<NewsRowCustomResponse<NewsVM>>> GetNewsById_Base(GetRowRequestBody requestBody)
+        [HttpPost("GetMeetingById_Base")]
+        public async Task<ActionResult<RowResultObject<MeetingVM>>> GetMeetingById_Base(GetRowRequestBody requestBody)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(requestBody);
             }
-            var result = await _NewsRep.GetNewsByIdAsync(requestBody.ID);
+            var result = await _MeetingRep.GetMeetingByIdAsync(requestBody.ID);
             if (result.Status)
             {
-                var resultVM = _mapper.Map<NewsRowCustomResponse<NewsVM>>(result);
+                var resultVM = _mapper.Map<RowResultObject<MeetingVM>>(result);
                 return Ok(resultVM);
             }
             return BadRequest(result);
         }
 
-        [HttpPost("ExistNews_Base")]
-        public async Task<ActionResult<BitResultObject>> ExistNews_Base(GetRowRequestBody requestBody)
+      
+
+        [HttpPost("ExistMeeting_Base")]
+        public async Task<ActionResult<BitResultObject>> ExistMeeting_Base(GetRowRequestBody requestBody)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(requestBody);
             }
-            var result = await _NewsRep.ExistNewsAsync(requestBody.ID);
+            var result = await _MeetingRep.ExistMeetingAsync(requestBody.ID);
             if (string.IsNullOrEmpty(result.ErrorMessage))
             {
                 return Ok(result);
@@ -92,28 +89,26 @@ namespace AITechWebAPI.Controllers
             return BadRequest(result);
         }
 
-        [HttpPost("AddNews_Base")]
-        public async Task<ActionResult<BitResultObject>> AddNews_Base(AddEditNewsRequestBody requestBody)
+        [HttpPost("AddMeeting_Base")]
+        public async Task<ActionResult<BitResultObject>> AddMeeting_Base(AddEditMeetingRequestBody requestBody)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(requestBody);
             }
-            News News = new News()
+            Meeting Meeting = new Meeting()
             {
                 CreateDate = DateTime.Now.ToShamsi(),
                 UpdateDate = DateTime.Now.ToShamsi(),
-                UserId = requestBody.UserId,
-                Content = requestBody.Content,
-                Source = requestBody.Source,
-                PublishDate = requestBody.PublishDate.StringToDate().Value,
-                Keywords = requestBody.Keywords,
-                Title = requestBody.Title,
-                Note = requestBody.Note ?? "",
+                MeetingAttendees = requestBody.MeetingAttendees,
+                MeetingStatus = requestBody.MeetingStatus,
+                MeetingDate = requestBody.MeetingDate.StringToDate().Value,
+                MeetingStartTime = requestBody.MeetingStartTime.StringToTimeSpan(),
+                MeetingTitle = requestBody.MeetingTitle ?? "",
+                MeetingOrganizer = requestBody.MeetingOrganizer ?? "",
                 OtherLangs = requestBody.OtherLangs ?? "",
-
             };
-            var result = await _NewsRep.AddNewsAsync(News);
+            var result = await _MeetingRep.AddMeetingAsync(Meeting);
             if (result.Status)
             {
                 #region AddLog
@@ -124,52 +119,47 @@ namespace AITechWebAPI.Controllers
                     UpdateDate = DateTime.Now.ToShamsi(),
                     LogTime = DateTime.Now.ToShamsi(),
                     ActionName = this.ControllerContext.RouteData.Values["action"].ToString(),
-
                 };
                 await _logRep.AddLogAsync(log);
 
-                #endregion
-
+                #endregion AddLog
 
                 return Ok(result);
             }
             return BadRequest(result);
         }
 
-        [HttpPut("EditNews_Base")]
-        public async Task<ActionResult<BitResultObject>> EditNews_Base(AddEditNewsRequestBody requestBody)
+        [HttpPut("EditMeeting_Base")]
+        public async Task<ActionResult<BitResultObject>> EditMeeting_Base(AddEditMeetingRequestBody requestBody)
         {
             var result = new BitResultObject();
             if (!ModelState.IsValid)
             {
                 return BadRequest(requestBody);
             }
-            var theRow = await _NewsRep.GetNewsByIdAsync(requestBody.ID);
+            var theRow = await _MeetingRep.GetMeetingByIdAsync(requestBody.ID);
             if (!theRow.Status)
             {
                 result.Status = theRow.Status;
                 result.ErrorMessage = theRow.ErrorMessage;
             }
 
-            News News = new News()
+            Meeting Meeting = new Meeting()
             {
                 CreateDate = theRow.Result.CreateDate,
                 UpdateDate = DateTime.Now.ToShamsi(),
                 ID = requestBody.ID,
-                UserId = requestBody.UserId,
-                Content = requestBody.Content,
-                Source = requestBody.Source,
-                PublishDate = requestBody.PublishDate.StringToDate().Value,
-                Keywords = requestBody.Keywords,
-                Title = requestBody.Title,
-                Note = requestBody.Note ?? "",
+                MeetingAttendees = requestBody.MeetingAttendees,
+                MeetingStatus = requestBody.MeetingStatus,
+                MeetingDate = requestBody.MeetingDate.StringToDate().Value,
+                MeetingStartTime = requestBody.MeetingStartTime.StringToTimeSpan(),
+                MeetingTitle = requestBody.MeetingTitle ?? "",
+                MeetingOrganizer = requestBody.MeetingOrganizer ?? "",
                 OtherLangs = requestBody.OtherLangs ?? "",
-
             };
-            result = await _NewsRep.EditNewsAsync(News);
+            result = await _MeetingRep.EditMeetingAsync(Meeting);
             if (result.Status)
             {
-
                 #region AddLog
 
                 Log log = new Log()
@@ -178,28 +168,26 @@ namespace AITechWebAPI.Controllers
                     UpdateDate = DateTime.Now.ToShamsi(),
                     LogTime = DateTime.Now.ToShamsi(),
                     ActionName = this.ControllerContext.RouteData.Values["action"].ToString(),
-
                 };
                 await _logRep.AddLogAsync(log);
 
-                #endregion
+                #endregion AddLog
 
                 return Ok(result);
             }
             return BadRequest(result);
         }
 
-        [HttpDelete("DeleteNews_Base")]
-        public async Task<ActionResult<BitResultObject>> DeleteNews_Base(GetRowRequestBody requestBody)
+        [HttpDelete("DeleteMeeting_Base")]
+        public async Task<ActionResult<BitResultObject>> DeleteMeeting_Base(GetRowRequestBody requestBody)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(requestBody);
             }
-            var result = await _NewsRep.RemoveNewsAsync(requestBody.ID);
+            var result = await _MeetingRep.RemoveMeetingAsync(requestBody.ID);
             if (result.Status)
             {
-
                 #region AddLog
 
                 Log log = new Log()
@@ -208,11 +196,10 @@ namespace AITechWebAPI.Controllers
                     UpdateDate = DateTime.Now.ToShamsi(),
                     LogTime = DateTime.Now.ToShamsi(),
                     ActionName = this.ControllerContext.RouteData.Values["action"].ToString(),
-
                 };
                 await _logRep.AddLogAsync(log);
 
-                #endregion
+                #endregion AddLog
 
                 return Ok(result);
             }

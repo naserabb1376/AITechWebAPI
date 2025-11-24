@@ -172,6 +172,8 @@ namespace AITechWebAPI
             builder.Services.AddScoped<ILoginMethodRep, LoginMethodRep>();
             builder.Services.AddScoped<ILogRep, LogRep>();
             builder.Services.AddScoped<INewsRep, NewsRep>();
+            builder.Services.AddScoped<IMeetingRep, MeetingRep>();
+            builder.Services.AddScoped<IMinutesRep, MinutesRep>();
             builder.Services.AddScoped<INotificationRep, NotificationRep>();
             builder.Services.AddScoped<IParentRep, ParentRep>();
             builder.Services.AddScoped<IPaymentHistoryRep, PaymentHistoryRep>();

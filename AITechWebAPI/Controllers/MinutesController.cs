@@ -1,11 +1,10 @@
-﻿using AITechDATA.CustomResponses;
-using AITechDATA.DataLayer.Repositories;
+﻿using AITechDATA.DataLayer.Repositories;
 using AITechDATA.DataLayer.Services;
 using AITechDATA.Domain;
 using AITechDATA.ResultObjects;
 using AITechDATA.Tools;
 using AITechWebAPI.Models;
-using AITechWebAPI.Models.News;
+using AITechWebAPI.Models.Minutes;
 using AITechWebAPI.Models.Public;
 using AITechWebAPI.Validations;
 using AITechWebAPI.ViewModels;
@@ -22,69 +21,67 @@ using static AITechWebAPI.Tools.ToolBox;
 
 namespace AITechWebAPI.Controllers
 {
-    [Route("News")]
+    [Route("Minutes")]
     [ApiController]
-    [Authorize]
     [Produces("application/json")]
+    [Authorize]
     [CheckRoleBase(new[] { (int)BaseRole.MiddleAdmin, (int)BaseRole.GeneralAdmin, (int)BaseRole.ContentAdmin })]
 
-
-    public class NewsController : ControllerBase
+    public class MinutesController : ControllerBase
     {
-        INewsRep _NewsRep;
-        ILogRep _logRep;
+        private IMinutesRep _MinutesRep;
         private readonly IMapper _mapper;
+        private ILogRep _logRep;
 
-
-        public NewsController(INewsRep NewsRep,ILogRep logRep,IMapper mapper)
+        public MinutesController(IMinutesRep MinutesRep, ILogRep logRep,IMapper mapper)
         {
-           _NewsRep = NewsRep;
-           _logRep = logRep;
+            _MinutesRep = MinutesRep;
+            _logRep = logRep;
             _mapper = mapper;
         }
 
-        [AllowAnonymous]
-        [HttpPost("GetAllNews_Base")]
-        public async Task<ActionResult<NewsListCustomResponse<NewsVM>>> GetAllNews_Base(GetNewsListRequestBody requestBody)
+        [HttpPost("GetAllMinutes_Base")]
+        public async Task<ActionResult<ListResultObject<MinutesVM>>> GetAllMinutes_Base(GetMinutesListRequestBody requestBody)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(requestBody);
             }
-            var result = await _NewsRep.GetAllNewsAsync(requestBody.UserId,requestBody.PageIndex,requestBody.PageSize,requestBody.SearchText,requestBody.SortQuery);
+            var result = await _MinutesRep.GetAllMinutesAsync(requestBody.MeetingId,requestBody.PageIndex, requestBody.PageSize, requestBody.SearchText, requestBody.SortQuery);
             if (result.Status)
             {
-                var resultVM = _mapper.Map<NewsListCustomResponse<NewsVM>>(result);
+                var resultVM = _mapper.Map<ListResultObject<MinutesVM>>(result);
                 return Ok(resultVM);
             }
             return BadRequest(result);
         }
 
-        [AllowAnonymous]
-        [HttpPost("GetNewsById_Base")]
-        public async Task<ActionResult<NewsRowCustomResponse<NewsVM>>> GetNewsById_Base(GetRowRequestBody requestBody)
+        [HttpPost("GetMinutesById_Base")]
+        public async Task<ActionResult<RowResultObject<MinutesVM>>> GetMinutesById_Base(GetRowRequestBody requestBody)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(requestBody);
             }
-            var result = await _NewsRep.GetNewsByIdAsync(requestBody.ID);
+            var result = await _MinutesRep.GetMinutesByIdAsync(requestBody.ID);
             if (result.Status)
             {
-                var resultVM = _mapper.Map<NewsRowCustomResponse<NewsVM>>(result);
+                var resultVM = _mapper.Map<RowResultObject<MinutesVM>>(result);
                 return Ok(resultVM);
             }
             return BadRequest(result);
         }
 
-        [HttpPost("ExistNews_Base")]
-        public async Task<ActionResult<BitResultObject>> ExistNews_Base(GetRowRequestBody requestBody)
+      
+
+        [HttpPost("ExistMinutes_Base")]
+        public async Task<ActionResult<BitResultObject>> ExistMinutes_Base(GetRowRequestBody requestBody)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(requestBody);
             }
-            var result = await _NewsRep.ExistNewsAsync(requestBody.ID);
+            var result = await _MinutesRep.ExistMinutesAsync(requestBody.ID);
             if (string.IsNullOrEmpty(result.ErrorMessage))
             {
                 return Ok(result);
@@ -92,28 +89,23 @@ namespace AITechWebAPI.Controllers
             return BadRequest(result);
         }
 
-        [HttpPost("AddNews_Base")]
-        public async Task<ActionResult<BitResultObject>> AddNews_Base(AddEditNewsRequestBody requestBody)
+        [HttpPost("AddMinutes_Base")]
+        public async Task<ActionResult<BitResultObject>> AddMinutes_Base(AddEditMinutesRequestBody requestBody)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(requestBody);
             }
-            News News = new News()
+            Minutes Minutes = new Minutes()
             {
                 CreateDate = DateTime.Now.ToShamsi(),
                 UpdateDate = DateTime.Now.ToShamsi(),
-                UserId = requestBody.UserId,
-                Content = requestBody.Content,
-                Source = requestBody.Source,
-                PublishDate = requestBody.PublishDate.StringToDate().Value,
-                Keywords = requestBody.Keywords,
-                Title = requestBody.Title,
-                Note = requestBody.Note ?? "",
+                MeetingId = requestBody.MeetingId,
+                MinutesSubject = requestBody.MinutesSubject,
+                MinutesDescription = requestBody.MinutesDescription,
                 OtherLangs = requestBody.OtherLangs ?? "",
-
             };
-            var result = await _NewsRep.AddNewsAsync(News);
+            var result = await _MinutesRep.AddMinutesAsync(Minutes);
             if (result.Status)
             {
                 #region AddLog
@@ -124,52 +116,44 @@ namespace AITechWebAPI.Controllers
                     UpdateDate = DateTime.Now.ToShamsi(),
                     LogTime = DateTime.Now.ToShamsi(),
                     ActionName = this.ControllerContext.RouteData.Values["action"].ToString(),
-
                 };
                 await _logRep.AddLogAsync(log);
 
-                #endregion
-
+                #endregion AddLog
 
                 return Ok(result);
             }
             return BadRequest(result);
         }
 
-        [HttpPut("EditNews_Base")]
-        public async Task<ActionResult<BitResultObject>> EditNews_Base(AddEditNewsRequestBody requestBody)
+        [HttpPut("EditMinutes_Base")]
+        public async Task<ActionResult<BitResultObject>> EditMinutes_Base(AddEditMinutesRequestBody requestBody)
         {
             var result = new BitResultObject();
             if (!ModelState.IsValid)
             {
                 return BadRequest(requestBody);
             }
-            var theRow = await _NewsRep.GetNewsByIdAsync(requestBody.ID);
+            var theRow = await _MinutesRep.GetMinutesByIdAsync(requestBody.ID);
             if (!theRow.Status)
             {
                 result.Status = theRow.Status;
                 result.ErrorMessage = theRow.ErrorMessage;
             }
 
-            News News = new News()
+            Minutes Minutes = new Minutes()
             {
                 CreateDate = theRow.Result.CreateDate,
                 UpdateDate = DateTime.Now.ToShamsi(),
                 ID = requestBody.ID,
-                UserId = requestBody.UserId,
-                Content = requestBody.Content,
-                Source = requestBody.Source,
-                PublishDate = requestBody.PublishDate.StringToDate().Value,
-                Keywords = requestBody.Keywords,
-                Title = requestBody.Title,
-                Note = requestBody.Note ?? "",
+                MeetingId = requestBody.MeetingId,
+                MinutesSubject = requestBody.MinutesSubject,
+                MinutesDescription = requestBody.MinutesDescription,
                 OtherLangs = requestBody.OtherLangs ?? "",
-
             };
-            result = await _NewsRep.EditNewsAsync(News);
+            result = await _MinutesRep.EditMinutesAsync(Minutes);
             if (result.Status)
             {
-
                 #region AddLog
 
                 Log log = new Log()
@@ -178,28 +162,26 @@ namespace AITechWebAPI.Controllers
                     UpdateDate = DateTime.Now.ToShamsi(),
                     LogTime = DateTime.Now.ToShamsi(),
                     ActionName = this.ControllerContext.RouteData.Values["action"].ToString(),
-
                 };
                 await _logRep.AddLogAsync(log);
 
-                #endregion
+                #endregion AddLog
 
                 return Ok(result);
             }
             return BadRequest(result);
         }
 
-        [HttpDelete("DeleteNews_Base")]
-        public async Task<ActionResult<BitResultObject>> DeleteNews_Base(GetRowRequestBody requestBody)
+        [HttpDelete("DeleteMinutes_Base")]
+        public async Task<ActionResult<BitResultObject>> DeleteMinutes_Base(GetRowRequestBody requestBody)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(requestBody);
             }
-            var result = await _NewsRep.RemoveNewsAsync(requestBody.ID);
+            var result = await _MinutesRep.RemoveMinutesAsync(requestBody.ID);
             if (result.Status)
             {
-
                 #region AddLog
 
                 Log log = new Log()
@@ -208,11 +190,10 @@ namespace AITechWebAPI.Controllers
                     UpdateDate = DateTime.Now.ToShamsi(),
                     LogTime = DateTime.Now.ToShamsi(),
                     ActionName = this.ControllerContext.RouteData.Values["action"].ToString(),
-
                 };
                 await _logRep.AddLogAsync(log);
 
-                #endregion
+                #endregion AddLog
 
                 return Ok(result);
             }

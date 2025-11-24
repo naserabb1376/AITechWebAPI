@@ -41,6 +41,8 @@ namespace AITechDATA.DataLayer
         public DbSet<UserGroup> UserGroups { get; set; }
         public DbSet<News> News { get; set; }
         public DbSet<Log> Logs { get; set; }
+        public DbSet<Meeting> Meetings { get; set; }
+        public DbSet<Minutes> Minutes { get; set; }
         public DbSet<Notification> Notifications { get; set; }
         public DbSet<Parent> Parents { get; set; }
         public DbSet<PaymentHistory> PaymentHistories { get; set; }
@@ -63,8 +65,10 @@ namespace AITechDATA.DataLayer
         public DbSet<InterviewTime> InterviewTimes { get; set; }
         public DbSet<SMSMessage> SMSMessages { get; set; }
 
+        public DbSet<ClassForAi> ClassForAi { get; set; }
 
-        ///     public DbSet<ClassForAi> ClassForAi { get; set; }
+
+
 
         //protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         //{

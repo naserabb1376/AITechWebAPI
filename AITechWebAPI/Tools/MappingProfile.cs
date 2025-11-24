@@ -58,9 +58,15 @@ namespace AITechWebAPI.Tools
             CreateMap<Setting, SettingVM>();
             CreateMap<User, UserVM>();
             CreateMap<User, TeacherVM>();
+            CreateMap<Meeting, MeetingVM>();
 
             CreateMap<Course, CourseVM>()
              .ForMember(dest => dest.CategoryName, opt => opt.MapFrom(src => src.Category.CategoryName));
+
+            CreateMap<Minutes, MinutesVM>()
+            .ForMember(dest => dest.MeetingTitle, opt => opt.MapFrom(src => src.Meeting.MeetingTitle))
+            .ForMember(dest => dest.MeetingOrganizer, opt => opt.MapFrom(src => src.Meeting.MeetingOrganizer))
+            ;
 
             CreateMap<Article, ArticleVM>()
             .ForMember(dest => dest.CategoryName, opt => opt.MapFrom(src => src.Category.CategoryName));
