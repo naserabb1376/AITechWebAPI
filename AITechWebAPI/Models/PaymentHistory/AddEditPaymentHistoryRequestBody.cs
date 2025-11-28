@@ -6,10 +6,14 @@ namespace AITechWebAPI.Models.PaymentHistory
     {
         public long ID { get; set; } = 0;
 
-        [Display(Name = "کد گروه")]
+        [Display(Name = "کد رکورد")]
         [Required(ErrorMessage = "لطفا {0} را وارد کنید")]
         [Range(1, long.MaxValue, ErrorMessage = "مقدار {0} باید بزرگتر از 0 باشد")]
-        public long GroupID { get; set; }
+        public long ForeignKeyId { get; set; }
+
+        [Display(Name = "نام جدول")]
+        [Required(ErrorMessage = "لطفا {0} را وارد کنید")]
+        public string EntityType { get; set; }
 
         [Display(Name = "کد کاربر")]
         [Required(ErrorMessage = "لطفا {0} را وارد کنید")]

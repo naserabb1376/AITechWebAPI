@@ -109,6 +109,7 @@ namespace AITechWebAPI.Controllers
                 EventDate = requestBody.EventDate.StringToDate().Value,
                 Keywords = requestBody.Keywords,
                 Title = requestBody.Title,
+                Fee = requestBody.EventFee,
                 OtherLangs = requestBody.OtherLangs ?? "",
 
             };
@@ -161,6 +162,7 @@ namespace AITechWebAPI.Controllers
                 EventDate = requestBody.EventDate.StringToDate().Value,
                 Keywords = requestBody.Keywords,
                 Title = requestBody.Title,
+                Fee = requestBody.EventFee,
                 OtherLangs = requestBody.OtherLangs ?? "",
 
             };

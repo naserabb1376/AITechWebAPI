@@ -25,6 +25,11 @@ namespace AITechWebAPI.Models.Event
         [Display(Name = "تاریخ رویداد")]
         public string? EventDate { get; set; } // تاریخ رویداد
 
+
+        [Display(Name = "هزینه رویداد")]
+        public decimal? EventFee { get; set; }
+
+
         [Display(Name = "توضیحات")]
         public string? Note { get; set; }
 

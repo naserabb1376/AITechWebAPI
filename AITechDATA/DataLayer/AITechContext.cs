@@ -195,12 +195,6 @@ namespace AITechDATA.DataLayer
            
 
             modelBuilder.Entity<PaymentHistory>()
-   .HasOne(x => x.Group)
-   .WithMany(x => x.PaymentHistories)
-   .HasForeignKey(x => x.GroupId)
-   .OnDelete(DeleteBehavior.Cascade);
-
-            modelBuilder.Entity<PaymentHistory>()
    .HasOne(x => x.User)
    .WithMany(x => x.PaymentHistories)
    .HasForeignKey(x => x.UserId)
