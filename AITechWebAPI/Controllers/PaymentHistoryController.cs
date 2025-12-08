@@ -312,7 +312,7 @@ namespace AITechWebAPI.Controllers
 
                 var zarInvoice = new ZarinPalInvoice(description: $"{Addresult.ID} - {PaymentHistory.PaymentDate}");
                 // var callbackUrl = Url.Action("VerifyPayment", "PaymentHistory", new { payId = Addresult.ID }, Request.Scheme);
-                var callbackUrl = $"https://aitechac.com/verifypayment?PayId={Addresult.ID}&UserId={requestBody.UserID}&EntityType={requestBody.EntityType}&ForeignKeyId={requestBody.ForeignKeyId}";
+                var callbackUrl = $"https://aitechac.com/payment/verify?PayId={Addresult.ID}&UserId={requestBody.UserID}&EntityType={requestBody.EntityType}&ForeignKeyId={requestBody.ForeignKeyId}";
 
                 var invoice = await _onlinePayment.RequestAsync(invoice =>
                 {
