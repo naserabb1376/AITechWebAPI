@@ -40,7 +40,7 @@ public class FileCenterController : ControllerBase
 
             fileType = fileType.ToLower();
             entityName = entityName.ToLower();
-            bool isJobRequest = entityName.ToLower() == "jobrequest";
+            bool isJobRequest = entityName.ToLower() == "jobrequest" || entityName.ToLower() == "preregistration";
 
             string fileName = "", fullPath=""; long RowNumber =0;    
             var userId = !isJobRequest ? User?.FindFirst("userId")?.Value : "0";

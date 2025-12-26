@@ -288,6 +288,7 @@ namespace AITechWebAPI.Controllers
                 UserId = requestBody.UserID,
                 PaymentDate = DateTime.Now.ToShamsi(),
                 PaymentStatus = false,
+                
                 //  Description = requestBody.Description,
             };
             var Addresult = await _PaymentHistoryRep.AddPaymentHistoryAsync(PaymentHistory);
@@ -324,6 +325,7 @@ namespace AITechWebAPI.Controllers
                     invoice.UseAutoIncrementTrackingNumber();
 
                 });
+
 
                 if (invoice.IsSucceed)
                 {
