@@ -15,6 +15,8 @@ namespace AITechDATA.Domain
         [Display(Name = "تاریخ بروزرسانی")]
         public DateTime? UpdateDate { get; set; } = DateTime.Now.ToShamsi();
 
+        [Display(Name = "وضعیت فعال")]
+        public bool IsActive { get; set; } = true;
         public string? OtherLangs { get; set; }
     }
 
@@ -28,5 +30,9 @@ namespace AITechDATA.Domain
 
         [Display(Name = "تاریخ بروزرسانی")]
         public DateTime? UpdateDate { get; set; } = DateTime.Now.ToShamsi();
+       
+        [Display(Name = "وضعیت فعال")]
+        public bool IsActive { get; set; }
+
     }
 }

@@ -30,13 +30,15 @@ namespace AITechWebAPI.Controllers
     public class PermissionController : ControllerBase
     {
         private IPermissionRep _PermissionRep;
+        private IPermissionRoleRep _PermissionRoleRep;
         private ILogRep _logRep;
         private readonly IMapper _mapper;
 
 
-        public PermissionController(IPermissionRep PermissionRep, ILogRep logRep,IMapper mapper)
+        public PermissionController(IPermissionRep PermissionRep,IPermissionRoleRep permissionRoleRep, ILogRep logRep,IMapper mapper)
         {
             _PermissionRep = PermissionRep;
+            _PermissionRoleRep = permissionRoleRep;
             _logRep = logRep;
             _mapper = mapper;
         }
@@ -126,7 +128,34 @@ namespace AITechWebAPI.Controllers
 
                 #endregion AddLog
 
-                return Ok(result);
+                PermissionRole permissionRole = new PermissionRole() 
+                { 
+                    CreateDate = DateTime.Now.ToShamsi(),
+                    UpdateDate = DateTime.Now.ToShamsi(),
+                    OtherLangs = "",
+                    IsActive = true,
+                    PerrmissionId = result.ID,
+                    RoleId = 4,
+                };
+
+                result = await _PermissionRoleRep.AddPermissionRolesAsync(new List<PermissionRole> { permissionRole });
+                if (result.Status)
+                {
+                    #region AddLog
+
+                    log = new Log()
+                    {
+                        CreateDate = DateTime.Now.ToShamsi(),
+                        UpdateDate = DateTime.Now.ToShamsi(),
+                        LogTime = DateTime.Now.ToShamsi(),
+                        ActionName = $"{this.ControllerContext.RouteData.Values["action"].ToString()}/AddPermissionRolesAsync",
+                    };
+                    await _logRep.AddLogAsync(log);
+
+                    #endregion AddLog
+
+                    return Ok(result);
+                }
             }
             return BadRequest(result);
         }

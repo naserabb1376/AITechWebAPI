@@ -35,5 +35,8 @@ namespace AITechWebAPI.Models.News
         [Display(Name = "زبان های دیگر")]
         public string? OtherLangs { get; set; } = "";
 
+        [Display(Name = "وضعیت فعال")]
+        public bool IsActive { get; set; }
+
     }
 }

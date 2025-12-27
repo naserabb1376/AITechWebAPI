@@ -110,6 +110,7 @@ namespace AITechWebAPI.Controllers
                 Keywords = requestBody.Keywords,
                 Title = requestBody.Title,
                 Note = requestBody.Note ?? "",
+                IsActive = requestBody.IsActive,
                 OtherLangs = requestBody.OtherLangs ?? "",
 
             };
@@ -163,6 +164,7 @@ namespace AITechWebAPI.Controllers
                 Keywords = requestBody.Keywords,
                 Title = requestBody.Title,
                 Note = requestBody.Note ?? "",
+                IsActive = requestBody.IsActive,
                 OtherLangs = requestBody.OtherLangs ?? "",
 
             };
