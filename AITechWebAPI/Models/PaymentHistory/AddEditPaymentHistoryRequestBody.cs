@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using Microsoft.AspNetCore.Http.Connections;
+using System.ComponentModel.DataAnnotations;
 
 namespace AITechWebAPI.Models.PaymentHistory
 {

@@ -323,15 +323,16 @@ namespace AITechWebAPI.Controllers
                             .UseZarinPal();
 
                     invoice.UseAutoIncrementTrackingNumber();
-
+                   
                 });
-
 
                 if (invoice.IsSucceed)
                 {
                     result.Result.PayGatewayUrl = invoice.GatewayTransporter.Descriptor.Url;
                     result.ErrorMessage = "";
                 }
+
+          
 
                 else
                 {
@@ -348,15 +349,14 @@ namespace AITechWebAPI.Controllers
             return BadRequest(result);
         }
 
-        [HttpPost("VerifyPayment")]
-        [AllowAnonymous]
-        public async Task<ActionResult<BitResultObject>> VerifyPayment(VerifyPaymentRequestBody requestBody)
+        [HttpGet("VerifyPayment")]
+        public async Task<ActionResult<BitResultObject>> VerifyPayment(long PayId = 0,long UserID = 0,string? EntityType = "" , long? ForeignKeyId = 0,string? paymentToken = "",string? Authority ="", string? Status = "")
         {
             BitResultObject result = new BitResultObject();
             try
             {
-                var paymentHistory = await _PaymentHistoryRep.GetPaymentHistoryByIdAsync(requestBody.PayID);
-                var userRow = await _UserRep.GetUserByIdAsync(requestBody.UserID);
+                var paymentHistory = await _PaymentHistoryRep.GetPaymentHistoryByIdAsync(PayId);
+                var userRow = await _UserRep.GetUserByIdAsync(UserID);
 
                 var invoice = await _onlinePayment.FetchAsync();
 
@@ -392,8 +392,8 @@ namespace AITechWebAPI.Controllers
                         RecognitionLevel = null,
                         ProgrammingSkillLevel = null,
 
-                        ForeignKeyId = requestBody.ForeignKeyId,
-                        EntityType = requestBody.EntityType,
+                        ForeignKeyId = ForeignKeyId ?? 0,
+                        EntityType = EntityType ?? "",
                         RegistrationDate = DateTime.Now.ToShamsi(),
                         OtherLangs = null,
                         // Description = requestBody.Description,
