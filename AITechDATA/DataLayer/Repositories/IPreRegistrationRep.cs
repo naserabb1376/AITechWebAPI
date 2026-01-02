@@ -23,5 +23,7 @@ namespace AITechDATA.DataLayer.Repositories
         Task<BitResultObject> RemovePreRegistrationAsync(long preRegistrationId);
 
         Task<BitResultObject> ExistPreRegistrationAsync(long preRegistrationId);
+
+        Task<ListResultObject<string>> GetRegistrationTypesAsync(int pageIndex = 1, int pageSize = 20, string searchText = "");
     }
 }

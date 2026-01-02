@@ -34,6 +34,7 @@ namespace AITechDATA.Domain
     {
         PreRegistration, // پیش‌ثبت‌نام
         Active,          // در حال اجرا
-        Completed        // پایان یافته
+        Completed,        // پایان یافته
+        OnlineCourse        // دوره آنلاین
     }
 }

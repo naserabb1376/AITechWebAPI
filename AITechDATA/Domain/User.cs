@@ -33,5 +33,6 @@ namespace AITechDATA.Domain
         public ICollection<TicketMessage> TicketMessages { get; set; } // پاسخ تیکت‌های ثبت شده توسط مدیر
         public ICollection<News> News { get; set; } // اخبار ثبت شده توسط کاربر
         public StudentDetails StudentDetails { get; set; } // جزئیات دانش‌آموز
+        public EducationalBackground? EducationalBackground { get; set; } // پیشینه تحصیلی
     }
 }

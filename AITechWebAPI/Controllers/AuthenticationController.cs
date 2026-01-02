@@ -273,9 +273,6 @@ namespace AITechWebAPI.Controllers
             return BadRequest(result);
         }
 
-
-
-
         [HttpPost("Signup")]
         public async Task<ActionResult<BitResultObject>> Signup(SignupRequestBody signupRequestBody)
         {
@@ -865,6 +862,113 @@ namespace AITechWebAPI.Controllers
             }
 
             return result;
+        }
+
+
+
+        [HttpPost("TeacherMembership")]
+        public async Task<ActionResult<BitResultObject>> TeacherMembership(SignupRequestBody signupRequestBody)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(signupRequestBody);
+            }
+
+            BitResultObject result = new BitResultObject();
+
+            Address address = new Address();
+
+            var validUserName = await _userRep.ExistUserAsync(signupRequestBody.UserName, "username");
+
+            if (validUserName.Status)
+            {
+                result.Status = !validUserName.Status;
+                result.ErrorMessage = "نام کاربری (شماره موبایل) تکراری است";
+                return BadRequest(result);
+            }
+
+
+            var validEmail = await _userRep.ExistUserAsync(signupRequestBody.Email, "email");
+
+            if (validEmail.Status)
+            {
+                result.Status = !validEmail.Status;
+                result.ErrorMessage = "پست الکترونیک تکراری است";
+                return BadRequest(result);
+            }
+
+            var validNationalCode = await _userRep.ExistUserAsync(signupRequestBody.NationalCode, "nationalcode");
+
+            if (validNationalCode.Status)
+            {
+                result.Status = !validNationalCode.Status;
+                result.ErrorMessage = "کد ملی تکراری است";
+                return BadRequest(result);
+            }
+
+            if (signupRequestBody.Address != null)
+            {
+                address = new Address()
+                {
+                    CityID = signupRequestBody.Address.CityID,
+                    AddressLocationHorizentalPoint = signupRequestBody.Address.AddressLocationHorizentalPoint,
+                    AddressLocationVerticalPoint = signupRequestBody.Address.AddressLocationVerticalPoint,
+                    AddressPostalCode = signupRequestBody.Address.AddressPostalCode,
+                    AddressStreet = signupRequestBody.Address.AddressStreet,
+                    CreateDate = DateTime.Now.ToShamsi(),
+                    UpdateDate = DateTime.Now.ToShamsi(),
+
+                };
+
+                result = await _addressRep.AddAddressAsync(address);
+            }
+
+            if (result.Status)
+            {
+                User user = new User()
+                {
+                    FirstName = signupRequestBody.FirstName,
+                    LastName = signupRequestBody.LastName,
+                    Username = signupRequestBody.UserName,
+                    RoleId = 2,
+                    Email = signupRequestBody.Email,
+                    NationalCode = signupRequestBody.NationalCode,
+                    PasswordHash = signupRequestBody.Password.ToHash(),
+                    CreateDate = DateTime.Now.ToShamsi(),
+                    UpdateDate = DateTime.Now.ToShamsi(),
+                    AddressId = (address != null && address.ID > 0) ? address.ID : null,
+                };
+                ////if(user.RoleId == 1) // user is student
+                ////{
+                //StudentDetails studentDetails = new StudentDetails()
+                //{
+                //    CreateDate = DateTime.Now.ToShamsi(),
+                //    UpdateDate = DateTime.Now.ToShamsi(),
+                //};
+                //user.StudentDetails = studentDetails;
+                ////}
+                result = await _userRep.AddUserAsync(user);
+
+                if (result.Status)
+                {
+                    #region AddLog
+
+                    Log log = new Log()
+                    {
+                        CreateDate = DateTime.Now.ToShamsi(),
+                        UpdateDate = DateTime.Now.ToShamsi(),
+                        LogTime = DateTime.Now.ToShamsi(),
+                        ActionName = this.ControllerContext.RouteData.Values["action"].ToString(),
+
+                    };
+                    await _logRep.AddLogAsync(log);
+
+                    #endregion
+
+                    return Ok(result);
+                }
+            }
+            return BadRequest(result);
         }
 
 

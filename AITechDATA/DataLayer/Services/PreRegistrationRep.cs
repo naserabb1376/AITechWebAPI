@@ -133,6 +133,34 @@ namespace AITechDATA.DataLayer.Services
             return result;
         }
 
+        public async Task<ListResultObject<string>> GetRegistrationTypesAsync(int pageIndex = 1, int pageSize = 20, string searchText = "")
+        {
+
+            ListResultObject<string> results = new ListResultObject<string>();
+            try
+            {
+                var query = _context.PreRegistrations.AsNoTracking().Where(x => !string.IsNullOrEmpty(x.EntityType))
+        .Select(x => x.EntityType)
+        .Distinct();
+
+                query = query.Where(x =>
+                        ((!string.IsNullOrEmpty(x) && x.Contains(searchText))
+
+                        )
+                    );
+
+                results.TotalCount = query.Count();
+                results.PageCount = DbTools.GetPageCount(results.TotalCount, pageSize);
+                results.Results = await query.ToPaging(pageIndex, pageSize).ToListAsync();
+            }
+            catch (Exception ex)
+            {
+                results.Status = false;
+                results.ErrorMessage = $"{ex.Message} - {ex.InnerException?.Message}";
+            }
+            return results;
+        }
+
         public async Task<BitResultObject> RemovePreRegistrationAsync(PreRegistration preRegistration)
         {
             BitResultObject result = new BitResultObject();

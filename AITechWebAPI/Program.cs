@@ -197,6 +197,8 @@ namespace AITechWebAPI
             builder.Services.AddScoped<IArticleRep, ArticleRep>();
             builder.Services.AddScoped<ISMSMessageRep, SMSMessageRep>();
             builder.Services.AddScoped<IInterviewTimeRep, InterviewTimeRep>();
+            builder.Services.AddScoped<IEducationalBackgroundRep, EducationalBackgroundRep>();
+            builder.Services.AddScoped<IClassGradeRep, ClassGradeRep>();
 
 
             #endregion ImportDbServices

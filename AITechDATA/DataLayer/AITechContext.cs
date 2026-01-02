@@ -64,6 +64,8 @@ namespace AITechDATA.DataLayer
         public DbSet<Award> Awards { get; set; }
         public DbSet<InterviewTime> InterviewTimes { get; set; }
         public DbSet<SMSMessage> SMSMessages { get; set; }
+        public DbSet<EducationalBackground> EducationalBackgrounds { get; set; }
+        public DbSet<ClassGrade> ClassGrades { get; set; }
 
         public DbSet<ClassForAi> ClassForAi { get; set; }
 
