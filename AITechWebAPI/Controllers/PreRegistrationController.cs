@@ -233,5 +233,21 @@ namespace AITechWebAPI.Controllers
             }
             return BadRequest(result);
         }
+
+        [HttpPost("GetRegistrationTypes_Base")]
+        public async Task<ActionResult<ListResultObject<PreRegistrationVM>>> GetRegistrationTypes_Base(GetRegistrationTypesListRequestBody requestBody)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(requestBody);
+            }
+            var result = await _PreRegistrationRep.GetRegistrationTypesAsync(requestBody.PageIndex, requestBody.PageSize, requestBody.SearchText);
+            if (result.Status)
+            {
+                var resultVM = _mapper.Map<ListResultObject<PreRegistrationVM>>(result);
+                return Ok(resultVM);
+            }
+            return BadRequest(result);
+        }
     }
 }
