@@ -57,6 +57,7 @@ namespace AITechWebAPI.Tools
             CreateMap<SessionAssignment, SessionAssignmentVM>();
             CreateMap<Setting, SettingVM>();
             CreateMap<User, UserVM>();
+            CreateMap<PreRegistration, PreRegistrationVM>();
             CreateMap<User, TeacherVM>();
             CreateMap<Meeting, MeetingVM>();
 
