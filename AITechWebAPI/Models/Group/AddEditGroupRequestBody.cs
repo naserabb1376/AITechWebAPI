@@ -34,6 +34,10 @@ namespace AITechWebAPI.Models.Group
         [Required(ErrorMessage = "لطفا {0} را وارد کنید")]
         public string GroupStatus { get; set; }
 
+        [Display(Name = "نوع برگزاری گروه")]
+        [Required(ErrorMessage = "لطفا {0} را وارد کنید")]
+        public string GroupType { get; set; }
+
         [Display(Name = "هزینه گروه")]
         [Required(ErrorMessage = "لطفا {0} را وارد کنید")]
         public decimal GroupFee { get; set; }

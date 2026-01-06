@@ -12,6 +12,7 @@ namespace AITechWebAPI.ViewModels
         public TimeSpan? EndTime { get; set; } // ساعت پایان
         public decimal Fee { get; set; } // هزینه گروه
         public GroupStatus Status { get; set; } // وضعیت گروه (پیش‌ثبت‌نام، در حال اجرا، پایان یافته)
+        public string GroupType { get; set; } // نوع برگزاری گروه (حضوری، غیر حضوری)
         public string TeacherName { get; set; } // کلید خارجی به استاد
         public long CourseId { get; set; } // کلید خارجی به Course
         public string CourseTitle { get; set; }

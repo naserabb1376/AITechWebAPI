@@ -67,7 +67,7 @@ namespace AITechDATA.DataLayer.Services
                 {
                     result.Status = await _context.Settings
     .AsNoTracking()
-    .AnyAsync(x => x.Key == settingKey);
+    .AnyAsync(x => x.Key.ToLower() == settingKey.ToLower());
                 }
                 else
                 {

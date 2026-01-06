@@ -113,6 +113,7 @@ namespace AITechWebAPI.Controllers
                 Note = requestBody.Note ?? "",
                 OtherLangs = requestBody.OtherLangs ?? "",
                 Status = (GroupStatus)Enum.Parse(typeof(GroupStatus), requestBody.GroupStatus),
+                GroupType = requestBody.GroupType,
             };
             var result = await _GroupRep.AddGroupAsync(Group);
             if (result.Status)
@@ -167,6 +168,7 @@ namespace AITechWebAPI.Controllers
                 Note = requestBody.Note ??"",
                 OtherLangs = requestBody.OtherLangs ?? "",
                 Status = (GroupStatus)Enum.Parse(typeof(GroupStatus), requestBody.GroupStatus),
+                GroupType = requestBody.GroupType,
             };
             result = await _GroupRep.EditGroupAsync(Group);
             if (result.Status)

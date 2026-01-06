@@ -20,6 +20,7 @@ namespace AITechDATA.Domain
         public TimeSpan? EndTime { get; set; } // ساعت پایان
         public decimal Fee { get; set; } // هزینه گروه
         public GroupStatus Status { get; set; } // وضعیت گروه (پیش‌ثبت‌نام، در حال اجرا، پایان یافته)
+        public string GroupType { get; set; } // نوع برگزاری گروه (حضوری، غیر حضوری)
         public ICollection<Session> Sessions { get; set; } // جلسات مرتبط با گروه
     //    public ICollection<PreRegistration> PreRegistrations { get; set; } // پیش‌ثبت‌نام‌های مرتبط با گروه
         public long TeacherId { get; set; } // کلید خارجی به استاد
@@ -34,7 +35,6 @@ namespace AITechDATA.Domain
     {
         PreRegistration, // پیش‌ثبت‌نام
         Active,          // در حال اجرا
-        Completed,        // پایان یافته
-        OnlineCourse        // دوره آنلاین
+        Completed        // پایان یافته
     }
 }
