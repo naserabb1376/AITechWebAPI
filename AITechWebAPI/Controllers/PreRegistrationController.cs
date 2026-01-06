@@ -244,8 +244,7 @@ namespace AITechWebAPI.Controllers
             var result = await _PreRegistrationRep.GetRegistrationTypesAsync(requestBody.PageIndex, requestBody.PageSize, requestBody.SearchText);
             if (result.Status)
             {
-                var resultVM = _mapper.Map<ListResultObject<PreRegistrationVM>>(result);
-                return Ok(resultVM);
+                return Ok(result);
             }
             return BadRequest(result);
         }
