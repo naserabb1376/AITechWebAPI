@@ -165,7 +165,6 @@ namespace AITechWebAPI
             builder.Services.AddScoped<ICityRep, CityRep>();
             builder.Services.AddScoped<ICourseRep, CourseRep>();
             builder.Services.AddScoped<IEventRep, EventRep>();
-            builder.Services.AddScoped<ITokenRep, TokenRep>();
             builder.Services.AddScoped<IFileUploadRep, FileUploadRep>();
             builder.Services.AddScoped<IGroupRep, GroupRep>();
             builder.Services.AddScoped<IImageRep, ImageRep>();
