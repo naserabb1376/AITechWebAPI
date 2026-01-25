@@ -66,7 +66,9 @@ namespace AITechDATA.DataLayer
         public DbSet<SMSMessage> SMSMessages { get; set; }
         public DbSet<EducationalBackground> EducationalBackgrounds { get; set; }
         public DbSet<ClassGrade> ClassGrades { get; set; }
+        public DbSet<GroupChatMessage> GroupChatMessages { get; set; }
 
+        // Manual
         public DbSet<ClassForAi> ClassForAi { get; set; }
 
 
@@ -267,6 +269,36 @@ namespace AITechDATA.DataLayer
 .WithMany(x => x.Notifications)
 .HasForeignKey(x => x.UserId)
 .OnDelete(DeleteBehavior.Cascade);
-        }
+
+            // رابطه با Group
+            modelBuilder.Entity<GroupChatMessage>().HasOne(x => x.Group)
+                  .WithMany(g => g.ChatMessages)
+                  .HasForeignKey(x => x.GroupId)
+                  .OnDelete(DeleteBehavior.Cascade); // اگر گروه حذف شد، پیام‌ها هم حذف شوند (یا Restrict اگر دوست داری)
+
+            // رابطه با Sender(User)
+            modelBuilder.Entity<GroupChatMessage>().HasOne(x => x.SenderUser)
+                  .WithMany() // اگر در User کالکشن پیام‌ها نداری
+                  .HasForeignKey(x => x.SenderUserId)
+                  .OnDelete(DeleteBehavior.Restrict);
+            // مهم: Restrict تا حذف User باعث cascade پیام‌ها نشه و مسیرهای cascade تداخل نکنن
+
+            // Reply (اختیاری)
+            modelBuilder.Entity<GroupChatMessage>().HasOne(x => x.ReplyToMessage)
+                  .WithMany()
+                  .HasForeignKey(x => x.ReplyToMessageId)
+                  .OnDelete(DeleteBehavior.NoAction);
+
+            // Indexها برای سرعت
+            modelBuilder.Entity<GroupChatMessage>().HasIndex(x => new { x.GroupId, x.SentAt });
+            modelBuilder.Entity<GroupChatMessage>().HasIndex(x => new { x.GroupId, x.ID });
+            modelBuilder.Entity<GroupChatMessage>().HasIndex(x => new { x.GroupId, x.IsDeleted });
+
+
+    // Global Query Filter برای Soft Delete
+    modelBuilder.Entity<GroupChatMessage>()
+        .HasQueryFilter(x => !x.IsDeleted);
+
+    }
     }
 }

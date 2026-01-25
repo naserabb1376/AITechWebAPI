@@ -78,6 +78,7 @@ namespace AITechDATA.DataLayer.Services
             long courseId = 0,
             long teacherId = 0,
             string groupStatus = "",
+            string groupType = "",
             int pageIndex = 1,
             int pageSize = 20,
             string searchText = "",
@@ -122,6 +123,11 @@ namespace AITechDATA.DataLayer.Services
                     Enum.TryParse<GroupStatus>(groupStatus, out var parsedStatus))
                 {
                     query = query.Where(x => x.Status == parsedStatus);
+                }
+
+                if (!string.IsNullOrEmpty(groupType))
+                {
+                    query = query.Where(x => x.GroupType.ToLower() == groupType.ToLower());
                 }
 
                 if (!string.IsNullOrEmpty(searchText))

@@ -16,5 +16,8 @@ namespace AITechWebAPI.Models.Group
 
         [Display(Name = "وضعیت گروه")]
         public string GroupStatus { get; set; } = "";
+
+        [Display(Name = "نوع گروه")]
+        public string GroupType { get; set; } = "";
     }
 }

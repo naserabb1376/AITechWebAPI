@@ -48,7 +48,7 @@ namespace AITechWebAPI.Controllers
             {
                 return BadRequest(requestBody);
             }
-            var result = await _GroupRep.GetAllGroupsAsync(requestBody.StudentId,requestBody.CourseId,requestBody.TeacherId, requestBody.GroupStatus, requestBody.PageIndex, requestBody.PageSize, requestBody.SearchText, requestBody.SortQuery);
+            var result = await _GroupRep.GetAllGroupsAsync(requestBody.StudentId,requestBody.CourseId,requestBody.TeacherId, requestBody.GroupStatus,requestBody.GroupType,requestBody.PageIndex, requestBody.PageSize, requestBody.SearchText, requestBody.SortQuery);
             if (result.Status)
             {
                 var resultVM = _mapper.Map<ListResultObject<GroupVM>>(result);
