@@ -1,4 +1,5 @@
-﻿<!doctype html>
+﻿﻿
+<!doctype html>
 <html lang="fa" dir="rtl">
 <head>
     <meta charset="utf-8" />
@@ -421,11 +422,12 @@
                             <!--<label style="display:flex; align-items:center; gap:8px; margin:0; color:var(--muted); font-size:12px">
                                 <input id="isPublic" type="checkbox" checked />
                                 عمومی (MVP)
-                            </label>-->
-                        </div>
+                            </label>
+                        </div>-->
 
                         <div class="btnrow" style="justify-content:flex-start">
                             <button class="btn" id="btnSend">Send</button>
+                            <button class="btn2" id="btnSendFile">Send + File</button>
                         </div>
                     </div>
 
@@ -571,10 +573,10 @@
                 "کاربر: " + (payload?.unique_name || payload?.name || payload?.sub || "—");
 
             byId("endpoints").innerHTML = `
-        Hub: <span class="muted">${HUB_URL}</span><br/>
-        Send+File: <span class="muted">${SEND_WITH_ATTACHMENT_URL}</span><br/>
-        History: <span class="muted">${GET_ALL_MESSAGES_URL}</span>
-      `;
+            Hub: <span class="muted">${HUB_URL}</span><br/>
+            Send+File: <span class="muted">${SEND_WITH_ATTACHMENT_URL}</span><br/>
+            History: <span class="muted">${GET_ALL_MESSAGES_URL}</span>
+          `;
 
             // =========================
             // State
@@ -939,44 +941,13 @@
 
                 const userId = p?.userId ?? p?.UserId;
                 const isTyping = p?.isTyping ?? p?.IsTyping;
-                const name = (p?.name ?? p?.Name ?? "").trim();
-
                 if (!userId) return;
 
-                if (isTyping) {
-                    typingUsers.set(userId, name || ("User#" + userId));
-                } else {
-                    typingUsers.delete(userId);
-                }
+                if (isTyping) typingUsers.set(userId, true);
+                else typingUsers.delete(userId);
 
-                renderTypingNames();
+                typingEl.textContent = typingUsers.size ? `✍️ ${typingUsers.size} نفر در حال تایپ هستند...` : "";
             }
-
-            function renderTypingNames() {
-                if (typingUsers.size === 0) {
-                    typingEl.textContent = "";
-                    return;
-                }
-
-                const names = Array.from(typingUsers.values()).filter(Boolean);
-
-                // اگر اسم تکراری شد، unique کنیم
-                const unique = [...new Set(names)];
-
-                // متن قشنگ فارسی
-                if (unique.length === 1) {
-                    typingEl.textContent = `✍️ ${unique[0]} در حال تایپ است...`;
-                } else if (unique.length === 2) {
-                    typingEl.textContent = `✍️ ${unique[0]} و ${unique[1]} در حال تایپ هستند...`;
-                } else {
-                    const shown = unique.slice(0, 3);
-                    const rest = unique.length - shown.length;
-
-                    typingEl.textContent =
-                        `✍️ ${shown.join("، ")}${rest > 0 ? ` و ${rest} نفر دیگر` : ""} در حال تایپ هستند...`;
-                }
-            }
-
 
             // =========================
             // Send message (Hub)
@@ -997,20 +968,6 @@
                 }
             }
 
-            async function smartSend() {
-                if (!connection || !currentGroupId) return log("اول JoinGroup بزن.", "warn");
-
-                const file = byId("file").files[0];
-                if (file) {
-                    // اگر فایل هست: مسیر ارسال فایل
-                    await sendWithAttachment();
-                } else {
-                    // اگر فایل نیست: ارسال پیام معمولی
-                    await sendMessage();
-                }
-            }
-
-
             // =========================
             // Send + Attachment (REST => Hub Attach)
             // =========================
@@ -1026,16 +983,17 @@
                 //let ft = byId("fileType").value;
                 //if (ft === "auto") {
                 //    ft = file.type.startsWith("image/") ? "images" : "files";
+                //}
+
                 const ft = file.type.startsWith("image/") ? "images" : "files";
 
-                }
 
                 try {
                     const form = new FormData();
                     form.append("file", file);
                     form.append("groupId", String(currentGroupId));
                     form.append("fileType", ft);
-                    form.append("isPublic","true");
+                    form.append("isPublic", "true");
                     form.append("messageText", messageText || "📎 فایل ارسال شد");
 
                     const res = await fetch(SEND_WITH_ATTACHMENT_URL, {
@@ -1088,7 +1046,7 @@
             });
 
             byId("btnLeave").addEventListener("click", leaveGroup);
-            byId("btnSend").addEventListener("click", smartSend);
+            byId("btnSend").addEventListener("click", sendMessage);
             byId("btnSendFile").addEventListener("click", sendWithAttachment);
 
             byId("btnGoLogin").addEventListener("click", () => location.href = "./login.html");
@@ -1104,7 +1062,7 @@
 
             document.addEventListener("keydown", (e) => {
                 if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) {
-                    smartSend();
+                    sendMessage();
                 }
             });
 
