@@ -2,6 +2,7 @@
 using AITechDATA.Domain;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
+using Microsoft.EntityFrameworkCore;
 
 
 namespace AITechWebAPI.Tools
@@ -10,11 +11,13 @@ namespace AITechWebAPI.Tools
     public class GroupChatHub : Hub
     {
         private readonly IGroupChatMessageRep _chatService;
+        private readonly IUserRep _userRep;
         private readonly IGroupChatReadStateRep _seenService;
 
-        public GroupChatHub(IGroupChatMessageRep chatService,IGroupChatReadStateRep seenService)
+        public GroupChatHub(IGroupChatMessageRep chatService,IUserRep userRep,IGroupChatReadStateRep seenService)
         {
             _chatService = chatService;
+            _userRep = userRep;
             _seenService = seenService;
         }
 
@@ -93,10 +96,25 @@ namespace AITechWebAPI.Tools
         {
             var userId = Context.User!.GetCurrentUserId();
 
-            // به خودِ تایپ‌کننده نفرست
-            await Clients.OthersInGroup($"group:{groupId}")
-                .SendAsync("Typing", new { groupId, userId, isTyping });
+            // نام کاربر را از DB یا هر سرویس کاربر بگیر
+            // (بهترین: یک سرویس IUserService یا از DbContext استفاده کنی)
+            var u = await _userRep.GetUserByIdAsync(userId);
+
+            var name = (u == null)
+                ? $"User#{userId}"
+                : ((u.Result.FirstName + " " + u.Result.LastName).Trim().Length > 0
+                    ? (u.Result.FirstName + " " + u.Result.LastName).Trim()
+                    : (u.Result.Username ?? $"User#{userId}"));
+
+            await Clients.OthersInGroup($"group:{groupId}").SendAsync("Typing", new
+            {
+                groupId,
+                userId,
+                name,
+                isTyping
+            });
         }
+
 
         public async Task AttachFile(long groupId, long messageId, AttachFileToMessageRequest request)
         {
