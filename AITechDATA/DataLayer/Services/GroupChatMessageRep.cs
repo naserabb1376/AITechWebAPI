@@ -226,15 +226,15 @@ namespace AITechDATA.DataLayer.Services
 
         public async Task<GroupChatMessageDto> SendMessageAsync(long groupId, long senderUserId, SendGroupMessageRequest request)
         {
-            var since = DateTime.UtcNow.AddSeconds(-2);
+            //var since = DateTime.UtcNow.AddSeconds(-2);
 
-            var recentCount = await _context.GroupChatMessages.AsNoTracking()
-                .CountAsync(m => m.GroupId == groupId &&
-                                 m.SenderUserId == senderUserId &&
-                                 m.SentAt >= since);
+            //var recentCount = await _context.GroupChatMessages.AsNoTracking()
+            //    .CountAsync(m => m.GroupId == groupId &&
+            //                     m.SenderUserId == senderUserId &&
+            //                     m.SentAt >= since);
 
-            if (recentCount >= 3)
-                throw new ArgumentException("لطفاً کمی آهسته‌تر پیام ارسال کنید");
+            //if (recentCount >= 3)
+            //    throw new ArgumentException("لطفاً کمی آهسته‌تر پیام ارسال کنید");
 
 
             if (string.IsNullOrWhiteSpace(request.Text))

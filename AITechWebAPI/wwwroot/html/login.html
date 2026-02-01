@@ -4,206 +4,537 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
     <title>ورود | چت گروهی</title>
+
+    <!-- Optional: nicer Persian font (works online). If you want fully offline, remove this block. -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;600;700;800&display=swap" rel="stylesheet">
+
     <style>
         :root {
-            --bg: #0b1220;
-            --card: #0f1b33;
-            --muted: #93a4c7;
-            --text: #eaf0ff;
-            --pri: #4f7cff;
-            --pri2: #22c55e;
-            --danger: #ef4444;
-            --border: rgba(255,255,255,.10);
-            --shadow: 0 18px 60px rgba(0,0,0,.45);
-            --radius: 18px;
-            font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+            --bg0: #070B16;
+            --bg1: #0b1220;
+            --card: rgba(255,255,255,.06);
+            --card2: rgba(255,255,255,.035);
+            --border: rgba(255,255,255,.14);
+            --text: #EAF0FF;
+            --muted: #9FB1D6;
+            --pri: #5B8CFF;
+            --pri2: #22C55E;
+            --pri3: #A855F7;
+            --danger: #EF4444;
+            --radius: 22px;
+            --shadow: 0 26px 80px rgba(0,0,0,.55);
+            --shadow2: 0 10px 30px rgba(0,0,0,.35);
+            --ring: 0 0 0 5px rgba(91,140,255,.16);
+            font-family: "Vazirmatn", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+        }
+
+        * {
+            box-sizing: border-box
+        }
+
+        a {
+            color: inherit
+        }
+
+        ::selection {
+            background: rgba(91,140,255,.25)
         }
 
         body {
             margin: 0;
-            background: radial-gradient(1200px 600px at 20% 10%, rgba(79,124,255,.25), transparent 60%), radial-gradient(1000px 500px at 90% 20%, rgba(34,197,94,.18), transparent 55%), var(--bg);
-            color: var(--text);
             min-height: 100vh;
             display: grid;
             place-items: center;
-            padding: 24px;
+            padding: 28px;
+            color: var(--text);
+            background: radial-gradient(1200px 700px at 15% 15%, rgba(91,140,255,.28), transparent 60%), radial-gradient(900px 600px at 85% 20%, rgba(34,197,94,.18), transparent 55%), radial-gradient(1100px 700px at 55% 105%, rgba(168,85,247,.16), transparent 58%), linear-gradient(180deg, var(--bg0), var(--bg1));
+            overflow-x: hidden;
+        }
+
+            /* animated grain + moving glow */
+            body::before {
+                content: "";
+                position: fixed;
+                inset: -40px;
+                background: radial-gradient(600px 380px at 30% 20%, rgba(91,140,255,.22), transparent 70%), radial-gradient(520px 360px at 80% 30%, rgba(34,197,94,.16), transparent 70%), radial-gradient(520px 360px at 55% 85%, rgba(168,85,247,.12), transparent 70%);
+                filter: blur(18px);
+                opacity: .9;
+                animation: floaty 10s ease-in-out infinite alternate;
+                pointer-events: none;
+                z-index: -2;
+            }
+
+            body::after {
+                content: "";
+                position: fixed;
+                inset: 0;
+                background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)' opacity='.22'/%3E%3C/svg%3E");
+                background-size: 140px 140px;
+                mix-blend-mode: overlay;
+                opacity: .16;
+                pointer-events: none;
+                z-index: -1;
+            }
+
+        @keyframes floaty {
+            from {
+                transform: translate3d(-10px,-8px,0) scale(1)
+            }
+
+            to {
+                transform: translate3d(12px,10px,0) scale(1.03)
+            }
         }
 
         .wrap {
-            width: min(980px,100%);
+            width: min(1040px, 100%);
             display: grid;
             grid-template-columns: 1.1fr .9fr;
             gap: 18px;
+            align-items: stretch;
         }
 
-        @media (max-width: 880px) {
+        @media (max-width: 920px) {
             .wrap {
                 grid-template-columns: 1fr
             }
         }
 
-        .hero, .card {
-            background: rgba(15,27,51,.72);
+        .panel {
             border: 1px solid var(--border);
             border-radius: var(--radius);
+            background: linear-gradient(180deg, var(--card), var(--card2));
             box-shadow: var(--shadow);
-            backdrop-filter: blur(10px);
+            backdrop-filter: blur(14px);
+            -webkit-backdrop-filter: blur(14px);
+            position: relative;
+            overflow: hidden;
+            transform: translateY(0);
+            animation: in .7s cubic-bezier(.2,.9,.2,1) both;
+        }
+
+            /* subtle neon edges */
+            .panel::before {
+                content: "";
+                position: absolute;
+                inset: -1px;
+                background: radial-gradient(900px 220px at 20% 0%, rgba(91,140,255,.18), transparent 60%), radial-gradient(800px 240px at 100% 30%, rgba(34,197,94,.14), transparent 60%), radial-gradient(900px 240px at 60% 110%, rgba(168,85,247,.12), transparent 62%);
+                pointer-events: none;
+                opacity: .9;
+            }
+
+        @keyframes in {
+            from {
+                opacity: 0;
+                transform: translateY(14px) scale(.99)
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1)
+            }
         }
 
         .hero {
             padding: 28px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            gap: 18px;
+        }
+
+        .heroTop {
+            display: flex;
+            gap: 16px;
+            align-items: flex-start;
+        }
+
+        .logo {
+            width: 44px;
+            height: 44px;
+            border-radius: 14px;
+            background: linear-gradient(135deg, rgba(91,140,255,.95), rgba(34,197,94,.85));
+            box-shadow: 0 14px 34px rgba(91,140,255,.18);
+            display: grid;
+            place-items: center;
+            flex: 0 0 auto;
             position: relative;
             overflow: hidden;
         }
 
-            .hero h1 {
-                margin: 0 0 10px;
-                font-size: 28px
+            .logo::after {
+                content: "";
+                position: absolute;
+                inset: -40%;
+                background: linear-gradient(90deg, transparent, rgba(255,255,255,.35), transparent);
+                transform: rotate(25deg);
+                animation: shine 2.8s ease-in-out infinite;
+                opacity: .55;
             }
 
-            .hero p {
-                margin: 0;
-                color: var(--muted);
-                line-height: 1.9
+        @keyframes shine {
+            0% {
+                transform: translateX(-35%) rotate(25deg)
             }
 
-        .badge {
-            display: inline-flex;
-            gap: 8px;
-            align-items: center;
-            padding: 8px 12px;
-            border: 1px solid var(--border);
-            border-radius: 999px;
+            55% {
+                transform: translateX(35%) rotate(25deg)
+            }
+
+            100% {
+                transform: translateX(35%) rotate(25deg)
+            }
+        }
+
+        .logo svg {
+            filter: drop-shadow(0 8px 16px rgba(0,0,0,.35))
+        }
+
+        .hero h1 {
+            margin: 0 0 8px;
+            font-size: 30px;
+            letter-spacing: -.2px;
+            line-height: 1.25;
+        }
+
+        .hero p {
+            margin: 0;
             color: var(--muted);
+            line-height: 1.95;
+            font-size: 14.5px;
+        }
+
+        .chips {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
             margin-top: 14px;
-            font-size: 13px
+        }
+
+        .chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            padding: 9px 12px;
+            border-radius: 999px;
+            border: 1px solid rgba(255,255,255,.14);
+            background: rgba(255,255,255,.04);
+            color: var(--muted);
+            font-size: 12.5px;
+            box-shadow: var(--shadow2);
         }
 
         .dot {
             width: 10px;
             height: 10px;
             border-radius: 50%;
-            background: linear-gradient(135deg,var(--pri),var(--pri2))
+            background: linear-gradient(135deg, var(--pri), var(--pri2));
+            box-shadow: 0 0 0 4px rgba(91,140,255,.12);
         }
 
+        .heroBottom {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            padding-top: 10px;
+            border-top: 1px solid rgba(255,255,255,.10);
+        }
+
+        .hint {
+            color: var(--muted);
+            font-size: 12.5px;
+            line-height: 1.8;
+        }
+
+        .link {
+            color: #c7d2fe;
+            text-decoration: none;
+            font-weight: 700;
+            font-size: 13px;
+            padding: 10px 12px;
+            border-radius: 12px;
+            border: 1px solid rgba(199,210,254,.22);
+            background: rgba(199,210,254,.05);
+            transition: transform .15s ease, border-color .15s ease, background .15s ease;
+            white-space: nowrap;
+        }
+
+            .link:hover {
+                transform: translateY(-1px);
+                border-color: rgba(199,210,254,.35);
+                background: rgba(199,210,254,.08);
+            }
+
         .card {
-            padding: 22px
+            padding: 22px;
         }
 
         .title {
             display: flex;
-            align-items: center;
+            align-items: flex-start;
             justify-content: space-between;
-            gap: 12px;
-            margin-bottom: 14px
+            gap: 14px;
+            margin-bottom: 16px;
         }
 
             .title h2 {
                 margin: 0;
-                font-size: 18px
+                font-size: 18px;
+                letter-spacing: -.1px;
             }
 
         .sub {
-            color: var(--muted);
+            margin-top: 6px;
             font-size: 13px;
-            margin-top: 4px
+            color: var(--muted);
+            line-height: 1.7;
         }
 
         .row {
             display: grid;
             gap: 10px;
-            margin: 12px 0
+            margin: 12px 0;
         }
 
         label {
-            font-size: 13px;
-            color: var(--muted)
+            color: var(--muted);
+            font-size: 12.8px;
+        }
+
+        .field {
+            position: relative;
         }
 
         input {
             width: 100%;
-            padding: 12px 12px;
-            border-radius: 12px;
-            border: 1px solid var(--border);
-            background: rgba(11,18,32,.55);
+            padding: 13px 42px 13px 14px; /* rtl: icon right */
+            border-radius: 14px;
+            border: 1px solid rgba(255,255,255,.14);
+            background: rgba(11,18,32,.50);
             color: var(--text);
-            outline: none
+            outline: none;
+            transition: box-shadow .15s ease, border-color .15s ease, transform .15s ease;
         }
 
+            input::placeholder {
+                color: rgba(159,177,214,.65)
+            }
+
             input:focus {
-                border-color: rgba(79,124,255,.6);
-                box-shadow: 0 0 0 4px rgba(79,124,255,.12)
+                border-color: rgba(91,140,255,.62);
+                box-shadow: var(--ring);
+                transform: translateY(-1px);
+            }
+
+        .icon {
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 18px;
+            height: 18px;
+            opacity: .85;
+            color: rgba(234,240,255,.82);
+            pointer-events: none;
+            filter: drop-shadow(0 10px 18px rgba(0,0,0,.25));
+        }
+
+        .togglePass {
+            position: absolute;
+            left: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            border: 1px solid rgba(255,255,255,.14);
+            background: rgba(255,255,255,.05);
+            color: rgba(234,240,255,.85);
+            padding: 8px 10px;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: transform .12s ease, background .12s ease, border-color .12s ease, opacity .12s ease;
+        }
+
+            .togglePass:hover {
+                transform: translateY(-50%) scale(1.02);
+                border-color: rgba(255,255,255,.22);
+                background: rgba(255,255,255,.08);
             }
 
         .btn {
             width: 100%;
-            padding: 12px 14px;
-            border-radius: 12px;
+            padding: 13px 14px;
+            border-radius: 14px;
             border: none;
             cursor: pointer;
-            background: linear-gradient(135deg, var(--pri), #7aa2ff);
             color: white;
-            font-weight: 700
+            font-weight: 800;
+            letter-spacing: .2px;
+            background: linear-gradient(135deg, var(--pri), #7aa2ff 45%, rgba(168,85,247,.9));
+            box-shadow: 0 16px 40px rgba(91,140,255,.20);
+            position: relative;
+            overflow: hidden;
+            transition: transform .15s ease, box-shadow .15s ease, filter .15s ease;
         }
 
-            .btn:disabled {
+            .btn::before {
+                content: "";
+                position: absolute;
+                inset: -40%;
+                background: linear-gradient(90deg, transparent, rgba(255,255,255,.25), transparent);
+                transform: rotate(20deg) translateX(-40%);
+                transition: transform .45s ease;
                 opacity: .55;
-                cursor: not-allowed
             }
 
-        .msg {
-            margin-top: 10px;
-            font-size: 13px;
-            color: var(--muted);
-            line-height: 1.8
+            .btn:hover {
+                transform: translateY(-1px);
+                box-shadow: 0 22px 55px rgba(91,140,255,.26);
+                filter: saturate(1.06);
+            }
+
+                .btn:hover::before {
+                    transform: rotate(20deg) translateX(40%);
+                }
+
+            .btn:active {
+                transform: translateY(0px) scale(.995)
+            }
+
+            .btn:disabled {
+                opacity: .6;
+                cursor: not-allowed;
+                filter: grayscale(.2);
+                box-shadow: none;
+            }
+
+        .btnInner {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            position: relative;
+            z-index: 1;
         }
 
-        .err {
-            color: #fecaca;
-            background: rgba(239,68,68,.12);
-            border: 1px solid rgba(239,68,68,.25);
-            padding: 10px 12px;
-            border-radius: 12px;
-            margin-top: 10px;
-            display: none
+        .spinner {
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            border: 2px solid rgba(255,255,255,.35);
+            border-top-color: rgba(255,255,255,.95);
+            animation: spin .8s linear infinite;
+            display: none;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg)
+            }
+        }
+
+        .ok, .err {
+            padding: 11px 12px;
+            border-radius: 14px;
+            margin-top: 12px;
+            display: none;
+            line-height: 1.8;
+            font-size: 13px;
+            box-shadow: var(--shadow2);
+            animation: pop .22s ease-out;
+        }
+
+        @keyframes pop {
+            from {
+                transform: translateY(6px);
+                opacity: 0
+            }
+
+            to {
+                transform: translateY(0);
+                opacity: 1
+            }
         }
 
         .ok {
             color: #bbf7d0;
             background: rgba(34,197,94,.10);
-            border: 1px solid rgba(34,197,94,.25);
-            padding: 10px 12px;
-            border-radius: 12px;
-            margin-top: 10px;
-            display: none
+            border: 1px solid rgba(34,197,94,.28);
         }
 
-        .small {
-            font-size: 12px;
+        .err {
+            color: #fecaca;
+            background: rgba(239,68,68,.12);
+            border: 1px solid rgba(239,68,68,.30);
+        }
+
+        .msg {
+            margin-top: 12px;
             color: var(--muted);
-            margin-top: 10px
+            font-size: 12.8px;
+            line-height: 1.85;
+            border-top: 1px dashed rgba(255,255,255,.14);
+            padding-top: 12px;
         }
 
         code {
-            color: #c7d2fe
+            color: #c7d2fe;
+            background: rgba(199,210,254,.08);
+            border: 1px solid rgba(199,210,254,.14);
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 12px;
+        }
+
+        .kbd {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 10px;
+            border-radius: 12px;
+            border: 1px solid rgba(255,255,255,.14);
+            background: rgba(255,255,255,.05);
+            color: rgba(234,240,255,.86);
+            font-size: 12px;
+            white-space: nowrap;
         }
     </style>
 </head>
+
 <body>
     <div class="wrap">
-        <section class="hero">
-            <h1>ورود به چت گروهی</h1>
-            <p>
-                این صفحه با API لاگین آموزشگاه کار می‌کند و بعد از ورود، شما را وارد محیط تست چت می‌کند.
-                توکن دریافتی به‌صورت امن در <code>localStorage</code> ذخیره می‌شود.
-            </p>
-            <div class="badge"><span class="dot"></span> LoginType = 1 (طبق درخواست شما)</div>
-            <div class="small" style="margin-top:14px">
-                اگر قبلاً لاگین کرده‌ای: <a href="./chat.html" style="color:#c7d2fe">برو به چت</a>
+        <section class="panel hero">
+            <div class="heroTop">
+                <div class="logo" aria-hidden="true">
+                    <!-- simple chat icon -->
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+                        <path d="M7 8h10M7 12h7M12 21c-4.418 0-8-3.134-8-7s3.582-7 8-7 8 3.134 8 7c0 1.21-.36 2.36-1 3.35V21l-3.15-1.75c-1.15.48-2.47.75-3.85.75Z" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" opacity=".92" />
+                    </svg>
+                </div>
+                <div>
+                    <h1>ورود به چت گروهی</h1>
+                    <p>
+                        این صفحه با API لاگین آموزشگاه کار می‌کند و بعد از ورود، شما را وارد محیط تست چت می‌کند.
+                        توکن دریافتی به‌صورت امن در <code>localStorage</code> ذخیره می‌شود.
+                    </p>
+
+                    <div class="chips">
+                        <div class="chip"><span class="dot"></span> LoginType = 1</div>
+                        <div class="chip">برای ورود سریع: <span class="kbd">Enter ↵</span></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="heroBottom">
+                <div class="hint">
+                    اگر قبلاً لاگین کردی، مستقیم برو داخل چت.
+                </div>
+                <a class="link" href="./chat.html">برو به چت →</a>
             </div>
         </section>
 
-        <section class="card">
+        <section class="panel card">
             <div class="title">
                 <div>
                     <h2>ورود</h2>
@@ -212,16 +543,35 @@
             </div>
 
             <div class="row">
-                <label>نام کاربری</label>
-                <input id="username" placeholder="مثلاً 0935..." autocomplete="username" />
+                <label for="username">نام کاربری</label>
+                <div class="field">
+                    <svg class="icon" viewBox="0 0 24 24" fill="none">
+                        <path d="M20 21a8 8 0 0 0-16 0" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+                        <path d="M12 12a4.5 4.5 0 1 0-4.5-4.5A4.5 4.5 0 0 0 12 12Z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
+                    </svg>
+                    <input id="username" placeholder="مثلاً 0935..." autocomplete="username" />
+                </div>
             </div>
 
             <div class="row">
-                <label>رمز عبور</label>
-                <input id="password" type="password" placeholder="••••••••" autocomplete="current-password" />
+                <label for="password">رمز عبور</label>
+                <div class="field">
+                    <svg class="icon" viewBox="0 0 24 24" fill="none">
+                        <path d="M7 10V8a5 5 0 0 1 10 0v2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+                        <path d="M6.5 10h11A2.5 2.5 0 0 1 20 12.5v6A2.5 2.5 0 0 1 17.5 21h-11A2.5 2.5 0 0 1 4 18.5v-6A2.5 2.5 0 0 1 6.5 10Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" />
+                        <path d="M12 14.2v2.4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+                    </svg>
+                    <input id="password" type="password" placeholder="••••••••" autocomplete="current-password" />
+                    <button class="togglePass" id="togglePass" type="button" title="نمایش/مخفی کردن رمز">👁️</button>
+                </div>
             </div>
 
-            <button id="btnLogin" class="btn">ورود</button>
+            <button id="btnLogin" class="btn" type="button">
+                <span class="btnInner">
+                    <span class="spinner" id="spinner"></span>
+                    <span id="btnText">ورود</span>
+                </span>
+            </button>
 
             <div id="ok" class="ok"></div>
             <div id="err" class="err"></div>
@@ -242,8 +592,17 @@
             const byId = (id) => document.getElementById(id);
             const errBox = byId("err");
             const okBox = byId("ok");
+            const btn = byId("btnLogin");
+            const spinner = byId("spinner");
+            const btnText = byId("btnText");
 
             byId("loginUrlText").textContent = LOGIN_URL;
+
+            function setLoading(isLoading) {
+                btn.disabled = isLoading;
+                spinner.style.display = isLoading ? "inline-block" : "none";
+                btnText.textContent = isLoading ? "در حال ورود..." : "ورود";
+            }
 
             function showErr(msg) {
                 errBox.style.display = "block";
@@ -257,6 +616,14 @@
                 okBox.textContent = msg;
             }
 
+            // show/hide password
+            byId("togglePass").addEventListener("click", () => {
+                const p = byId("password");
+                p.type = (p.type === "password") ? "text" : "password";
+                byId("togglePass").textContent = (p.type === "password") ? "👁️" : "🙈";
+                p.focus();
+            });
+
             async function login() {
                 const username = byId("username").value.trim();
                 const password = byId("password").value;
@@ -266,7 +633,7 @@
                     return;
                 }
 
-                byId("btnLogin").disabled = true;
+                setLoading(true);
                 showOk("در حال ورود...");
 
                 try {
@@ -291,15 +658,15 @@
                     localStorage.setItem("chat_access_token", token);
                     showOk("✅ ورود موفق. در حال انتقال به چت...");
 
-                    setTimeout(() => location.href = "./chat.html", 600);
+                    setTimeout(() => location.href = "./chat.html", 650);
                 } catch (e) {
                     showErr("❌ " + (e?.message || "خطای نامشخص"));
                 } finally {
-                    byId("btnLogin").disabled = false;
+                    setLoading(false);
                 }
             }
 
-            byId("btnLogin").addEventListener("click", login);
+            btn.addEventListener("click", login);
             document.addEventListener("keydown", (e) => {
                 if (e.key === "Enter") login();
             });

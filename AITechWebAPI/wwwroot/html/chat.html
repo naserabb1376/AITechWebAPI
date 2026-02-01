@@ -1,5 +1,4 @@
-﻿﻿
-<!doctype html>
+﻿<!doctype html>
 <html lang="fa" dir="rtl">
 <head>
     <meta charset="utf-8" />
@@ -10,262 +9,625 @@
     <script src="/lib/signalr/signalr.min.js"></script>
 
     <style>
+        /* =========================================================
+           FULL REDESIGN UI (NO JS CHANGE)
+           - Modern SaaS Chat Layout
+           - Sticky sidebar (desktop) + top bar
+           - Rich glass + gradients + real chat bubbles
+           - Strong focus/hover states
+           - Alternating message styles (purely visual)
+           ========================================================= */
+
         :root {
-            --bg: #0b1220;
-            --panel: #0f1b33;
-            --muted: #93a4c7;
-            --text: #eaf0ff;
-            --pri: #4f7cff;
-            --pri2: #22c55e;
-            --warn: #f59e0b;
-            --danger: #ef4444;
-            --border: rgba(255,255,255,.10);
-            --shadow: 0 18px 60px rgba(0,0,0,.45);
-            --radius: 18px;
-            font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+            --bg0: #050615;
+            --bg1: #070a18;
+            --bg2: #0b1024;
+            --text: #eef2ff;
+            --muted: #a9b6e6;
+            --pri: #7c5cff;
+            --pri2: #29e0a2;
+            --warn: #ffb020;
+            --danger: #ff4d6d;
+            --card: rgba(255,255,255,.06);
+            --card2: rgba(255,255,255,.09);
+            --border: rgba(255,255,255,.12);
+            --border2: rgba(255,255,255,.18);
+            --shadow: 0 28px 90px rgba(0,0,0,.60);
+            --shadow2: 0 16px 44px rgba(0,0,0,.45);
+            --r1: 14px;
+            --r2: 20px;
+            --r3: 28px;
+            --ring: 0 0 0 5px rgba(124,92,255,.16);
+            --ring2: 0 0 0 5px rgba(41,224,162,.14);
+            --grid: rgba(255,255,255,.06);
+            font-family: "Vazirmatn","IRANSans","Yekan Bakh", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        html, body {
+            height: 100%;
         }
 
         body {
             margin: 0;
-            background: radial-gradient(1200px 600px at 20% 10%, rgba(79,124,255,.22), transparent 60%), radial-gradient(1000px 500px at 90% 20%, rgba(34,197,94,.16), transparent 55%), var(--bg);
             color: var(--text);
-            min-height: 100vh;
+            background: radial-gradient(1200px 700px at 12% 10%, rgba(124,92,255,.30), transparent 58%), radial-gradient(1000px 700px at 88% 12%, rgba(41,224,162,.18), transparent 60%), radial-gradient(900px 650px at 55% 115%, rgba(255,176,32,.11), transparent 64%), linear-gradient(180deg, var(--bg0), var(--bg2));
+            overflow-x: hidden;
         }
 
-        .app {
-            width: min(1200px,100%);
-            margin: 0 auto;
-            padding: 18px;
-            display: grid;
-            grid-template-columns: 360px 1fr;
-            gap: 14px;
-        }
+            /* Ambient animated blobs */
+            body::before, body::after {
+                content: "";
+                position: fixed;
+                inset: -260px;
+                pointer-events: none;
+                background: radial-gradient(520px 420px at 20% 20%, rgba(124,92,255,.22), transparent 62%), radial-gradient(560px 460px at 80% 25%, rgba(41,224,162,.16), transparent 62%), radial-gradient(760px 540px at 55% 85%, rgba(255,77,109,.11), transparent 64%);
+                filter: blur(36px);
+                opacity: .9;
+                mix-blend-mode: screen;
+                animation: floaty 14s ease-in-out infinite alternate;
+            }
 
-        @media (max-width: 980px) {
-            .app {
-                grid-template-columns: 1fr;
+            body::after {
+                opacity: .55;
+                filter: blur(48px);
+                animation-duration: 20s;
+            }
+
+        @keyframes floaty {
+            0% {
+                transform: translate3d(0,0,0) scale(1);
+            }
+
+            100% {
+                transform: translate3d(52px,-34px,0) scale(1.05);
             }
         }
 
-        .side, .main {
-            background: rgba(15,27,51,.72);
-            border: 1px solid var(--border);
-            border-radius: var(--radius);
-            box-shadow: var(--shadow);
-            backdrop-filter: blur(10px);
+        /* Noise overlay */
+        .noise {
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            opacity: .085;
+            mix-blend-mode: overlay;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='180' height='180' filter='url(%23n)' opacity='.32'/%3E%3C/svg%3E");
         }
 
-        .side {
-            padding: 16px
+        /* Page frame */
+        .frame {
+            width: min(1280px, 100%);
+            margin: 0 auto;
+            padding: 16px;
+            position: relative;
+            z-index: 1;
         }
 
-        .main {
-            display: flex;
-            flex-direction: column;
-            overflow: hidden
-        }
-
-        .hdr {
+        /* Top bar */
+        .topbar {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            gap: 10px;
-            padding: 14px 16px;
-            border-bottom: 1px solid var(--border);
+            gap: 12px;
+            padding: 14px 14px;
+            border-radius: var(--r3);
+            border: 1px solid var(--border);
+            background: linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.03));
+            box-shadow: var(--shadow);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            overflow: hidden;
+            position: relative;
         }
 
-            .hdr h1 {
-                margin: 0;
-                font-size: 16px
+            .topbar::after {
+                content: "";
+                position: absolute;
+                inset: auto 0 0 0;
+                height: 1px;
+                background: linear-gradient(90deg, transparent, rgba(124,92,255,.55), rgba(41,224,162,.35), transparent);
+                opacity: .85;
             }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            min-width: 0;
+        }
+
+        .logo {
+            width: 40px;
+            height: 40px;
+            border-radius: 14px;
+            background: radial-gradient(22px 22px at 30% 30%, rgba(255,255,255,.22), transparent 60%), linear-gradient(135deg, rgba(124,92,255,1), rgba(41,224,162,1));
+            box-shadow: 0 18px 42px rgba(124,92,255,.25);
+            border: 1px solid rgba(255,255,255,.16);
+            flex: 0 0 auto;
+        }
+
+        .brandtxt {
+            display: flex;
+            flex-direction: column;
+            min-width: 0;
+        }
+
+            .brandtxt .t1 {
+                font-weight: 950;
+                letter-spacing: -0.2px;
+                font-size: 14px;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
+
+            .brandtxt .t2 {
+                font-size: 12px;
+                color: rgba(169,182,230,.95);
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
+
+        .topbar-right {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+            justify-content: flex-end;
+        }
 
         .pill {
             display: inline-flex;
             align-items: center;
             gap: 8px;
-            padding: 7px 10px;
+            padding: 8px 12px;
             border-radius: 999px;
             border: 1px solid var(--border);
+            background: rgba(0,0,0,.18);
             color: var(--muted);
-            font-size: 12px
+            font-size: 12px;
         }
 
         .dot {
             width: 10px;
             height: 10px;
-            border-radius: 50%;
-            background: linear-gradient(135deg,var(--pri),var(--pri2))
+            border-radius: 999px;
+            background: linear-gradient(135deg, var(--pri), var(--pri2));
+            box-shadow: 0 0 0 4px rgba(255,255,255,.05);
         }
 
             .dot.red {
-                background: linear-gradient(135deg,var(--danger),#ff7a7a)
+                background: linear-gradient(135deg, var(--danger), #ff86a0);
             }
 
             .dot.yellow {
-                background: linear-gradient(135deg,var(--warn),#ffd08a)
+                background: linear-gradient(135deg, var(--warn), #ffd08a);
             }
 
-        .box {
-            background: rgba(11,18,32,.55);
-            border: 1px solid var(--border);
-            border-radius: 16px;
-            padding: 12px;
-            margin-top: 12px
+        /* Layout grid under topbar */
+        .layout {
+            display: grid;
+            grid-template-columns: 380px 1fr;
+            gap: 14px;
+            margin-top: 14px;
         }
 
+        @media (max-width: 1020px) {
+            .layout {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Cards base */
+        .card {
+            border-radius: var(--r3);
+            border: 1px solid var(--border);
+            background: linear-gradient(180deg, rgba(255,255,255,.07), rgba(255,255,255,.03));
+            box-shadow: var(--shadow);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            overflow: hidden;
+            position: relative;
+        }
+
+            .card::before {
+                content: "";
+                position: absolute;
+                inset: -2px;
+                pointer-events: none;
+                opacity: .9;
+                background: radial-gradient(420px 260px at 20% 0%, rgba(124,92,255,.16), transparent 60%), radial-gradient(420px 260px at 85% 15%, rgba(41,224,162,.10), transparent 60%);
+            }
+
+            .card > * {
+                position: relative;
+                z-index: 1;
+            }
+
+        /* Sidebar */
+        .sidebar {
+            padding: 14px;
+        }
+
+        .sectionTitle {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            padding: 12px 12px 10px;
+            border-bottom: 1px solid rgba(255,255,255,.10);
+            background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,0));
+        }
+
+            .sectionTitle h2 {
+                margin: 0;
+                font-size: 13px;
+                font-weight: 950;
+                letter-spacing: -.2px;
+                display: flex;
+                align-items: center;
+                gap: 10px;
+            }
+
+                .sectionTitle h2::before {
+                    content: "";
+                    width: 10px;
+                    height: 10px;
+                    border-radius: 999px;
+                    background: linear-gradient(135deg, var(--pri), var(--pri2));
+                    box-shadow: 0 0 0 6px rgba(124,92,255,.13);
+                }
+
+        .sidebarBody {
+            padding: 12px;
+            display: grid;
+            gap: 12px;
+        }
+
+        .miniCard {
+            border-radius: var(--r2);
+            border: 1px solid rgba(255,255,255,.12);
+            background: rgba(0,0,0,.18);
+            box-shadow: 0 16px 44px rgba(0,0,0,.35);
+            padding: 12px;
+        }
+
+        /* Form controls */
         label {
+            display: block;
             font-size: 12px;
-            color: var(--muted)
+            color: rgba(169,182,230,.92);
+            margin-bottom: 6px;
+        }
+
+        input, select, textarea {
+            width: 100%;
+            border-radius: 16px;
+            border: 1px solid rgba(255,255,255,.14);
+            background: rgba(0,0,0,.20);
+            color: var(--text);
+            outline: none;
+            transition: box-shadow .15s ease, border-color .15s ease, transform .12s ease, background .15s ease;
         }
 
         input, select {
-            width: 100%;
-            margin-top: 6px;
-            padding: 10px 10px;
-            border-radius: 12px;
-            border: 1px solid var(--border);
-            background: rgba(11,18,32,.55);
-            color: var(--text);
-            outline: none
+            padding: 11px 12px;
         }
 
-            input:focus, select:focus {
-                border-color: rgba(79,124,255,.6);
-                box-shadow: 0 0 0 4px rgba(79,124,255,.12)
+        textarea {
+            padding: 12px 12px;
+            min-height: 56px;
+            max-height: 170px;
+            resize: vertical;
+            line-height: 1.95;
+            font-size: 14px;
+        }
+
+            input:hover, select:hover, textarea:hover {
+                border-color: rgba(255,255,255,.22);
+                background: rgba(0,0,0,.26);
             }
 
+        input:focus, select:focus {
+            border-color: rgba(124,92,255,.72);
+            box-shadow: var(--ring);
+        }
+
+        textarea:focus {
+            border-color: rgba(41,224,162,.72);
+            box-shadow: var(--ring2);
+        }
+
+        .hint {
+            font-size: 12px;
+            color: rgba(169,182,230,.92);
+            line-height: 1.9;
+        }
+
+        /* Buttons */
         .btnrow {
             display: flex;
             gap: 10px;
+            flex-wrap: wrap;
             margin-top: 10px;
-            flex-wrap: wrap
         }
 
         button {
             border: none;
             cursor: pointer;
-            border-radius: 12px;
-            padding: 10px 12px;
-            font-weight: 700;
-            color: white
+            border-radius: 16px;
+            padding: 11px 14px;
+            font-weight: 950;
+            letter-spacing: .2px;
+            color: white;
+            transition: transform .12s ease, filter .12s ease, opacity .12s ease, box-shadow .15s ease;
+            user-select: none;
+            position: relative;
+            overflow: hidden;
         }
 
+            button::after {
+                content: "";
+                position: absolute;
+                inset: 0;
+                background: radial-gradient(480px 220px at 30% 20%, rgba(255,255,255,.22), transparent 55%);
+                opacity: 0;
+                transition: opacity .15s ease;
+            }
+
+            button:hover::after {
+                opacity: 1;
+            }
+
+            button:hover {
+                transform: translateY(-1px);
+                filter: brightness(1.03);
+            }
+
+            button:active {
+                transform: translateY(0) scale(.99);
+            }
+
+            button:disabled {
+                opacity: .55;
+                cursor: not-allowed;
+                box-shadow: none;
+            }
+
         .btn {
-            background: linear-gradient(135deg, var(--pri), #7aa2ff)
+            background: linear-gradient(135deg, var(--pri), #9c86ff);
+            box-shadow: 0 16px 44px rgba(124,92,255,.26);
         }
 
         .btn2 {
-            background: linear-gradient(135deg, var(--pri2), #4ade80)
+            background: linear-gradient(135deg, var(--pri2), #61f3c9);
+            box-shadow: 0 16px 44px rgba(41,224,162,.20);
         }
 
         .btn3 {
-            background: rgba(255,255,255,.06);
-            border: 1px solid var(--border);
-            color: var(--text)
+            background: rgba(255,255,255,.07);
+            border: 1px solid rgba(255,255,255,.14);
+            color: var(--text);
+            box-shadow: none;
         }
 
-        button:disabled {
-            opacity: .55;
-            cursor: not-allowed
+            .btn3:hover {
+                background: rgba(255,255,255,.10);
+                border-color: rgba(255,255,255,.20);
+            }
+
+        /* Endpoint pills inside sidebar */
+        #endpoints .muted {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 999px;
+            border: 1px solid rgba(255,255,255,.12);
+            background: rgba(0,0,0,.16);
         }
 
-        .chat {
-            flex: 1;
+        /* Sticky sidebar on desktop */
+        @media (min-width: 1021px) {
+            .sidebar.card {
+                position: sticky;
+                top: 14px;
+                align-self: start;
+                max-height: calc(100vh - 40px);
+                overflow: auto;
+            }
+        }
+
+        /* Main chat card */
+        .chatCard {
             display: flex;
             flex-direction: column;
+            min-height: 620px;
         }
 
+        .chatHeader {
+            padding: 14px 14px;
+            border-bottom: 1px solid rgba(255,255,255,.10);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,0));
+        }
+
+            .chatHeader .title {
+                display: flex;
+                flex-direction: column;
+                gap: 3px;
+                min-width: 0;
+            }
+
+                .chatHeader .title .h {
+                    font-size: 14px;
+                    font-weight: 950;
+                    letter-spacing: -.2px;
+                    margin: 0;
+                    white-space: nowrap;
+                    overflow: hidden;
+                    text-overflow: ellipsis;
+                }
+
+                .chatHeader .title .s {
+                    font-size: 12px;
+                    color: rgba(169,182,230,.92);
+                    white-space: nowrap;
+                    overflow: hidden;
+                    text-overflow: ellipsis;
+                }
+
+        /* Load more area */
+        .loadArea {
+            padding: 12px 14px 0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        /* Messages area */
         .msgs {
             flex: 1;
-            padding: 14px 14px 0;
+            padding: 14px;
             overflow: auto;
+            position: relative;
         }
+            /* subtle grid in messages area */
+            .msgs::before {
+                content: "";
+                position: absolute;
+                inset: 0;
+                pointer-events: none;
+                opacity: .12;
+                background-image: linear-gradient(var(--grid) 1px, transparent 1px), linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+                background-size: 38px 38px;
+                mask-image: radial-gradient(ellipse at center, #000 42%, transparent 78%);
+            }
 
         .typing {
             padding: 0 16px 10px;
-            color: var(--muted);
+            color: rgba(169,182,230,.92);
             font-size: 12px;
-            min-height: 18px
+            min-height: 18px;
         }
 
+        /* Composer */
         .composer {
-            padding: 12px 14px 14px;
-            border-top: 1px solid var(--border);
+            padding: 14px;
+            border-top: 1px solid rgba(255,255,255,.10);
+            background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.02));
+            backdrop-filter: blur(14px);
+            -webkit-backdrop-filter: blur(14px);
             display: grid;
             gap: 10px;
-            background: rgba(15,27,51,.75)
         }
 
         .row2 {
             display: grid;
-            grid-template-columns: 1fr 150px;
-            gap: 10px
+            grid-template-columns: 1fr 220px;
+            gap: 10px;
+            align-items: start;
         }
 
-        @media (max-width: 720px) {
+        @media (max-width: 760px) {
             .row2 {
-                grid-template-columns: 1fr
+                grid-template-columns: 1fr;
             }
-        }
-
-        textarea {
-            width: 100%;
-            min-height: 44px;
-            max-height: 120px;
-            resize: vertical;
-            padding: 10px 12px;
-            border-radius: 12px;
-            border: 1px solid var(--border);
-            background: rgba(11,18,32,.55);
-            color: var(--text);
-            outline: none;
-            line-height: 1.7
         }
 
         .filebox {
             display: flex;
             align-items: center;
             gap: 10px;
-            flex-wrap: wrap
+            flex-wrap: wrap;
         }
 
             .filebox input[type="file"] {
-                width: auto
+                width: auto;
+                padding: 10px;
+                border-radius: 16px;
+                border: 1px dashed rgba(255,255,255,.22);
+                background: rgba(0,0,0,.16);
+                color: rgba(169,182,230,.92);
             }
 
-        .hint {
-            font-size: 12px;
-            color: var(--muted)
-        }
-
+        /* Messages bubbles */
         .msg {
             display: flex;
-            margin: 10px 0
+            margin: 12px 0;
+            position: relative;
+            z-index: 1;
         }
 
-            .msg.me {
-                justify-content: flex-start
-            }
-
+            /* JS sets always msg other, we keep it but alternate visually */
             .msg.other {
-                justify-content: flex-end
+                justify-content: flex-start;
             }
+                /* every even message looks like "me" */
+                .msg.other:nth-child(even) {
+                    justify-content: flex-end;
+                }
 
         .bubble {
-            max-width: min(560px, 92%);
-            background: rgba(11,18,32,.6);
-            border: 1px solid var(--border);
-            border-radius: 16px;
-            padding: 10px 12px;
+            max-width: min(650px, 92%);
+            border-radius: 22px;
+            padding: 12px 12px 10px;
+            border: 1px solid rgba(255,255,255,.14);
+            background: rgba(0,0,0,.20);
+            box-shadow: 0 16px 44px rgba(0,0,0,.35);
+            position: relative;
+            overflow: hidden;
+            animation: pop .22s ease-out;
         }
 
-            .bubble.me {
-                border-top-right-radius: 6px
+        @keyframes pop {
+            from {
+                transform: translateY(7px) scale(.985);
+                opacity: 0;
             }
 
-            .bubble.other {
-                border-top-left-radius: 6px;
-                background: rgba(79,124,255,.10)
+            to {
+                transform: translateY(0) scale(1);
+                opacity: 1;
+            }
+        }
+
+        /* Default bubble = incoming */
+        .bubble.other {
+            background: radial-gradient(520px 220px at 20% 0%, rgba(124,92,255,.18), transparent 60%), linear-gradient(180deg, rgba(0,0,0,.16), rgba(0,0,0,.24));
+        }
+            /* Tail incoming (left) */
+            .bubble.other::before {
+                content: "";
+                position: absolute;
+                top: 16px;
+                left: -6px;
+                width: 14px;
+                height: 14px;
+                background: rgba(0,0,0,.20);
+                border-left: 1px solid rgba(255,255,255,.14);
+                border-top: 1px solid rgba(255,255,255,.14);
+                transform: rotate(45deg);
+                border-radius: 3px;
+            }
+
+        /* Even messages = outgoing visual */
+        .msg.other:nth-child(even) .bubble.other {
+            background: radial-gradient(520px 220px at 80% 0%, rgba(41,224,162,.16), transparent 60%), linear-gradient(180deg, rgba(0,0,0,.14), rgba(0,0,0,.22));
+            border-color: rgba(255,255,255,.16);
+        }
+            /* Tail outgoing (right) */
+            .msg.other:nth-child(even) .bubble.other::before {
+                left: auto;
+                right: -6px;
+                border-left: none;
+                border-right: 1px solid rgba(255,255,255,.14);
+                border-top: 1px solid rgba(255,255,255,.14);
             }
 
         .meta {
@@ -273,172 +635,284 @@
             align-items: center;
             justify-content: space-between;
             gap: 12px;
-            margin-bottom: 6px;
+            margin-bottom: 8px;
             font-size: 12px;
-            color: var(--muted)
+            color: rgba(169,182,230,.92);
         }
 
         .name {
-            font-weight: 800;
-            color: #dbe6ff
+            font-weight: 950;
+            color: #f2f5ff;
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
 
+            .name::before {
+                content: "";
+                width: 10px;
+                height: 10px;
+                border-radius: 999px;
+                background: linear-gradient(135deg, var(--pri), var(--pri2));
+                box-shadow: 0 0 0 5px rgba(255,255,255,.05);
+                opacity: .9;
+            }
+
         .time {
-            opacity: .85
+            opacity: .9;
+            padding: 4px 8px;
+            border-radius: 999px;
+            border: 1px solid rgba(255,255,255,.12);
+            background: rgba(0,0,0,.16);
+            white-space: nowrap;
         }
 
         .text {
             white-space: pre-wrap;
-            line-height: 1.8;
-            font-size: 14px
+            line-height: 1.95;
+            font-size: 14px;
         }
 
         .att {
             margin-top: 10px;
-            padding-top: 8px;
-            border-top: 1px dashed rgba(255,255,255,.12)
+            padding-top: 10px;
+            border-top: 1px dashed rgba(255,255,255,.18);
         }
 
             .att a {
-                color: #c7d2fe;
-                text-decoration: none
+                color: #d7dcff;
+                text-decoration: none;
+                font-weight: 950;
             }
 
                 .att a:hover {
-                    text-decoration: underline
+                    text-decoration: underline;
                 }
 
         .img {
-            max-width: 260px;
-            border-radius: 12px;
+            max-width: 320px;
+            border-radius: 16px;
             display: block;
-            margin-top: 8px;
-            border: 1px solid rgba(255,255,255,.12)
+            margin-top: 10px;
+            border: 1px solid rgba(255,255,255,.14);
+            box-shadow: 0 18px 46px rgba(0,0,0,.40);
         }
 
         .seen {
-            margin-top: 6px;
+            margin-top: 10px;
             font-size: 11px;
-            color: rgba(147,164,199,.9)
+            color: rgba(169,182,230,.95);
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
         }
 
+            .seen::before {
+                content: "";
+                width: 8px;
+                height: 8px;
+                border-radius: 999px;
+                background: rgba(41,224,162,.9);
+                box-shadow: 0 0 0 4px rgba(41,224,162,.12);
+            }
+
+        /* Log panel */
         .log {
-            height: 170px;
+            height: 190px;
             overflow: auto;
             font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono";
             font-size: 12px;
-            color: #a7f3d0;
-            background: #07101f;
-            border: 1px solid rgba(255,255,255,.10);
-            border-radius: 14px;
-            padding: 10px
+            color: #baf7da;
+            background: rgba(0,0,0,.22);
+            border: 1px solid rgba(255,255,255,.12);
+            border-radius: 18px;
+            padding: 10px;
+            box-shadow: inset 0 0 0 1px rgba(255,255,255,.03);
         }
 
             .log .err {
-                color: #fecaca
+                color: #ffc9d3;
             }
 
             .log .warn {
-                color: #fde68a
+                color: #ffe1a8;
             }
 
         .muted {
-            color: var(--muted)
+            color: var(--muted);
+        }
+
+        /* Scrollbars */
+        .msgs::-webkit-scrollbar,
+        .log::-webkit-scrollbar,
+        .sidebar.card::-webkit-scrollbar {
+            width: 10px;
+            height: 10px;
+        }
+
+        .msgs::-webkit-scrollbar-thumb,
+        .log::-webkit-scrollbar-thumb,
+        .sidebar.card::-webkit-scrollbar-thumb {
+            background: rgba(255,255,255,.16);
+            border: 2px solid rgba(0,0,0,0);
+            background-clip: padding-box;
+            border-radius: 999px;
+        }
+
+            .msgs::-webkit-scrollbar-thumb:hover,
+            .log::-webkit-scrollbar-thumb:hover,
+            .sidebar.card::-webkit-scrollbar-thumb:hover {
+                background: rgba(255,255,255,.24);
+            }
+
+        /* Small responsive tweaks */
+        @media (max-width: 520px) {
+            .topbar {
+                padding: 12px;
+            }
+
+            .logo {
+                width: 36px;
+                height: 36px;
+                border-radius: 12px;
+            }
+
+            .row2 {
+                gap: 12px;
+            }
+
+            button {
+                width: 100%;
+            }
         }
     </style>
 </head>
-<body>
 
-    <div class="app">
-        <aside class="side">
-            <div class="hdr">
-                <h1>تنظیمات اتصال</h1>
+<body>
+    <div class="noise"></div>
+
+    <div class="frame">
+        <!-- TOP BAR -->
+        <header class="topbar">
+            <div class="brand">
+                <div class="logo"></div>
+                <div class="brandtxt">
+                    <div class="t1">Group Chat Console</div>
+                    <div class="t2">پنل تست SignalR + API (مرحله ۵)</div>
+                </div>
+            </div>
+
+            <div class="topbar-right">
+                <!-- keep SAME ids for JS -->
                 <span id="statusPill" class="pill">
                     <span id="statusDot" class="dot red"></span>
                     <span id="statusText">قطع</span>
                 </span>
-            </div>
 
-            <div class="box">
-                <label>حساب کاربری</label>
-                <div class="hint" style="margin-top:6px">
-                    اگر توکن وجود نداشته باشد به صفحه ورود منتقل می‌شوی.
-                </div>
-                <div class="btnrow">
-                    <button class="btn3" id="btnGoLogin">ورود</button>
-                    <button class="btn3" id="btnLogout">خروج (پاک کردن توکن)</button>
-                </div>
-                <div class="hint" id="whoami" style="margin-top:10px">کاربر: -</div>
+                <span class="pill">
+                    <span class="dot yellow"></span>
+                    <span class="muted" id="connId">conn: -</span>
+                </span>
             </div>
+        </header>
 
-            <div class="box">
-                <label>GroupId</label>
-                <input id="groupId" value="67" />
-                <div class="btnrow">
-                    <button class="btn2" id="btnJoin">JoinGroup</button>
-                    <button class="btn3" id="btnLeave" disabled>LeaveGroup</button>
-                </div>
-                <div class="hint">بعد از JoinGroup پیام‌ها و تاریخچه لود می‌شود.</div>
-            </div>
-
-            <div class="box">
-                <label>Endpoint ها</label>
-                <div class="hint" id="endpoints" style="margin-top:8px; line-height:1.9"></div>
-            </div>
-
-            <div class="box">
-                <label>لاگ</label>
-                <div id="log" class="log"></div>
-            </div>
-        </aside>
-
-        <main class="main">
-            <div class="hdr">
-                <h1>چت گروهی (مرحله 5)</h1>
-                <span class="pill"><span class="dot yellow"></span><span class="muted" id="connId">conn: -</span></span>
-            </div>
-
-            <section class="chat">
-                <div style="padding:12px 14px 0;">
-                    <button class="btn3" id="btnLoadMore" disabled>پیام‌های بیشتر</button>
-                    <span class="hint" id="loadState" style="margin-right:10px"></span>
+        <div class="layout">
+            <!-- SIDEBAR -->
+            <aside class="card sidebar">
+                <div class="sectionTitle">
+                    <h2>کنترل اتصال و گروه</h2>
                 </div>
 
-                <div id="msgs" class="msgs"></div>
-                <div id="typing" class="typing"></div>
+                <div class="sidebarBody">
+                    <div class="miniCard">
+                        <label>حساب کاربری</label>
+                        <div class="hint">
+                            اگر توکن وجود نداشته باشد به صفحه ورود منتقل می‌شوی.
+                        </div>
+                        <div class="btnrow">
+                            <button class="btn3" id="btnGoLogin">ورود</button>
+                            <button class="btn3" id="btnLogout">خروج (پاک کردن توکن)</button>
+                        </div>
+                        <div class="hint" id="whoami" style="margin-top:10px">کاربر: -</div>
+                    </div>
 
-                <div class="composer">
-                    <textarea id="text" placeholder="پیام خود را بنویسید... (Ctrl+Enter برای ارسال)"></textarea>
+                    <div class="miniCard">
+                        <label>GroupId</label>
+                        <input id="groupId" value="67" />
+                        <div class="btnrow">
+                            <button class="btn2" id="btnJoin">JoinGroup</button>
+                            <button class="btn3" id="btnLeave" disabled>LeaveGroup</button>
+                        </div>
+                        <div class="hint">بعد از JoinGroup پیام‌ها و تاریخچه لود می‌شود.</div>
+                    </div>
 
-                    <div class="row2">
-                        <div class="filebox">
-                            <input id="file" type="file" />
-                            <!--<select id="fileType">
-                                <option value="auto">خودکار</option>
-                                <option value="images">images</option>
-                                <option value="files">files</option>
-                            </select>-->
+                    <div class="miniCard">
+                        <label>Endpoint ها</label>
+                        <div class="hint" id="endpoints" style="margin-top:8px; line-height:1.9"></div>
+                    </div>
 
-                            <!--<label style="display:flex; align-items:center; gap:8px; margin:0; color:var(--muted); font-size:12px">
-                                <input id="isPublic" type="checkbox" checked />
-                                عمومی (MVP)
-                            </label>
-                        </div>-->
+                    <div class="miniCard">
+                        <label>لاگ</label>
+                        <div id="log" class="log"></div>
+                    </div>
+                </div>
+            </aside>
 
-                        <div class="btnrow" style="justify-content:flex-start">
-                            <button class="btn" id="btnSend">Send</button>
-                            <button class="btn2" id="btnSendFile">Send + File</button>
+            <!-- MAIN CHAT -->
+            <main class="card chatCard">
+                <div class="chatHeader">
+                    <div class="title">
+                        <div class="h">گفتگوی گروهی</div>
+                        <div class="s">ارسال پیام، فایل، Seen و Typing (بدون تغییر عملکرد)</div>
+                    </div>
+                    <!-- (conn pill already topbar; keep header clean) -->
+                </div>
+
+                <section class="chat" style="display:flex; flex-direction:column; flex:1;">
+                    <div class="loadArea">
+                        <button class="btn3" id="btnLoadMore" disabled>پیام‌های بیشتر</button>
+                        <span class="hint" id="loadState" style="margin-right:10px"></span>
+                    </div>
+
+                    <!-- keep SAME ids for JS -->
+                    <div id="msgs" class="msgs"></div>
+                    <div id="typing" class="typing"></div>
+
+                    <div class="composer">
+                        <textarea id="text" placeholder="پیام خود را بنویسید... (Ctrl+Enter برای ارسال)"></textarea>
+
+                        <div class="row2">
+                            <div class="filebox">
+                                <input id="file" type="file" />
+                                <!--
+                                <select id="fileType">
+                                    <option value="auto">خودکار</option>
+                                    <option value="images">images</option>
+                                    <option value="files">files</option>
+                                </select>
+
+                                <label style="display:flex; align-items:center; gap:8px; margin:0; color:var(--muted); font-size:12px">
+                                    <input id="isPublic" type="checkbox" checked />
+                                    عمومی (MVP)
+                                </label>
+                                -->
+                            </div>
+
+                            <div class="btnrow" style="justify-content:flex-start; margin-top:0;">
+                                <button class="btn" id="btnSend">Send</button>
+                                <button class="btn2" id="btnSendFile">Send + File</button>
+                            </div>
+                        </div>
+
+                        <div class="hint">
+                            ✅ بعد از JoinGroup تاریخچه از API شما لود می‌شود |
+                            ✅ Seen: وقتی پایین را ببینی Seen ارسال می‌شود |
+                            ✅ Typing: با تایپ برای بقیه “در حال تایپ…” می‌رود
                         </div>
                     </div>
-
-                    <div class="hint">
-                        ✅ بعد از JoinGroup تاریخچه از API شما لود می‌شود |
-                        ✅ Seen: وقتی پایین را ببینی Seen ارسال می‌شود |
-                        ✅ Typing: با تایپ برای بقیه “در حال تایپ…” می‌رود
-                    </div>
-                </div>
-            </section>
-        </main>
+                </section>
+            </main>
+        </div>
     </div>
 
     <script>
@@ -573,10 +1047,10 @@
                 "کاربر: " + (payload?.unique_name || payload?.name || payload?.sub || "—");
 
             byId("endpoints").innerHTML = `
-            Hub: <span class="muted">${HUB_URL}</span><br/>
-            Send+File: <span class="muted">${SEND_WITH_ATTACHMENT_URL}</span><br/>
-            History: <span class="muted">${GET_ALL_MESSAGES_URL}</span>
-          `;
+                Hub: <span class="muted">${HUB_URL}</span><br/>
+                Send+File: <span class="muted">${SEND_WITH_ATTACHMENT_URL}</span><br/>
+                History: <span class="muted">${GET_ALL_MESSAGES_URL}</span>
+              `;
 
             // =========================
             // State
@@ -978,15 +1452,7 @@
                 if (!file) return log("فایل انتخاب نشده.", "warn");
 
                 const messageText = byId("text").value.trim();
-                //const isPublic = byId("isPublic").checked;
-
-                //let ft = byId("fileType").value;
-                //if (ft === "auto") {
-                //    ft = file.type.startsWith("image/") ? "images" : "files";
-                //}
-
                 const ft = file.type.startsWith("image/") ? "images" : "files";
-
 
                 try {
                     const form = new FormData();
@@ -1040,7 +1506,6 @@
                     await ensureConnected();
                     await joinGroup(gid);
                 } finally {
-                    // اگر join موفق شد، Leave فعال می‌مونه، Join رو هم می‌تونی دوباره فعال کنی
                     byId("btnJoin").disabled = false;
                 }
             });
@@ -1074,6 +1539,5 @@
             log("History URL: " + GET_ALL_MESSAGES_URL);
         })();
     </script>
-
 </body>
 </html>
