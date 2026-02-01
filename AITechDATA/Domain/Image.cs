@@ -17,5 +17,7 @@ namespace AITechDATA.Domain
         public long CreatorId { get; set; } = 0; // کاربر ایجاد کننده
         public int? Priority { get; set; }
         public string? GetUrl { get; set; } // لینک دانلود
+        public string? Tag { get; set; }
+        public string? Note { get; set; }
     }
 }

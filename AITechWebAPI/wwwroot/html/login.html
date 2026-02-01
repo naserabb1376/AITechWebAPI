@@ -1,0 +1,309 @@
+﻿<!doctype html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>ورود | چت گروهی</title>
+    <style>
+        :root {
+            --bg: #0b1220;
+            --card: #0f1b33;
+            --muted: #93a4c7;
+            --text: #eaf0ff;
+            --pri: #4f7cff;
+            --pri2: #22c55e;
+            --danger: #ef4444;
+            --border: rgba(255,255,255,.10);
+            --shadow: 0 18px 60px rgba(0,0,0,.45);
+            --radius: 18px;
+            font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+        }
+
+        body {
+            margin: 0;
+            background: radial-gradient(1200px 600px at 20% 10%, rgba(79,124,255,.25), transparent 60%), radial-gradient(1000px 500px at 90% 20%, rgba(34,197,94,.18), transparent 55%), var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            display: grid;
+            place-items: center;
+            padding: 24px;
+        }
+
+        .wrap {
+            width: min(980px,100%);
+            display: grid;
+            grid-template-columns: 1.1fr .9fr;
+            gap: 18px;
+        }
+
+        @media (max-width: 880px) {
+            .wrap {
+                grid-template-columns: 1fr
+            }
+        }
+
+        .hero, .card {
+            background: rgba(15,27,51,.72);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            backdrop-filter: blur(10px);
+        }
+
+        .hero {
+            padding: 28px;
+            position: relative;
+            overflow: hidden;
+        }
+
+            .hero h1 {
+                margin: 0 0 10px;
+                font-size: 28px
+            }
+
+            .hero p {
+                margin: 0;
+                color: var(--muted);
+                line-height: 1.9
+            }
+
+        .badge {
+            display: inline-flex;
+            gap: 8px;
+            align-items: center;
+            padding: 8px 12px;
+            border: 1px solid var(--border);
+            border-radius: 999px;
+            color: var(--muted);
+            margin-top: 14px;
+            font-size: 13px
+        }
+
+        .dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: linear-gradient(135deg,var(--pri),var(--pri2))
+        }
+
+        .card {
+            padding: 22px
+        }
+
+        .title {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            margin-bottom: 14px
+        }
+
+            .title h2 {
+                margin: 0;
+                font-size: 18px
+            }
+
+        .sub {
+            color: var(--muted);
+            font-size: 13px;
+            margin-top: 4px
+        }
+
+        .row {
+            display: grid;
+            gap: 10px;
+            margin: 12px 0
+        }
+
+        label {
+            font-size: 13px;
+            color: var(--muted)
+        }
+
+        input {
+            width: 100%;
+            padding: 12px 12px;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            background: rgba(11,18,32,.55);
+            color: var(--text);
+            outline: none
+        }
+
+            input:focus {
+                border-color: rgba(79,124,255,.6);
+                box-shadow: 0 0 0 4px rgba(79,124,255,.12)
+            }
+
+        .btn {
+            width: 100%;
+            padding: 12px 14px;
+            border-radius: 12px;
+            border: none;
+            cursor: pointer;
+            background: linear-gradient(135deg, var(--pri), #7aa2ff);
+            color: white;
+            font-weight: 700
+        }
+
+            .btn:disabled {
+                opacity: .55;
+                cursor: not-allowed
+            }
+
+        .msg {
+            margin-top: 10px;
+            font-size: 13px;
+            color: var(--muted);
+            line-height: 1.8
+        }
+
+        .err {
+            color: #fecaca;
+            background: rgba(239,68,68,.12);
+            border: 1px solid rgba(239,68,68,.25);
+            padding: 10px 12px;
+            border-radius: 12px;
+            margin-top: 10px;
+            display: none
+        }
+
+        .ok {
+            color: #bbf7d0;
+            background: rgba(34,197,94,.10);
+            border: 1px solid rgba(34,197,94,.25);
+            padding: 10px 12px;
+            border-radius: 12px;
+            margin-top: 10px;
+            display: none
+        }
+
+        .small {
+            font-size: 12px;
+            color: var(--muted);
+            margin-top: 10px
+        }
+
+        code {
+            color: #c7d2fe
+        }
+    </style>
+</head>
+<body>
+    <div class="wrap">
+        <section class="hero">
+            <h1>ورود به چت گروهی</h1>
+            <p>
+                این صفحه با API لاگین آموزشگاه کار می‌کند و بعد از ورود، شما را وارد محیط تست چت می‌کند.
+                توکن دریافتی به‌صورت امن در <code>localStorage</code> ذخیره می‌شود.
+            </p>
+            <div class="badge"><span class="dot"></span> LoginType = 1 (طبق درخواست شما)</div>
+            <div class="small" style="margin-top:14px">
+                اگر قبلاً لاگین کرده‌ای: <a href="./chat.html" style="color:#c7d2fe">برو به چت</a>
+            </div>
+        </section>
+
+        <section class="card">
+            <div class="title">
+                <div>
+                    <h2>ورود</h2>
+                    <div class="sub">نام کاربری و رمز را وارد کنید</div>
+                </div>
+            </div>
+
+            <div class="row">
+                <label>نام کاربری</label>
+                <input id="username" placeholder="مثلاً 0935..." autocomplete="username" />
+            </div>
+
+            <div class="row">
+                <label>رمز عبور</label>
+                <input id="password" type="password" placeholder="••••••••" autocomplete="current-password" />
+            </div>
+
+            <button id="btnLogin" class="btn">ورود</button>
+
+            <div id="ok" class="ok"></div>
+            <div id="err" class="err"></div>
+
+            <div class="msg">
+                مسیر لاگین: <code id="loginUrlText">/Authentication/Authenticate</code><br />
+                توکن در مرورگر ذخیره می‌شود و در SignalR استفاده می‌گردد.
+            </div>
+        </section>
+    </div>
+
+    <script>
+        (() => {
+            // ===== CONFIG =====
+            const BASE_URL = ""; // مثال: "https://localhost:44375"
+            const LOGIN_URL = BASE_URL + "/Authentication/Authenticate";
+
+            const byId = (id) => document.getElementById(id);
+            const errBox = byId("err");
+            const okBox = byId("ok");
+
+            byId("loginUrlText").textContent = LOGIN_URL;
+
+            function showErr(msg) {
+                errBox.style.display = "block";
+                okBox.style.display = "none";
+                errBox.textContent = msg;
+            }
+
+            function showOk(msg) {
+                okBox.style.display = "block";
+                errBox.style.display = "none";
+                okBox.textContent = msg;
+            }
+
+            async function login() {
+                const username = byId("username").value.trim();
+                const password = byId("password").value;
+
+                if (!username || !password) {
+                    showErr("نام کاربری و رمز عبور الزامی است.");
+                    return;
+                }
+
+                byId("btnLogin").disabled = true;
+                showOk("در حال ورود...");
+
+                try {
+                    const body = { userName: username, password, loginType: 1 };
+
+                    const res = await fetch(LOGIN_URL, {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify(body)
+                    });
+
+                    const data = await res.json().catch(() => null);
+
+                    if (!res.ok) {
+                        const msg = (data && (data.message || data.errorMessage)) || `خطا در ورود (${res.status})`;
+                        throw new Error(msg);
+                    }
+
+                    const token = data?.result.accessToken || data?.result.AccessToken;
+                    if (!token) throw new Error("توکن دریافت نشد. خروجی API را بررسی کنید.");
+
+                    localStorage.setItem("chat_access_token", token);
+                    showOk("✅ ورود موفق. در حال انتقال به چت...");
+
+                    setTimeout(() => location.href = "./chat.html", 600);
+                } catch (e) {
+                    showErr("❌ " + (e?.message || "خطای نامشخص"));
+                } finally {
+                    byId("btnLogin").disabled = false;
+                }
+            }
+
+            byId("btnLogin").addEventListener("click", login);
+            document.addEventListener("keydown", (e) => {
+                if (e.key === "Enter") login();
+            });
+        })();
+    </script>
+</body>
+</html>

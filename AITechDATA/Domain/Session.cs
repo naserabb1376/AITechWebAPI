@@ -10,6 +10,7 @@ namespace AITechDATA.Domain
     public class Session : BaseEntity
     {
         public long GroupId { get; set; } // کلید خارجی به Group
+        public string? Description { get; set; } 
         public Group Group { get; set; } // ارتباط با Group
         public DateTime SessionDate { get; set; } // تاریخ برگزاری جلسه
         public ICollection<Attendance> Attendances { get; set; } // حضور و غیاب مرتبط با جلسه

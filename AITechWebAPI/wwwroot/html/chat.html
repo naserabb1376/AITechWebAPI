@@ -1,0 +1,1075 @@
+﻿<!doctype html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>تست چت گروهی | مرحله 5</title>
+
+    <!-- SignalR CDN -->
+    <script src="/lib/signalr/signalr.min.js"></script>
+
+    <style>
+        :root {
+            --bg: #0b1220;
+            --panel: #0f1b33;
+            --muted: #93a4c7;
+            --text: #eaf0ff;
+            --pri: #4f7cff;
+            --pri2: #22c55e;
+            --warn: #f59e0b;
+            --danger: #ef4444;
+            --border: rgba(255,255,255,.10);
+            --shadow: 0 18px 60px rgba(0,0,0,.45);
+            --radius: 18px;
+            font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+        }
+
+        body {
+            margin: 0;
+            background: radial-gradient(1200px 600px at 20% 10%, rgba(79,124,255,.22), transparent 60%), radial-gradient(1000px 500px at 90% 20%, rgba(34,197,94,.16), transparent 55%), var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+        }
+
+        .app {
+            width: min(1200px,100%);
+            margin: 0 auto;
+            padding: 18px;
+            display: grid;
+            grid-template-columns: 360px 1fr;
+            gap: 14px;
+        }
+
+        @media (max-width: 980px) {
+            .app {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .side, .main {
+            background: rgba(15,27,51,.72);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            backdrop-filter: blur(10px);
+        }
+
+        .side {
+            padding: 16px
+        }
+
+        .main {
+            display: flex;
+            flex-direction: column;
+            overflow: hidden
+        }
+
+        .hdr {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            padding: 14px 16px;
+            border-bottom: 1px solid var(--border);
+        }
+
+            .hdr h1 {
+                margin: 0;
+                font-size: 16px
+            }
+
+        .pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 7px 10px;
+            border-radius: 999px;
+            border: 1px solid var(--border);
+            color: var(--muted);
+            font-size: 12px
+        }
+
+        .dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: linear-gradient(135deg,var(--pri),var(--pri2))
+        }
+
+            .dot.red {
+                background: linear-gradient(135deg,var(--danger),#ff7a7a)
+            }
+
+            .dot.yellow {
+                background: linear-gradient(135deg,var(--warn),#ffd08a)
+            }
+
+        .box {
+            background: rgba(11,18,32,.55);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 12px;
+            margin-top: 12px
+        }
+
+        label {
+            font-size: 12px;
+            color: var(--muted)
+        }
+
+        input, select {
+            width: 100%;
+            margin-top: 6px;
+            padding: 10px 10px;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            background: rgba(11,18,32,.55);
+            color: var(--text);
+            outline: none
+        }
+
+            input:focus, select:focus {
+                border-color: rgba(79,124,255,.6);
+                box-shadow: 0 0 0 4px rgba(79,124,255,.12)
+            }
+
+        .btnrow {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+            flex-wrap: wrap
+        }
+
+        button {
+            border: none;
+            cursor: pointer;
+            border-radius: 12px;
+            padding: 10px 12px;
+            font-weight: 700;
+            color: white
+        }
+
+        .btn {
+            background: linear-gradient(135deg, var(--pri), #7aa2ff)
+        }
+
+        .btn2 {
+            background: linear-gradient(135deg, var(--pri2), #4ade80)
+        }
+
+        .btn3 {
+            background: rgba(255,255,255,.06);
+            border: 1px solid var(--border);
+            color: var(--text)
+        }
+
+        button:disabled {
+            opacity: .55;
+            cursor: not-allowed
+        }
+
+        .chat {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .msgs {
+            flex: 1;
+            padding: 14px 14px 0;
+            overflow: auto;
+        }
+
+        .typing {
+            padding: 0 16px 10px;
+            color: var(--muted);
+            font-size: 12px;
+            min-height: 18px
+        }
+
+        .composer {
+            padding: 12px 14px 14px;
+            border-top: 1px solid var(--border);
+            display: grid;
+            gap: 10px;
+            background: rgba(15,27,51,.75)
+        }
+
+        .row2 {
+            display: grid;
+            grid-template-columns: 1fr 150px;
+            gap: 10px
+        }
+
+        @media (max-width: 720px) {
+            .row2 {
+                grid-template-columns: 1fr
+            }
+        }
+
+        textarea {
+            width: 100%;
+            min-height: 44px;
+            max-height: 120px;
+            resize: vertical;
+            padding: 10px 12px;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            background: rgba(11,18,32,.55);
+            color: var(--text);
+            outline: none;
+            line-height: 1.7
+        }
+
+        .filebox {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap
+        }
+
+            .filebox input[type="file"] {
+                width: auto
+            }
+
+        .hint {
+            font-size: 12px;
+            color: var(--muted)
+        }
+
+        .msg {
+            display: flex;
+            margin: 10px 0
+        }
+
+            .msg.me {
+                justify-content: flex-start
+            }
+
+            .msg.other {
+                justify-content: flex-end
+            }
+
+        .bubble {
+            max-width: min(560px, 92%);
+            background: rgba(11,18,32,.6);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 10px 12px;
+        }
+
+            .bubble.me {
+                border-top-right-radius: 6px
+            }
+
+            .bubble.other {
+                border-top-left-radius: 6px;
+                background: rgba(79,124,255,.10)
+            }
+
+        .meta {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            margin-bottom: 6px;
+            font-size: 12px;
+            color: var(--muted)
+        }
+
+        .name {
+            font-weight: 800;
+            color: #dbe6ff
+        }
+
+        .time {
+            opacity: .85
+        }
+
+        .text {
+            white-space: pre-wrap;
+            line-height: 1.8;
+            font-size: 14px
+        }
+
+        .att {
+            margin-top: 10px;
+            padding-top: 8px;
+            border-top: 1px dashed rgba(255,255,255,.12)
+        }
+
+            .att a {
+                color: #c7d2fe;
+                text-decoration: none
+            }
+
+                .att a:hover {
+                    text-decoration: underline
+                }
+
+        .img {
+            max-width: 260px;
+            border-radius: 12px;
+            display: block;
+            margin-top: 8px;
+            border: 1px solid rgba(255,255,255,.12)
+        }
+
+        .seen {
+            margin-top: 6px;
+            font-size: 11px;
+            color: rgba(147,164,199,.9)
+        }
+
+        .log {
+            height: 170px;
+            overflow: auto;
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono";
+            font-size: 12px;
+            color: #a7f3d0;
+            background: #07101f;
+            border: 1px solid rgba(255,255,255,.10);
+            border-radius: 14px;
+            padding: 10px
+        }
+
+            .log .err {
+                color: #fecaca
+            }
+
+            .log .warn {
+                color: #fde68a
+            }
+
+        .muted {
+            color: var(--muted)
+        }
+    </style>
+</head>
+<body>
+
+    <div class="app">
+        <aside class="side">
+            <div class="hdr">
+                <h1>تنظیمات اتصال</h1>
+                <span id="statusPill" class="pill">
+                    <span id="statusDot" class="dot red"></span>
+                    <span id="statusText">قطع</span>
+                </span>
+            </div>
+
+            <div class="box">
+                <label>حساب کاربری</label>
+                <div class="hint" style="margin-top:6px">
+                    اگر توکن وجود نداشته باشد به صفحه ورود منتقل می‌شوی.
+                </div>
+                <div class="btnrow">
+                    <button class="btn3" id="btnGoLogin">ورود</button>
+                    <button class="btn3" id="btnLogout">خروج (پاک کردن توکن)</button>
+                </div>
+                <div class="hint" id="whoami" style="margin-top:10px">کاربر: -</div>
+            </div>
+
+            <div class="box">
+                <label>GroupId</label>
+                <input id="groupId" value="67" />
+                <div class="btnrow">
+                    <button class="btn2" id="btnJoin">JoinGroup</button>
+                    <button class="btn3" id="btnLeave" disabled>LeaveGroup</button>
+                </div>
+                <div class="hint">بعد از JoinGroup پیام‌ها و تاریخچه لود می‌شود.</div>
+            </div>
+
+            <div class="box">
+                <label>Endpoint ها</label>
+                <div class="hint" id="endpoints" style="margin-top:8px; line-height:1.9"></div>
+            </div>
+
+            <div class="box">
+                <label>لاگ</label>
+                <div id="log" class="log"></div>
+            </div>
+        </aside>
+
+        <main class="main">
+            <div class="hdr">
+                <h1>چت گروهی (مرحله 5)</h1>
+                <span class="pill"><span class="dot yellow"></span><span class="muted" id="connId">conn: -</span></span>
+            </div>
+
+            <section class="chat">
+                <div style="padding:12px 14px 0;">
+                    <button class="btn3" id="btnLoadMore" disabled>پیام‌های بیشتر</button>
+                    <span class="hint" id="loadState" style="margin-right:10px"></span>
+                </div>
+
+                <div id="msgs" class="msgs"></div>
+                <div id="typing" class="typing"></div>
+
+                <div class="composer">
+                    <textarea id="text" placeholder="پیام خود را بنویسید... (Ctrl+Enter برای ارسال)"></textarea>
+
+                    <div class="row2">
+                        <div class="filebox">
+                            <input id="file" type="file" />
+                            <select id="fileType">
+                                <option value="auto">خودکار</option>
+                                <option value="images">images</option>
+                                <option value="files">files</option>
+                            </select>
+
+                            <label style="display:flex; align-items:center; gap:8px; margin:0; color:var(--muted); font-size:12px">
+                                <input id="isPublic" type="checkbox" checked />
+                                عمومی (MVP)
+                            </label>
+                        </div>
+
+                        <div class="btnrow" style="justify-content:flex-start">
+                            <button class="btn" id="btnSend">Send</button>
+                            <button class="btn2" id="btnSendFile">Send + File</button>
+                        </div>
+                    </div>
+
+                    <div class="hint">
+                        ✅ بعد از JoinGroup تاریخچه از API شما لود می‌شود |
+                        ✅ Seen: وقتی پایین را ببینی Seen ارسال می‌شود |
+                        ✅ Typing: با تایپ برای بقیه “در حال تایپ…” می‌رود
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script>
+        (() => {
+            // =========================
+            // CONFIG
+            // =========================
+            const BASE_URL = ""; // مثال: "https://localhost:44375"
+            const HUB_URL = BASE_URL + "/hubs/group-chat";
+
+            // REST: آپلود و ساخت پیام (که خودت پیاده کردی)
+            const SEND_WITH_ATTACHMENT_URL = BASE_URL + "/GroupChatMessage/send-with-attachment";
+
+            // REST: تاریخچه پیام‌های گروه (Swagger)
+            const GET_ALL_MESSAGES_URL = BASE_URL + "/GroupChatMessage/GetAllGroupChatMessages_Base";
+
+            const PAGE_SIZE = 30;
+
+            // Hub method names
+            const M_JOIN = "JoinGroup";
+            const M_LEAVE = "LeaveGroup";
+            const M_SEND = "SendMessage";
+            const M_SEEN = "Seen";
+            const M_TYPING = "Typing";
+            const M_ATTACH = "AttachFile";
+
+            // Hub event names
+            const E_MSG = "MessageReceived";
+            const E_ATTACH_UPDATED = "MessageAttachmentUpdated";
+            const E_SEEN_UPDATED = "SeenUpdated";
+            const E_TYPING = "Typing";
+
+            // =========================
+            // Helpers
+            // =========================
+            const byId = (id) => document.getElementById(id);
+
+            const logEl = byId("log");
+            const msgsEl = byId("msgs");
+            const typingEl = byId("typing");
+            const loadBtn = byId("btnLoadMore");
+            const loadState = byId("loadState");
+
+            function log(msg, type = "ok") {
+                const div = document.createElement("div");
+                div.className = type === "err" ? "err" : (type === "warn" ? "warn" : "");
+                div.textContent = `[${new Date().toLocaleTimeString()}] ${msg}`;
+                logEl.appendChild(div);
+                logEl.scrollTop = logEl.scrollHeight;
+            }
+
+            function setStatus(state) {
+                const dot = byId("statusDot");
+                const text = byId("statusText");
+                if (state === "connected") { dot.className = "dot"; text.textContent = "متصل"; }
+                else if (state === "connecting") { dot.className = "dot yellow"; text.textContent = "در حال اتصال"; }
+                else { dot.className = "dot red"; text.textContent = "قطع"; }
+            }
+
+            function decodeJwtPayload(t) {
+                try {
+                    const payload = t.split(".")[1];
+                    const json = atob(payload.replace(/-/g, '+').replace(/_/g, '/'));
+                    return JSON.parse(decodeURIComponent(escape(json)));
+                } catch { return null; }
+            }
+
+            function formatTime(d) {
+                try {
+                    if (!d) return "";
+                    const dt = new Date(d);
+                    if (isNaN(dt.getTime())) return "";
+                    return dt.toLocaleTimeString("fa-IR", { hour: '2-digit', minute: '2-digit' });
+                } catch { return "" }
+            }
+
+            function authHeader() {
+                return { Authorization: `Bearer ${localStorage.getItem("chat_access_token")}` };
+            }
+
+            // پیام‌های ورودی از API (نتیجه GetAllGroupChatMessages_Base)
+            function normalizeMsgFromApi(m) {
+                if (!m) return null;
+                const id = m.id ?? m.Id;
+
+                const senderName =
+                    (m.firstName || m.FirstName || "") + " " + (m.lastName || m.LastName || "");
+
+                return {
+                    id,
+                    groupId: m.groupId ?? m.GroupId,
+                    senderUserId: m.senderUserId ?? m.SenderUserId,
+                    senderName: (senderName.trim() || m.username || m.Username || ("User#" + (m.senderUserId ?? m.SenderUserId))),
+                    text: m.text ?? m.Text ?? "",
+                    sentAt: m.sentAt ?? m.SentAt,
+                    attachmentUrl: m.attachmentUrl ?? m.AttachmentUrl,
+                    attachmentName: m.attachmentName ?? m.AttachmentName,
+                    attachmentSize: m.attachmentSize ?? m.AttachmentSize,
+                    attachmentType: m.attachmentType ?? m.AttachmentType
+                };
+            }
+
+            // پیام‌های ورودی از Hub (DTO های SignalR)
+            function normalizeMsgFromHub(m) {
+                if (!m) return null;
+                const id = m.id ?? m.Id;
+                return {
+                    id,
+                    groupId: m.groupId ?? m.GroupId,
+                    senderUserId: m.senderUserId ?? m.SenderUserId,
+                    senderName: m.senderName ?? m.SenderName ?? ("User#" + (m.senderUserId ?? m.SenderUserId)),
+                    text: m.text ?? m.Text ?? "",
+                    sentAt: m.sentAt ?? m.SentAt,
+                    attachmentUrl: m.attachmentUrl ?? m.AttachmentUrl,
+                    attachmentName: m.attachmentName ?? m.AttachmentName,
+                    attachmentSize: m.attachmentSize ?? m.AttachmentSize,
+                    attachmentType: m.attachmentType ?? m.AttachmentType
+                };
+            }
+
+            // =========================
+            // Auth check
+            // =========================
+            const token = localStorage.getItem("chat_access_token");
+            if (!token) {
+                location.href = "./login.html";
+                return;
+            }
+
+            const payload = decodeJwtPayload(token);
+            byId("whoami").textContent =
+                "کاربر: " + (payload?.unique_name || payload?.name || payload?.sub || "—");
+
+            byId("endpoints").innerHTML = `
+        Hub: <span class="muted">${HUB_URL}</span><br/>
+        Send+File: <span class="muted">${SEND_WITH_ATTACHMENT_URL}</span><br/>
+        History: <span class="muted">${GET_ALL_MESSAGES_URL}</span>
+      `;
+
+            // =========================
+            // State
+            // =========================
+            let connection = null;
+            let currentGroupId = null;
+
+            let messages = [];
+            let seenMap = new Map();
+            let typingUsers = new Map();
+
+            // paging
+            let pageIndex = 1;     // 1-based
+            let hasMore = true;
+            let isLoadingMessages = false;
+
+            // =========================
+            // Load previous messages (POST + results)
+            // =========================
+            async function loadMessages(reset = false) {
+                if (!currentGroupId) return;
+                if (isLoadingMessages) return;
+                isLoadingMessages = true;
+
+                try {
+                    loadBtn.disabled = true;
+                    loadState.textContent = reset ? "در حال بارگذاری پیام‌ها..." : "در حال دریافت پیام‌های قدیمی‌تر...";
+
+                    const body = {
+                        pageIndex: reset ? 1 : pageIndex,
+                        pageSize: PAGE_SIZE,
+                        searchText: "",
+                        sortQuery: "",
+                        lang: "fa",
+                        groupId: currentGroupId,
+                        senderUserId: 0,
+                        replyToMessageId: 0,
+                        withDeleted: false
+                    };
+
+                    const res = await fetch(GET_ALL_MESSAGES_URL, {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json",
+                            ...authHeader()
+                        },
+                        body: JSON.stringify(body)
+                    });
+
+                    const data = await res.json().catch(() => null);
+
+                    if (!res.ok || !data) {
+                        const msg =
+                            (data && (data.message || data.errorMessage)) ||
+                            `خطا در دریافت پیام‌ها (${res.status})`;
+                        throw new Error(msg);
+                    }
+
+                    if (data.status === false) {
+                        throw new Error(data.errorMessage || "خطا در دریافت پیام‌ها");
+                    }
+
+                    const rawList = data.results || [];
+                    const list = rawList.map(normalizeMsgFromApi).filter(Boolean);
+
+                    if (list.length < PAGE_SIZE) hasMore = false;
+
+                    // API شما معمولاً newest-first می‌دهد، برای UI باید قدیمی→جدید
+                    list.reverse();
+
+                    if (reset) {
+                        messages = list;
+                        pageIndex = 2; // صفحه بعد
+                    } else {
+                        messages = [...list, ...messages];
+                        pageIndex += 1;
+                    }
+
+                    renderMessages(reset ? "reset" : "prepend");
+                    log(`Messages loaded ✅ (count=${list.length}, hasMore=${hasMore})`);
+
+                    if (reset) {
+                        msgsEl.scrollTop = msgsEl.scrollHeight;
+                    }
+                } catch (e) {
+                    log("LoadMessages error: " + (e?.message || e), "err");
+                } finally {
+                    isLoadingMessages = false;
+                    loadBtn.disabled = !hasMore;
+                    loadState.textContent = hasMore ? "" : "✅ پیام قدیمی‌تری وجود ندارد";
+                }
+            }
+
+            // =========================
+            // SignalR
+            // =========================
+            async function connect() {
+                try {
+                    setStatus("connecting");
+                    log("در حال ساخت Connection...");
+
+                    connection = new signalR.HubConnectionBuilder()
+                        .withUrl(HUB_URL, { accessTokenFactory: () => localStorage.getItem("chat_access_token") })
+                        .withAutomaticReconnect()
+                        .configureLogging(signalR.LogLevel.Information)
+                        .build();
+
+                    connection.onclose((err) => {
+                        setStatus("disconnected");
+                        log("Connection بسته شد: " + (err?.message || ""), "warn");
+                    });
+
+                    connection.onreconnecting((err) => {
+                        setStatus("connecting");
+                        log("reconnecting... " + (err?.message || ""), "warn");
+                    });
+
+                    connection.onreconnected((id) => {
+                        setStatus("connected");
+                        byId("connId").textContent = "conn: " + (id || "-");
+                        log("reconnected ✅ (connId=" + id + ")");
+                        if (currentGroupId) joinGroup(currentGroupId, true);
+                    });
+
+                    // events
+                    connection.on(E_MSG, (msg) => upsertMessageFromHub(msg));
+                    connection.on(E_ATTACH_UPDATED, (msg) => upsertMessageFromHub(msg));
+                    connection.on(E_SEEN_UPDATED, (p) => applySeenUpdate(p));
+                    connection.on(E_TYPING, (p) => applyTyping(p));
+
+                    await connection.start();
+
+                    setStatus("connected");
+                    log("Connected ✅");
+                    byId("connId").textContent = "conn: " + (connection.connectionId || "-");
+
+                } catch (e) {
+                    setStatus("disconnected");
+                    log("Connect error: " + (e?.message || e), "err");
+                }
+            }
+
+            async function ensureConnected() {
+                if (!connection) {
+                    await connect();
+                    return;
+                }
+
+                const state = connection.state; // Disconnected / Connecting / Connected / Reconnecting
+                if (state === signalR.HubConnectionState.Disconnected) {
+                    await connect();
+                }
+            }
+
+
+            async function joinGroup(groupId, silent = false) {
+                if (!connection) return;
+                try {
+                    currentGroupId = groupId;
+
+                    // reset paging + ui
+                    pageIndex = 1;
+                    hasMore = true;
+                    messages = [];
+                    renderMessages("reset");
+                    loadBtn.disabled = true;
+                    loadState.textContent = "در حال ورود به گروه...";
+
+                    await connection.invoke(M_JOIN, groupId);
+
+                    byId("btnLeave").disabled = false;
+                    if (!silent) log("Joined group: " + groupId);
+
+                    // ✅ load history
+                    await loadMessages(true);
+
+                    // enable load more if exists
+                    loadBtn.disabled = !hasMore;
+
+                    // send seen after load
+                    maybeMarkSeen();
+                } catch (e) {
+                    log("JoinGroup error: " + (e?.message || e), "err");
+                    loadState.textContent = "";
+                }
+            }
+
+            async function leaveGroup() {
+                if (!connection || !currentGroupId) return;
+                try {
+                    await connection.invoke(M_LEAVE, currentGroupId);
+                    log("Left group: " + currentGroupId);
+
+                    currentGroupId = null;
+                    byId("btnLeave").disabled = true;
+
+                    messages = [];
+                    renderMessages("reset");
+                    typingEl.textContent = "";
+                    loadBtn.disabled = true;
+                    loadState.textContent = "";
+                } catch (e) {
+                    log("LeaveGroup error: " + (e?.message || e), "err");
+                }
+            }
+
+            // =========================
+            // UI: messages
+            // =========================
+            function upsertMessageFromHub(raw) {
+                const msg = normalizeMsgFromHub(raw);
+                if (!msg?.id) return;
+
+                const idx = messages.findIndex(x => x.id === msg.id);
+                if (idx >= 0) messages[idx] = { ...messages[idx], ...msg };
+                else {
+                    messages.push(msg);
+                    messages.sort((a, b) => (a.id - b.id));
+                }
+
+                renderMessages("append");
+                maybeMarkSeen();
+            }
+
+            function renderMessages(mode) {
+                msgsEl.innerHTML = "";
+
+                messages.forEach((m, i) => {
+                    const wrap = document.createElement("div");
+                    wrap.className = "msg other";
+
+                    const bubble = document.createElement("div");
+                    bubble.className = "bubble other";
+
+                    const meta = document.createElement("div");
+                    meta.className = "meta";
+
+                    const name = document.createElement("div");
+                    name.className = "name";
+                    name.textContent = m.senderName;
+
+                    const time = document.createElement("div");
+                    time.className = "time";
+                    time.textContent = formatTime(m.sentAt);
+
+                    meta.appendChild(name);
+                    meta.appendChild(time);
+
+                    const text = document.createElement("div");
+                    text.className = "text";
+                    text.textContent = m.text || "";
+
+                    bubble.appendChild(meta);
+                    bubble.appendChild(text);
+
+                    if (m.attachmentUrl) {
+                        const att = document.createElement("div");
+                        att.className = "att";
+
+                        const a = document.createElement("a");
+                        a.href = m.attachmentUrl;
+                        a.target = "_blank";
+                        a.rel = "noreferrer";
+                        a.textContent = "دانلود: " + (m.attachmentName || "فایل");
+                        att.appendChild(a);
+
+                        if ((m.attachmentType || "").toLowerCase() === "images") {
+                            const img = document.createElement("img");
+                            img.className = "img";
+                            img.src = m.attachmentUrl;
+                            img.alt = m.attachmentName || "image";
+                            att.appendChild(img);
+                        }
+
+                        bubble.appendChild(att);
+                    }
+
+                    if (i === messages.length - 1) {
+                        const seen = document.createElement("div");
+                        seen.className = "seen";
+                        const seenCount = [...seenMap.values()].filter(v => v && v >= m.id).length;
+                        seen.textContent = seenCount ? `✅ دیده شده توسط ${seenCount} نفر` : "";
+                        bubble.appendChild(seen);
+                    }
+
+                    wrap.appendChild(bubble);
+                    msgsEl.appendChild(wrap);
+                });
+
+                if (mode === "reset" || mode === "append") {
+                    msgsEl.scrollTop = msgsEl.scrollHeight;
+                }
+            }
+
+            // =========================
+            // Seen
+            // =========================
+            let seenThrottle = null;
+
+            function maybeMarkSeen() {
+                if (!connection || !currentGroupId || messages.length === 0) return;
+
+                const nearBottom = (msgsEl.scrollHeight - msgsEl.scrollTop - msgsEl.clientHeight) < 80;
+                if (!nearBottom) return;
+
+                if (seenThrottle) return;
+                seenThrottle = setTimeout(async () => {
+                    seenThrottle = null;
+                    try {
+                        const lastMsgId = messages[messages.length - 1].id;
+                        await connection.invoke(M_SEEN, currentGroupId, lastMsgId);
+                        log("Seen sent for msgId=" + lastMsgId);
+                    } catch (e) {
+                        log("Seen error: " + (e?.message || e), "err");
+                    }
+                }, 350);
+            }
+
+            msgsEl.addEventListener("scroll", maybeMarkSeen);
+
+            function applySeenUpdate(p) {
+                const groupId = p?.groupId ?? p?.GroupId;
+                if (!groupId || groupId != currentGroupId) return;
+
+                const userId = p?.userId ?? p?.UserId;
+                const lastReadMessageId = p?.lastReadMessageId ?? p?.LastReadMessageId;
+                if (!userId) return;
+
+                seenMap.set(userId, lastReadMessageId);
+                renderMessages("update");
+            }
+
+            // =========================
+            // Typing
+            // =========================
+            let typingTimer = null;
+            let typingActive = false;
+
+            async function sendTyping(isTyping) {
+                if (!connection || !currentGroupId) return;
+                try { await connection.invoke(M_TYPING, currentGroupId, isTyping); } catch { }
+            }
+
+            byId("text").addEventListener("input", () => {
+                if (!currentGroupId) return;
+
+                if (!typingActive) {
+                    typingActive = true;
+                    sendTyping(true);
+                }
+
+                clearTimeout(typingTimer);
+                typingTimer = setTimeout(() => {
+                    typingActive = false;
+                    sendTyping(false);
+                }, 800);
+            });
+
+            function applyTyping(p) {
+                const groupId = p?.groupId ?? p?.GroupId;
+                if (!groupId || groupId != currentGroupId) return;
+
+                const userId = p?.userId ?? p?.UserId;
+                const isTyping = p?.isTyping ?? p?.IsTyping;
+                if (!userId) return;
+
+                if (isTyping) typingUsers.set(userId, true);
+                else typingUsers.delete(userId);
+
+                typingEl.textContent = typingUsers.size ? `✍️ ${typingUsers.size} نفر در حال تایپ هستند...` : "";
+            }
+
+            // =========================
+            // Send message (Hub)
+            // =========================
+            async function sendMessage() {
+                if (!connection || !currentGroupId) return log("اول JoinGroup بزن.", "warn");
+
+                const text = byId("text").value.trim();
+                if (!text) return;
+
+                try {
+                    await connection.invoke(M_SEND, currentGroupId, { text, replyToMessageId: null });
+                    byId("text").value = "";
+                    typingActive = false;
+                    sendTyping(false);
+                } catch (e) {
+                    log("SendMessage error: " + (e?.message || e), "err");
+                }
+            }
+
+            // =========================
+            // Send + Attachment (REST => Hub Attach)
+            // =========================
+            async function sendWithAttachment() {
+                if (!connection || !currentGroupId) return log("اول JoinGroup بزن.", "warn");
+
+                const file = byId("file").files[0];
+                if (!file) return log("فایل انتخاب نشده.", "warn");
+
+                const messageText = byId("text").value.trim();
+                const isPublic = byId("isPublic").checked;
+
+                let ft = byId("fileType").value;
+                if (ft === "auto") {
+                    ft = file.type.startsWith("image/") ? "images" : "files";
+                }
+
+                try {
+                    const form = new FormData();
+                    form.append("file", file);
+                    form.append("groupId", String(currentGroupId));
+                    form.append("fileType", ft);
+                    form.append("isPublic", String(isPublic));
+                    form.append("messageText", messageText || "📎 فایل ارسال شد");
+
+                    const res = await fetch(SEND_WITH_ATTACHMENT_URL, {
+                        method: "POST",
+                        headers: { ...authHeader() },
+                        body: form
+                    });
+
+                    const data = await res.json().catch(() => null);
+                    if (!res.ok) {
+                        const msg = (data && (data.message || data.errorMessage)) || `خطا در آپلود (${res.status})`;
+                        throw new Error(msg);
+                    }
+
+                    const msgId = data.messageId ?? data.MessageId ?? data.id ?? data.Id;
+                    if (!msgId) throw new Error("messageId از API برگشت داده نشد.");
+
+                    await connection.invoke(M_ATTACH, currentGroupId, msgId, {
+                        attachmentUrl: data.url ?? data.Url,
+                        attachmentName: data.fileName ?? data.FileName,
+                        attachmentSize: data.size ?? data.Size,
+                        attachmentType: data.fileType ?? data.FileType
+                    });
+
+                    byId("text").value = "";
+                    byId("file").value = "";
+                    log("File attached ✅ (msgId=" + msgId + ")");
+                } catch (e) {
+                    log("Send+File error: " + (e?.message || e), "err");
+                }
+            }
+
+            // =========================
+            // Buttons
+            // =========================
+            byId("btnJoin").addEventListener("click", async () => {
+                const gid = Number(byId("groupId").value);
+                if (!gid) return log("GroupId نامعتبر", "warn");
+
+                // UI lock
+                byId("btnJoin").disabled = true;
+
+                try {
+                    await ensureConnected();
+                    await joinGroup(gid);
+                } finally {
+                    // اگر join موفق شد، Leave فعال می‌مونه، Join رو هم می‌تونی دوباره فعال کنی
+                    byId("btnJoin").disabled = false;
+                }
+            });
+
+            byId("btnLeave").addEventListener("click", leaveGroup);
+            byId("btnSend").addEventListener("click", sendMessage);
+            byId("btnSendFile").addEventListener("click", sendWithAttachment);
+
+            byId("btnGoLogin").addEventListener("click", () => location.href = "./login.html");
+            byId("btnLogout").addEventListener("click", () => {
+                localStorage.removeItem("chat_access_token");
+                location.href = "./login.html";
+            });
+
+            loadBtn.addEventListener("click", () => {
+                if (!hasMore) return;
+                loadMessages(false);
+            });
+
+            document.addEventListener("keydown", (e) => {
+                if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) {
+                    sendMessage();
+                }
+            });
+
+            // =========================
+            // Init
+            // =========================
+            log("Token loaded ✅");
+            log("Hub URL: " + HUB_URL);
+            log("History URL: " + GET_ALL_MESSAGES_URL);
+        })();
+    </script>
+
+</body>
+</html>

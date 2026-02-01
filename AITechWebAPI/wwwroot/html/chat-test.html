@@ -1,0 +1,135 @@
+﻿<!doctype html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="utf-8" />
+    <title>Group Chat Test</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            padding: 16px;
+        }
+
+        input, button {
+            padding: 8px;
+            margin: 4px;
+        }
+
+        #log {
+            background: #111;
+            color: #0f0;
+            padding: 12px;
+            height: 320px;
+            overflow: auto;
+            border-radius: 8px;
+        }
+
+        .row {
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h3>تست SignalR چت گروهی</h3>
+
+    <div class="row">
+        <label>Token (JWT):</label><br />
+        <input id="token" style="width:900px" placeholder="توکن JWT را اینجا paste کن" />
+    </div>
+
+    <div class="row">
+        <label>GroupId:</label>
+        <input id="groupId" value="1" />
+        <button id="connect">Connect</button>
+        <button id="join">JoinGroup</button>
+        <button id="leave">LeaveGroup</button>
+    </div>
+
+    <div class="row">
+        <input id="text" placeholder="پیام..." style="width:500px" />
+        <button id="send">SendMessage</button>
+    </div>
+
+    <pre id="log"></pre>
+
+    <script src="/lib/signalr/signalr.min.js"></script>
+    <script>
+    let connection;
+
+    const log = (x) => {
+      const el = document.getElementById("log");
+      el.textContent += x + "\n";
+      el.scrollTop = el.scrollHeight;
+    };
+
+    const getToken = () => document.getElementById("token").value.trim();
+    const getGroupId = () => parseInt(document.getElementById("groupId").value, 10);
+
+    document.getElementById("connect").onclick = async () => {
+      try {
+        const token = getToken();
+        if (!token) return log("❌ Token خالیه. اول JWT رو وارد کن.");
+
+        connection = new signalR.HubConnectionBuilder()
+          .withUrl("/hubs/group-chat", { accessTokenFactory: () => token })
+          .withAutomaticReconnect()
+          .build();
+
+        connection.onreconnecting(() => log("… reconnecting"));
+          connection.onreconnected(async () => {
+              log("✅ reconnected");
+              const gid = getGroupId();
+              await connection.invoke("JoinGroup", gid);
+              log("➡️ JoinGroup after reconnect");
+          });        connection.onclose((e) => log("❌ connection closed: " + (e?.message ?? "")));
+
+        connection.on("Joined", (data) => log("✅ Joined: " + JSON.stringify(data)));
+        connection.on("Left", (data) => log("✅ Left: " + JSON.stringify(data)));
+        connection.on("MessageReceived", (msg) => log("📩 MessageReceived: " + JSON.stringify(msg)));
+        connection.on("MessageEdited", (msg) => log("✏️ MessageEdited: " + JSON.stringify(msg)));
+        connection.on("MessageDeleted", (msg) => log("🗑️ MessageDeleted: " + JSON.stringify(msg)));
+
+        await connection.start();
+        log("✅ Connected!");
+      } catch (err) {
+        log("❌ Connect error: " + (err?.message ?? err));
+      }
+    };
+
+    document.getElementById("join").onclick = async () => {
+      try {
+        if (!connection) return log("❌ اول Connect کن.");
+        const gid = getGroupId();
+        await connection.invoke("JoinGroup", gid);
+        log("➡️ JoinGroup invoked for groupId=" + gid);
+      } catch (err) {
+        log("❌ JoinGroup error: " + (err?.message ?? err));
+      }
+    };
+
+    document.getElementById("leave").onclick = async () => {
+      try {
+        if (!connection) return log("❌ اول Connect کن.");
+        const gid = getGroupId();
+        await connection.invoke("LeaveGroup", gid);
+        log("➡️ LeaveGroup invoked for groupId=" + gid);
+      } catch (err) {
+        log("❌ LeaveGroup error: " + (err?.message ?? err));
+      }
+    };
+
+    document.getElementById("send").onclick = async () => {
+      try {
+        if (!connection) return log("❌ اول Connect کن.");
+        const gid = getGroupId();
+        const text = document.getElementById("text").value.trim();
+        if (!text) return log("❌ متن پیام خالیه.");
+
+          await connection.invoke("SendMessage", gid, { Text: text, ReplyToMessageId: null });
+        log("➡️ SendMessage invoked: " + text);
+      } catch (err) {
+        log("❌ SendMessage error: " + (err?.message ?? err));
+      }
+    };
+    </script>
+</body>
+</html>

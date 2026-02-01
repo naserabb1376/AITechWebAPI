@@ -13,5 +13,9 @@ namespace AITechWebAPI.Models.Session
 
         [Display(Name = "تاریخ جلسه")]
         public string? SessionDate { get; set; }
+
+        [Display(Name = "توضیحات جلسه")]
+        public string? Description { get; set; }
+
     }
 }

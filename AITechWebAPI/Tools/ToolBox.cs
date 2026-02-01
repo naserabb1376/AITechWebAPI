@@ -206,7 +206,15 @@ namespace AITechWebAPI.Tools
            return token;
         }
 
-       
+        public static long GetCurrentUserId(this ClaimsPrincipal user)
+        {
+            var idStr = user.FindFirstValue("userId");
+
+            if (string.IsNullOrWhiteSpace(idStr))
+                throw new UnauthorizedAccessException("UserId claim not found.");
+
+            return long.Parse(idStr);
+        }
 
         public static bool SendEmail(string emailAddress, string subject, string body)
         {
@@ -307,7 +315,22 @@ namespace AITechWebAPI.Tools
             return ApiVersion;
         }
 
+        public static string GetContentType(this string path)
+        {
+            var types = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                [".jpg"] = "image/jpeg",
+                [".jpeg"] = "image/jpeg",
+                [".png"] = "image/png",
+                [".pdf"] = "application/pdf",
+                [".mp4"] = "video/mp4",
+                [".txt"] = "text/plain",
+                [".docx"] = "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+            };
 
+            var ext = Path.GetExtension(path);
+            return types.TryGetValue(ext, out var contentType) ? contentType : "application/octet-stream";
+        }
     }
 
 }

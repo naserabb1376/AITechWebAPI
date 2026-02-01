@@ -97,6 +97,8 @@ namespace AITechWebAPI.Controllers
                 FileName = x.FileName,
                 FilePath = x.FilePath,
                 ForeignKeyId = x.ForeignKeyId,
+                Note = x.Note,
+                Tag = x.Tag,
                 GetUrl = x.GetUrl ?? "",
             }).ToList();
             
@@ -156,6 +158,9 @@ namespace AITechWebAPI.Controllers
                     Description = body.Description ??"",
                     CreatorId = body.CreatorId ?? 0,
                     GetUrl = body.GetUrl ?? "",
+                    Note = body.Note,
+                    Tag = body.Tag,
+
 
                 };
 

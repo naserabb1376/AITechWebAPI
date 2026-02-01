@@ -7,6 +7,7 @@ namespace AITechWebAPI.ViewModels
     {
         public long GroupId { get; set; } // کلید خارجی به Group
         public string GroupName { get; set; } // ارتباط با Group
+        public string? Description { get; set; }
         public DateTime SessionDate { get; set; } // تاریخ برگزاری جلسه
     }
 }

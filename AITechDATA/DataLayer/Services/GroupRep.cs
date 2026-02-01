@@ -43,6 +43,35 @@ namespace AITechDATA.DataLayer.Services
             try
             {
                 _context.Groups.Update(group);
+                if (group.Status == GroupStatus.Active)
+                {
+                    var newUserGroups = new List<UserGroup>();
+                    var groupprs = await _context.PreRegistrations.Where(x => x.EntityType.ToLower() == "group" && x.ForeignKeyId == group.ID).ToListAsync();
+                    var groupusers = await _context.UserGroups.Where(x => x.GroupId == group.ID).ToListAsync();
+
+                    foreach ( var pr in groupprs )
+                    {
+                        var existuser = await _context.Users.FirstOrDefaultAsync(u => u.Username == pr.PhoneNumber);
+                        if ( existuser != null && !groupusers.Any(x=> x.UserId == existuser.ID))
+                        {
+                            var newUsergroup = new UserGroup()
+                            {
+                                CreateDate = DateTime.Now.ToShamsi(),
+                                UpdateDate = DateTime.Now.ToShamsi(),
+                                IsActive = true,
+                                OtherLangs = "",
+
+                                GroupId = group.ID,
+                                UserId = existuser.ID,
+                                
+                            };
+
+                            newUserGroups.Add(newUsergroup);
+                        }
+                    }
+
+                    await _context.UserGroups.AddRangeAsync(newUserGroups);
+                }
                 await _context.SaveChangesAsync();
                 result.ID = group.ID;
                 _context.Entry(group).State = EntityState.Detached;

@@ -5,6 +5,7 @@ using AITechDATA.ResultObjects;
 using AITechDATA.Tools;
 using AITechWebAPI.Models.FileCenter;
 using AITechWebAPI.Models.FileUpload;
+using AITechWebAPI.Tools;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.FileProviders;
@@ -31,22 +32,22 @@ public class FileCenterController : ControllerBase
 
     [HttpPost("uploadfile")]
     [AllowAnonymous]
-    public async Task<IActionResult> UploadFile(IFormFile file, [FromQuery] bool isPublic, [FromQuery] string entityName, [FromQuery] string fileType, [FromQuery] long rowId)
+    public async Task<IActionResult> UploadFile(IFormFile file, [FromQuery] UploadFileRequestBody requestBody)
     {
         try
         {
             if (file == null || file.Length == 0)
                 return BadRequest("فایلی انتخاب نشده است.");
 
-            fileType = fileType.ToLower();
-            entityName = entityName.ToLower();
+            var fileType = requestBody.FileType.ToLower();
+            var entityName = requestBody.EntityName.ToLower();
             bool isJobRequest = entityName.ToLower() == "jobrequest" || entityName.ToLower() == "preregistration";
 
             string fileName = "", fullPath=""; long RowNumber =0;    
             var userId = !isJobRequest ? User?.FindFirst("userId")?.Value : "0";
             if ((string.IsNullOrEmpty(userId) || userId == "0") && !isJobRequest) return Unauthorized();
 
-            string savePath = isPublic
+            string savePath = requestBody.IsPublic
                 ? Path.Combine(_env.ContentRootPath, "FileCenter", entityName, fileType, "Public")
                 : Path.Combine(_env.ContentRootPath, "FileCenter", entityName, fileType, userId);
 
@@ -63,14 +64,17 @@ public class FileCenterController : ControllerBase
                 {
                     CreateDate = DateTime.Now.ToShamsi(),
                     UpdateDate = DateTime.Now.ToShamsi(),
-                    Description = isPublic ? "Public" : "Private",
+                    Description = requestBody.IsPublic ? "Public" : "Private",
                     FileName = fileName,
                     FilePath = fullPath,
                     EntityType = entityName,
-                    ForeignKeyId = rowId,
+                    ForeignKeyId = requestBody.RowId,
+                    IsActive = true,
+                    Note = requestBody.Note,
+                    Tag = requestBody.Tag,
                     CreatorId = long.Parse(userId),
                 };
-                var removeoldResult = await _imageRep.RemoveOldImagesAsync(rowId,entityName);
+                var removeoldResult = await _imageRep.RemoveOldImagesAsync(requestBody.RowId,entityName);
                 if (!removeoldResult.Status) return BadRequest(removeoldResult);
 
                 var saveResult = await _imageRep.AddImagesAsync(new List<Image> { theImage });
@@ -95,12 +99,15 @@ public class FileCenterController : ControllerBase
                     FileName = fileName,
                     FilePath = fullPath,
                     EntityType= entityName,
-                    ForeignKeyId = rowId,
-                    ContentType = GetContentType(fullPath),
-                    Description = isPublic ? "Public" : "Private",
+                    ForeignKeyId = requestBody.RowId,
+                    ContentType = fullPath.GetContentType(),
+                    Description = requestBody.IsPublic ? "Public" : "Private",
+                    IsActive = true,
+                    Note = requestBody.Note,
+                    Tag = requestBody.Tag,
                     CreatorId = long.Parse(userId),
                 };
-                var removeoldResult = await _fileUploadRep.RemoveOldFilesAsync(rowId, entityName);
+                var removeoldResult = await _fileUploadRep.RemoveOldFilesAsync(requestBody.RowId, entityName);
                 if (!removeoldResult.Status) return BadRequest(removeoldResult);
 
                 var saveResult = await _fileUploadRep.AddFileUploadAsync(theFile);
@@ -123,7 +130,7 @@ public class FileCenterController : ControllerBase
                 CreateDate = DateTime.Now.ToShamsi(),
                 UpdateDate = DateTime.Now.ToShamsi(),
                 LogTime = DateTime.Now.ToShamsi(),
-                ActionName = $"UploadFile:{{Entity={entityName},Type={fileType},Row={rowId},Path={fullPath},Id={resultId}}}",
+                ActionName = $"UploadFile:{{Entity={entityName},Type={fileType},Row={requestBody.RowId},Path={fullPath},Id={resultId}}}",
             };
             await _logRep.AddLogAsync(log);
 
@@ -180,7 +187,7 @@ public class FileCenterController : ControllerBase
             };
             await _logRep.AddLogAsync(log);
 
-            var contentType = GetContentType(filePath);
+            var contentType = filePath.GetContentType();
             var fileName = Path.GetFileName(filePath);
             var bytes = await System.IO.File.ReadAllBytesAsync(filePath);
             return File(bytes, contentType, fileName);
@@ -243,20 +250,5 @@ public class FileCenterController : ControllerBase
     }
 
 
-    private string GetContentType(string path)
-    {
-        var types = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
-        {
-            [".jpg"] = "image/jpeg",
-            [".jpeg"] = "image/jpeg",
-            [".png"] = "image/png",
-            [".pdf"] = "application/pdf",
-            [".mp4"] = "video/mp4",
-            [".txt"] = "text/plain",
-            [".docx"] = "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-        };
-
-        var ext = Path.GetExtension(path);
-        return types.TryGetValue(ext, out var contentType) ? contentType : "application/octet-stream";
-    }
+   
 }

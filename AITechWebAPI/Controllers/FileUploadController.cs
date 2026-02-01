@@ -96,6 +96,8 @@ namespace AITechWebAPI.Controllers
                 FilePath = requestBody.FilePath,
                 CreatorId = requestBody.CreatorId ?? 0,
                 Description = requestBody.Description ?? "",
+                Note = requestBody.Note,
+                Tag = requestBody.Tag,
                 GetUrl = requestBody.GetUrl ?? "",
             };
             var result = await _FileUploadRep.AddFileUploadAsync(FileUpload);
@@ -146,6 +148,8 @@ namespace AITechWebAPI.Controllers
                 FilePath = requestBody.FilePath,
                 CreatorId = requestBody.CreatorId ?? 0,
                 Description = requestBody.Description ?? "",
+                Note = requestBody.Note,
+                Tag = requestBody.Tag,
                 GetUrl = requestBody.GetUrl ?? "",
 
             };

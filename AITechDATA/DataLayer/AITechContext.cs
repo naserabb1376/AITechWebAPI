@@ -67,6 +67,8 @@ namespace AITechDATA.DataLayer
         public DbSet<EducationalBackground> EducationalBackgrounds { get; set; }
         public DbSet<ClassGrade> ClassGrades { get; set; }
         public DbSet<GroupChatMessage> GroupChatMessages { get; set; }
+        public DbSet<GroupChatReadState> GroupChatReadStates { get; set; }
+
 
         // Manual
         public DbSet<ClassForAi> ClassForAi { get; set; }
@@ -299,6 +301,22 @@ namespace AITechDATA.DataLayer
     modelBuilder.Entity<GroupChatMessage>()
         .HasQueryFilter(x => !x.IsDeleted);
 
-    }
+            modelBuilder.Entity<GroupChatReadState>(e =>
+            {
+                e.HasIndex(x => new { x.GroupId, x.UserId }).IsUnique();
+
+                e.HasOne(x => x.Group)
+                    .WithMany()
+                    .HasForeignKey(x => x.GroupId)
+                    .OnDelete(DeleteBehavior.Cascade);
+
+                e.HasOne(x => x.User)
+                    .WithMany()
+                    .HasForeignKey(x => x.UserId)
+                    .OnDelete(DeleteBehavior.Restrict);
+            });
+
+
+        }
     }
 }

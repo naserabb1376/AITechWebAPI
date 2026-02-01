@@ -69,6 +69,20 @@ namespace AITechWebAPI.Tools
             .ForMember(dest => dest.MeetingOrganizer, opt => opt.MapFrom(src => src.Meeting.MeetingOrganizer))
             ;
 
+            CreateMap<GroupChatMessage, GroupChatMessageVM>()
+          .ForMember(dest => dest.RefMessageText, opt => opt.MapFrom(src => src.ReplyToMessage.Text ?? ""))
+          .ForMember(dest => dest.GroupName, opt => opt.MapFrom(src => src.Group.Name))
+          .ForMember(dest => dest.GroupType, opt => opt.MapFrom(src => src.Group.GroupType))
+          .ForMember(dest => dest.CourseTitle, opt => opt.MapFrom(src => src.Group.Course.Title))
+          .ForMember(dest => dest.TeacherName, opt => opt.MapFrom(src => $"{src.Group.Teacher.FirstName} {src.Group.Teacher.LastName}"))
+          .ForMember(dest => dest.Username, opt => opt.MapFrom(src => src.SenderUser.Username))
+          .ForMember(dest => dest.FirstName, opt => opt.MapFrom(src => src.SenderUser.FirstName))
+          .ForMember(dest => dest.LastName, opt => opt.MapFrom(src => src.SenderUser.LastName))
+          .ForMember(dest => dest.Email, opt => opt.MapFrom(src => src.SenderUser.Email))
+          .ForMember(dest => dest.NationalCode, opt => opt.MapFrom(src => src.SenderUser.NationalCode))
+
+          ;
+
             CreateMap<Article, ArticleVM>()
             .ForMember(dest => dest.CategoryName, opt => opt.MapFrom(src => src.Category.CategoryName));
 

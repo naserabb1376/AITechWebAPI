@@ -35,5 +35,12 @@ namespace AITechWebAPI.Models.Image
 
         [Display(Name = "لینک دانلود")]
         public string? GetUrl { get; set; } // لینک دانلود
+
+        [Display(Name = "برچسب")]
+        public string? Tag { get; set; }
+
+        [Display(Name = "توضیحات")]
+        public string? Note { get; set; }
+
     }
 }

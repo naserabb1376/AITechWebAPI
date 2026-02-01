@@ -118,6 +118,7 @@ namespace AITechDATA.DataLayer.Services
                 {
                     query = query.Where(x =>
                         (x.Group != null && x.Group.Name.Contains(searchText)) ||
+                        (!string.IsNullOrEmpty(x.Description) && x.Description.Contains(searchText)) ||
                         x.SessionDate.ToString().Contains(searchText));
                 }
 

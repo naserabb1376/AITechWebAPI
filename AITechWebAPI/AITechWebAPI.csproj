@@ -22,6 +22,7 @@
     <None Include="DataSetting.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <None Include="ViewModels\GroupChatReadStateVM.cs" />
   </ItemGroup>
 
   <ItemGroup>

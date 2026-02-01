@@ -15,6 +15,7 @@ using Parbad.Gateway.ZarinPal;
 using Repositories;
 using Services;
 using System.Text;
+using System.Text.Json;
 
 namespace AITechWebAPI
 {
@@ -199,10 +200,12 @@ namespace AITechWebAPI
             builder.Services.AddScoped<IEducationalBackgroundRep, EducationalBackgroundRep>();
             builder.Services.AddScoped<IClassGradeRep, ClassGradeRep>();
             builder.Services.AddScoped<IGroupChatMessageRep, GroupChatMessageRep>();
+            builder.Services.AddScoped<IGroupChatReadStateRep, GroupChatReadStateRep>();
 
 
             #endregion ImportDbServices
 
+            builder.Services.AddTransient<ExceptionHandlingMiddleware>();
 
 
 
@@ -224,7 +227,35 @@ namespace AITechWebAPI
           ValidAudience = builder.Configuration["Jwt:Audience"],
           IssuerSigningKey = new SymmetricSecurityKey(key)
       };
+
+      options.Events = new JwtBearerEvents
+      {
+          OnMessageReceived = context =>
+          {
+              var accessToken = context.Request.Query["access_token"];
+
+              // مسیر هاب شما
+              var path = context.HttpContext.Request.Path;
+              if (!string.IsNullOrEmpty(accessToken) &&
+                  path.StartsWithSegments("/hubs/group-chat"))
+              {
+                  context.Token = accessToken;
+              }
+
+              return Task.CompletedTask;
+          }
+      };
   });
+
+            builder.Services.AddSignalR(o =>
+            {
+                o.EnableDetailedErrors = true;
+            })
+                .AddJsonProtocol(o =>
+            {
+                o.PayloadSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
+                o.PayloadSerializerOptions.PropertyNameCaseInsensitive = true;
+            }); ;
 
 
             builder.Services.AddAutoMapper(typeof(Program));
@@ -260,10 +291,16 @@ namespace AITechWebAPI
 
 
             app.UseRouting();
+
+            app.UseMiddleware<ExceptionHandlingMiddleware>();
+
+
             app.UseAuthentication();
             app.UseAuthorization();
 
-         //   app.UseParbadVirtualGateway();
+            app.MapHub<GroupChatHub>("/hubs/group-chat");
+
+            //   app.UseParbadVirtualGateway();
 
             //Controller/Action/Id?
             app.UseEndpoints(endpoints =>

@@ -107,7 +107,10 @@ namespace AITechDATA.DataLayer.Services
                     query = query.Where(x =>
                         (!string.IsNullOrEmpty(x.FileName) && x.FileName.Contains(searchText)) ||
                         (!string.IsNullOrEmpty(x.Description) && x.Description.Contains(searchText)) ||
-                        (!string.IsNullOrEmpty(x.EntityType) && x.EntityType.Contains(searchText))
+                        (!string.IsNullOrEmpty(x.EntityType) && x.EntityType.Contains(searchText)) ||
+                        (!string.IsNullOrEmpty(x.Tag) && x.Tag.Contains(searchText)) ||
+                        (!string.IsNullOrEmpty(x.Note) && x.Note.Contains(searchText))
+
                     );
                 }
 

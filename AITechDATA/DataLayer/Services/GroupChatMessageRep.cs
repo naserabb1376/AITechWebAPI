@@ -80,29 +80,44 @@ namespace AITechDATA.DataLayer.Services
 
         }
 
-        public async Task<ListResultObject<GroupChatMessage>> GetAllGroupChatMessagesAsync(long GroupId = 0, long SenderUserId = 0, long ReplyToMessageId = 0, int pageIndex = 1, int pageSize = 20, string searchText = "", string sortQuery = "")
+        public async Task<ListResultObject<GroupChatMessage>> GetAllGroupChatMessagesAsync(long GroupId = 0, long SenderUserId = 0, long ReplyToMessageId = 0,bool withDeleted = false, int pageIndex = 1, int pageSize = 20, string searchText = "", string sortQuery = "")
         {
             ListResultObject<GroupChatMessage> results = new ListResultObject<GroupChatMessage>();
             try
             {
-                var canAccess = await CanAccessGroupChatAsync(GroupId, SenderUserId);
-                if (!canAccess.Status)
-                    throw new UnauthorizedAccessException("شما به این گروه چت دسترسی ندارید");
+                if (GroupId > 0 && SenderUserId > 0)
+                {
+                    var canAccess = await CanAccessGroupChatAsync(GroupId, SenderUserId);
+                    if (!canAccess)
+                    {
+                        results.ErrorMessage = "شما به این گروه چت دسترسی ندارید";
+                        results.Status = false;
+                        return results;
+                    }
+
+                }
 
 
                 IQueryable<GroupChatMessage> query = _context.GroupChatMessages
-                        .AsNoTracking().Include(x => x.SenderUser).Include(x=> x.Group).Include(x=> x.ReplyToMessage);
+                        .AsNoTracking().Include(x => x.SenderUser).Include(x => x.ReplyToMessage).Include(x=> x.Group)
+                        .ThenInclude(g=> g.Course).Include(x=> x.Group).ThenInclude(g=> g.Teacher)
+                        .Include(x => x.SenderUser);
 
-                if (SenderUserId == 0)
+                if (!withDeleted)
+                {
+                    query = query.Where(x=> !x.IsDeleted);
+                }
+
+                if (SenderUserId > 0)
                 {
                     query = query.Where(x=> x.SenderUserId == SenderUserId);
                 }
 
-                if (GroupId == 0)
+                if (GroupId > 0)
                 {
                     query = query.Where(x => x.GroupId == GroupId);
                 }
-                if (ReplyToMessageId == 0)
+                if (ReplyToMessageId > 0)
                 {
                     query = query.Where(x => x.ReplyToMessageId == ReplyToMessageId);
                 }
@@ -120,7 +135,7 @@ namespace AITechDATA.DataLayer.Services
 
                 results.TotalCount = query.Count();
                 results.PageCount = DbTools.GetPageCount(results.TotalCount, pageSize);
-                results.Results = await query.OrderByDescending(x => x.CreateDate)
+                results.Results = await query.OrderByDescending(x => x.SentAt)
                 .SortBy(sortQuery).ToPaging(pageIndex, pageSize)
                 .ToListAsync();
             }
@@ -139,7 +154,9 @@ namespace AITechDATA.DataLayer.Services
             try
             {
                 result.Result = await _context.GroupChatMessages
-                .AsNoTracking().Include(x => x.SenderUser).Include(x => x.Group).Include(x => x.ReplyToMessage)
+                .AsNoTracking().Include(x => x.SenderUser).Include(x => x.ReplyToMessage).Include(x => x.Group)
+                .ThenInclude(g => g.Course).Include(x => x.Group).ThenInclude(g => g.Teacher)
+                .Include(x => x.SenderUser)
                 .SingleOrDefaultAsync(x => x.ID == GroupChatMessageId);
             }
             catch (Exception ex)
@@ -187,92 +204,240 @@ namespace AITechDATA.DataLayer.Services
 
         }
 
-        public async Task<BitResultObject> CanAccessGroupChatAsync(long GroupId, long UserId)
+
+        // Messenger
+
+        public async Task<bool> CanAccessGroupChatAsync(long groupId, long userId)
         {
-            BitResultObject result = new BitResultObject();
-            try
-            {
-                // استاد گروه
-                var isTeacher = await _context.Groups
-                    .AsNoTracking()
-                    .AnyAsync(g => g.ID == GroupId && g.TeacherId == UserId);
+            // استاد گروه
+            var isTeacher = await _context.Groups
+                .AsNoTracking()
+                .AnyAsync(g => g.ID == groupId && g.TeacherId == userId);
 
+            if (isTeacher) return true;
 
-                // دانش‌آموز عضو گروه (UserGroup)
-                var isStudent = await _context.UserGroups
-                    .AsNoTracking()
-                    .AnyAsync(ug => ug.GroupId == GroupId && ug.UserId == UserId);
+            // دانش‌آموز عضو گروه (UserGroup)
+            var isStudent = await _context.UserGroups
+                .AsNoTracking()
+                .AnyAsync(ug => ug.GroupId == groupId && ug.UserId == userId);
 
-                result.ID = 0;
-                result.Status = isTeacher || isStudent;
-            }
-            catch (Exception ex)
-            {
-                result.Status = false;
-                result.ErrorMessage = $"{ex.Message} - {ex.InnerException?.Message}";
-            }
-            return result;
-
+            return isStudent;
         }
 
-        public async Task<RowResultObject<GroupChatMessage>> SendMessageAsync(long groupId, long senderUserId, SendGroupMessageRequest request)
+        public async Task<GroupChatMessageDto> SendMessageAsync(long groupId, long senderUserId, SendGroupMessageRequest request)
         {
-            RowResultObject<GroupChatMessage> result = new RowResultObject<GroupChatMessage>();
-            try
+            var since = DateTime.UtcNow.AddSeconds(-2);
+
+            var recentCount = await _context.GroupChatMessages.AsNoTracking()
+                .CountAsync(m => m.GroupId == groupId &&
+                                 m.SenderUserId == senderUserId &&
+                                 m.SentAt >= since);
+
+            if (recentCount >= 3)
+                throw new ArgumentException("لطفاً کمی آهسته‌تر پیام ارسال کنید");
+
+
+            if (string.IsNullOrWhiteSpace(request.Text))
+                throw new ArgumentException("متن پیام را وارد کنید");
+
+            var canAccess = await CanAccessGroupChatAsync(groupId, senderUserId);
+            if (!canAccess)
+                throw new UnauthorizedAccessException("شما به این گروه دسترسی ندارید");
+
+            // اگر ReplyToMessageId داده شده، مطمئن شو پیام مربوط به همین گروه است
+            if (request.ReplyToMessageId.HasValue)
             {
-                if (string.IsNullOrWhiteSpace(request.Text))
-                    throw new ArgumentException("متن پیام را وارد کنید");
+                var okReply = await _context.GroupChatMessages
+                    .AsNoTracking()
+                    .AnyAsync(m => m.ID == request.ReplyToMessageId.Value && m.GroupId == groupId);
 
-                var canAccess = await CanAccessGroupChatAsync(groupId, senderUserId);
-                if (!canAccess.Status)
-                    throw new UnauthorizedAccessException("شما امکان ارسال پیام در این گروه را ندارید");
-
-                // اگر ReplyToMessageId داده شده، مطمئن شو پیام مربوط به همین گروه است
-                if (request.ReplyToMessageId.HasValue)
-                {
-                    var okReply = await _context.GroupChatMessages
-                        .AsNoTracking()
-                        .AnyAsync(m => m.ID == request.ReplyToMessageId.Value && m.GroupId == groupId);
-
-                    if (!okReply)
-                        throw new InvalidOperationException("ارسال پاسخ برای این پیام مقدور نیست");
-                }
-
-                var message = new GroupChatMessage
-                {
-                    GroupId = groupId,
-                    SenderUserId = senderUserId,
-                    Text = request.Text.Trim(),
-                    SentAt = DateTime.UtcNow,
-                    ReplyToMessageId = request.ReplyToMessageId
-                };
-                var addResult = await AddGroupChatMessageAsync(message);
-                if (!addResult.Status)
-                {
-                    result.Status = addResult.Status;
-                    result.ErrorMessage = addResult.ErrorMessage;
-                }
-                else
-                {
-                    var GetGroupChat = await GetGroupChatMessageByIdAsync(message.ID);
-                    if (!GetGroupChat.Status)
-                    {
-                        result.Status = GetGroupChat.Status;
-                        result.ErrorMessage = GetGroupChat.ErrorMessage;
-                    }
-                    else
-                    {
-                        result.Result = GetGroupChat.Result;
-                    }
-                }
+                if (!okReply)
+                    throw new InvalidOperationException("پیام پیدا نشد");
             }
-            catch (Exception ex)
+
+            var message = new GroupChatMessage
             {
-                result.Status = false;
-                result.ErrorMessage = $"{ex.Message} - {ex.InnerException?.Message}";
-            }
-            return result;
+                GroupId = groupId,
+                SenderUserId = senderUserId,
+                Text = request.Text.Trim(),
+                SentAt = DateTime.Now.ToShamsi(),
+                ReplyToMessageId = request.ReplyToMessageId
+            };
 
+            await AddGroupChatMessageAsync(message);  
+
+            // خروجی DTO
+            return await BuildDtoAsync(message.ID);
         }
+
+        public async Task<List<GroupChatMessageDto>> GetMessagesAsync(long groupId, long userId, int pageIndex, int pageSize)
+        {
+            var canAccess = await CanAccessGroupChatAsync(groupId, userId);
+            if (!canAccess)
+                throw new UnauthorizedAccessException("شما به این گروه دسترسی ندارید");
+
+            // جدیدترین‌ها اول، صفحه‌بندی
+            var query = _context.GroupChatMessages
+                .AsNoTracking()
+                .Where(m => m.GroupId == groupId && !m.IsDeleted)
+                .OrderByDescending(m => m.SentAt)
+                .Skip((pageIndex - 1) * pageSize)
+                .Take(pageSize);
+
+            // اگر User->Person داری، اینجا Join می‌کنیم
+            var list = await (
+                from m in query
+                join u in _context.Users on m.SenderUserId equals u.ID
+                select new GroupChatMessageDto
+                {
+                    Id = m.ID,
+                    GroupId = m.GroupId,
+                    SenderUserId = m.SenderUserId,
+                    SenderName = u != null ? (u.FirstName + " " + u.LastName) : ("User#" + m.SenderUserId),
+                    Text = m.Text,
+                    SentAt = m.SentAt,
+                    IsEdited = m.IsEdited,
+                    EditedAt = m.EditedAt,
+                    ReplyToMessageId = m.ReplyToMessageId,
+                    AttachmentUrl = m.AttachmentUrl,
+                    AttachmentName = m.AttachmentName,
+                    AttachmentSize = m.AttachmentSize,
+                    AttachmentType = m.AttachmentType
+                }
+            ).ToListAsync();
+
+            return list;
+        }
+
+        public async Task<GroupChatMessageDto> EditMessageAsync(long groupId, long messageId, long userId, EditGroupMessageRequest request)
+        {
+            if (string.IsNullOrWhiteSpace(request.Text))
+                throw new ArgumentException("متن پیام را وارد کنید");
+
+            var canAccess = await CanAccessGroupChatAsync(groupId, userId);
+            if (!canAccess)
+                throw new UnauthorizedAccessException("شما به این گروه دسترسی ندارید");
+
+            var message = await _context.GroupChatMessages
+                .FirstOrDefaultAsync(m => m.ID == messageId && m.GroupId == groupId);
+
+            if (message == null)
+                throw new KeyNotFoundException("پیام پیدا نشد");
+
+            // فقط نویسنده خودش بتواند ادیت کند (سیاست پیش‌فرض)
+            if (message.SenderUserId != userId)
+                throw new UnauthorizedAccessException("You can only edit your own message.");
+
+            message.Text = request.Text.Trim();
+            message.IsEdited = true;
+            message.EditedAt = DateTime.Now.ToShamsi();
+
+            await EditGroupChatMessageAsync(message);
+
+            return await BuildDtoAsync(message.ID);
+        }
+
+        public async Task SoftDeleteMessageAsync(long groupId, long messageId, long userId)
+        {
+            var canAccess = await CanAccessGroupChatAsync(groupId, userId);
+            if (!canAccess)
+                throw new UnauthorizedAccessException("شما به این گروه دسترسی ندارید");
+
+            var message = await _context.GroupChatMessages
+                .FirstOrDefaultAsync(m => m.ID == messageId && m.GroupId == groupId);
+
+            if (message == null)
+                throw new KeyNotFoundException("پیام پیدا نشد");
+
+            // سیاست: فقط نویسنده یا استاد گروه بتواند حذف کند
+            var isTeacher = await _context.Groups
+                .AsNoTracking()
+                .AnyAsync(g => g.ID == groupId && g.TeacherId == userId);
+
+            if (message.SenderUserId != userId && !isTeacher)
+                throw new UnauthorizedAccessException("شما دسترسی حذف این پیام را ندارید");
+
+            // Soft delete
+            message.IsDeleted = true;
+            message.DeletedAt = DateTime.Now.ToShamsi();
+
+            await EditGroupChatMessageAsync(message);
+        }
+
+        private async Task<GroupChatMessageDto> BuildDtoAsync(long messageId)
+        {
+            // اینجا هم با join اطلاعات فرستنده رو می‌گیریم
+            var dto = await (
+                from m in _context.GroupChatMessages.AsNoTracking()
+                where m.ID == messageId
+                join u in _context.Users on m.SenderUserId equals u.ID
+                select new GroupChatMessageDto
+                {
+                    Id = m.ID,
+                    GroupId = m.GroupId,
+                    SenderUserId = m.SenderUserId,
+                    SenderName = u != null ? (u.FirstName + " " + u.LastName) : ("User#" + m.SenderUserId),
+                    Text = m.Text,
+                    SentAt = m.SentAt,
+                    IsEdited = m.IsEdited,
+                    EditedAt = m.EditedAt,
+                    ReplyToMessageId = m.ReplyToMessageId,
+                    AttachmentUrl = m.AttachmentUrl,
+                    AttachmentName = m.AttachmentName,
+                    AttachmentSize = m.AttachmentSize,
+                    AttachmentType = m.AttachmentType
+                }
+            ).FirstAsync();
+
+            return dto;
+        }
+
+        // Attachment 
+
+        public async Task<GroupChatMessageDto> AttachFileToMessageAsync(long groupId, long messageId, long userId, AttachFileToMessageRequest request)
+        {
+            if (request == null)
+                throw new ArgumentException("اطلاعات فایل نامعتبر است");
+
+            if (string.IsNullOrWhiteSpace(request.AttachmentUrl))
+                throw new ArgumentException("لینک فایل نامعتبر است");
+
+            if (string.IsNullOrWhiteSpace(request.AttachmentType))
+                throw new ArgumentException("نوع فایل مشخص نیست");
+
+            var type = request.AttachmentType.Trim().ToLower();
+            if (type != "images" && type != "files")
+                throw new ArgumentException("نوع فایل فقط می‌تواند images یا files باشد");
+
+            // دسترسی به گروه
+            var canAccess = await CanAccessGroupChatAsync(groupId, userId);
+            if (!canAccess)
+                throw new UnauthorizedAccessException("شما به این گروه دسترسی ندارید");
+
+            var message = await _context.GroupChatMessages
+                .FirstOrDefaultAsync(m => m.ID == messageId && m.GroupId == groupId && !m.IsDeleted);
+
+            if (message == null)
+                throw new KeyNotFoundException("پیام پیدا نشد");
+
+            // سیاست دسترسی:
+            // فقط فرستنده پیام یا استاد گروه بتواند فایل اضافه کند
+            var isTeacher = await _context.Groups.AsNoTracking()
+                .AnyAsync(g => g.ID == groupId && g.TeacherId == userId);
+
+            if (message.SenderUserId != userId && !isTeacher)
+                throw new UnauthorizedAccessException("شما دسترسی افزودن فایل به این پیام را ندارید");
+
+            // ثبت فایل روی پیام
+            message.AttachmentUrl = request.AttachmentUrl.Trim();
+            message.AttachmentName = request.AttachmentName?.Trim();
+            message.AttachmentSize = request.AttachmentSize;
+            message.AttachmentType = type;
+
+            await _context.SaveChangesAsync();
+
+            return await BuildDtoAsync(message.ID);
+        }
+
     }
 }
