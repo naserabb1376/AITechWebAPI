@@ -9,11 +9,15 @@ using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using MTPermissionCenter.Abstractions;
+using MTPermissionCenter.AspNetCore;
+using MTPermissionCenter.EFCore;
 using Parbad.Builder;
 using Parbad.Gateway.ParbadVirtual;
 using Parbad.Gateway.ZarinPal;
 using Repositories;
 using Services;
+using System;
 using System.Text;
 using System.Text.Json;
 
@@ -154,6 +158,9 @@ namespace AITechWebAPI
             builder.Services.AddDbContext<AITechContext>(options =>
                 options.UseSqlServer(configHelper.GetConnectionString("publicdb")));
 
+            // MTPermissionCenter (AspNetCore)
+            builder.Services.AddMTPermissionCenter();
+
 
             #region ImportDbServices
 
@@ -201,9 +208,20 @@ namespace AITechWebAPI
             builder.Services.AddScoped<IClassGradeRep, ClassGradeRep>();
             builder.Services.AddScoped<IGroupChatMessageRep, GroupChatMessageRep>();
             builder.Services.AddScoped<IGroupChatReadStateRep, GroupChatReadStateRep>();
+            builder.Services.AddScoped<IUserRoleProvider, UserRep>();
+            builder.Services.AddScoped<IGroupChatReadStateRep, GroupChatReadStateRep>();
 
 
             #endregion ImportDbServices
+
+
+            #region ImportMTPermissionCenterServices
+
+            builder.Services.AddScoped<IPermissionInvalidationService, PermissionInvalidationService>();
+            builder.Services.AddScoped<IPermissionService, EfPermissionService<AITechContext>>();
+
+            #endregion ImportMTPermissionCenterServices
+
 
             builder.Services.AddTransient<ExceptionHandlingMiddleware>();
 
@@ -297,6 +315,9 @@ namespace AITechWebAPI
 
             app.UseAuthentication();
             app.UseAuthorization();
+
+            // IMPORTANT: after authentication
+            app.UseMTPermissionCenter();
 
             app.MapHub<GroupChatHub>("/hubs/group-chat");
 

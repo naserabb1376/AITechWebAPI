@@ -1,8 +1,9 @@
 ﻿using AITechDATA.DataLayer.Repositories;
 using AITechDATA.Domain;
 using AITechDATA.ResultObjects;
-using Microsoft.EntityFrameworkCore;
 using AITechDATA.Tools;
+using Microsoft.EntityFrameworkCore;
+using MTPermissionCenter.EFCore.Entities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -20,7 +21,7 @@ namespace AITechDATA.DataLayer.Services
             _context = context;
         }
 
-        public async Task<BitResultObject> AddPermissionAsync(Permission permission)
+        public async Task<BitResultObject> AddPermissionAsync(MTPermissionCenter_Permission permission)
         {
             BitResultObject result = new BitResultObject();
             try
@@ -38,7 +39,7 @@ namespace AITechDATA.DataLayer.Services
             return result;
         }
 
-        public async Task<BitResultObject> EditPermissionAsync(Permission permission)
+        public async Task<BitResultObject> EditPermissionAsync(MTPermissionCenter_Permission permission)
         {
             BitResultObject result = new BitResultObject();
             try
@@ -74,12 +75,12 @@ namespace AITechDATA.DataLayer.Services
             return result;
         }
 
-        public async Task<ListResultObject<Permission>> GetAllPermissionsAsync(long roleId = 0,string permissionType="", int pageIndex = 1, int pageSize = 20, string searchText = "", string sortQuery = "")
+        public async Task<ListResultObject<MTPermissionCenter_Permission>> GetAllPermissionsAsync(long roleId = 0,string permissionType="", int pageIndex = 1, int pageSize = 20, string searchText = "", string sortQuery = "")
         {
-            ListResultObject<Permission> results = new ListResultObject<Permission>();
+            ListResultObject<MTPermissionCenter_Permission> results = new ListResultObject<MTPermissionCenter_Permission>();
             try
             {
-                IQueryable<Permission> query = _context.Permissions.AsNoTracking();
+                IQueryable<MTPermissionCenter_Permission> query = _context.Permissions.AsNoTracking();
                 if (roleId > 0)
                 {
                     query = _context.PermissionRoles.Where(x => x. RoleId== roleId).Select(x => x.Permission)
@@ -90,16 +91,15 @@ namespace AITechDATA.DataLayer.Services
                 {
                     query = query.Where(x => x.PermissionType.ToLower() == permissionType.ToLower());
                 }
-                else
-                {
+             
                     query = query.Where(x =>
                       (!string.IsNullOrEmpty(x.Name) && x.Name.Contains(searchText))
                    || (!string.IsNullOrEmpty(x.PermissionType) && x.PermissionType.Contains(searchText))
-                   || (!string.IsNullOrEmpty(x.Name_EN) && x.Name_EN.Contains(searchText))
-                   || (!string.IsNullOrEmpty(x.Description_EN) && x.Description_EN.Contains(searchText))
+                   || (!string.IsNullOrEmpty(x.Icon) && x.Icon.Contains(searchText))
+                   || (!string.IsNullOrEmpty(x.Routename) && x.Routename.Contains(searchText))
+                   || (!string.IsNullOrEmpty(x.Key) && x.Key.Contains(searchText))
                    || (!string.IsNullOrEmpty(x.Description) && x.Description.Contains(searchText))
                   );
-                }
 
                 results.TotalCount = query.Count();
                 results.PageCount = DbTools.GetPageCount(results.TotalCount, pageSize);
@@ -116,9 +116,9 @@ namespace AITechDATA.DataLayer.Services
             return results;
         }
 
-        public async Task<RowResultObject<Permission>> GetPermissionByIdAsync(long permissionId)
+        public async Task<RowResultObject<MTPermissionCenter_Permission>> GetPermissionByIdAsync(long permissionId)
         {
-            RowResultObject<Permission> result = new RowResultObject<Permission>();
+            RowResultObject<MTPermissionCenter_Permission> result = new RowResultObject<MTPermissionCenter_Permission>();
             try
             {
                 result.Result = await _context.Permissions
@@ -134,7 +134,7 @@ namespace AITechDATA.DataLayer.Services
             return result;
         }
 
-        public async Task<BitResultObject> RemovePermissionAsync(Permission permission)
+        public async Task<BitResultObject> RemovePermissionAsync(MTPermissionCenter_Permission permission)
         {
             BitResultObject result = new BitResultObject();
             try

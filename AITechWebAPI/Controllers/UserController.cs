@@ -26,7 +26,7 @@ namespace AITechWebAPI.Controllers
     [ApiController]
     [Authorize]
     [Produces("application/json")]
-    [CheckRoleBase(new[] { (int)BaseRole.MiddleAdmin, (int)BaseRole.GeneralAdmin })]
+    // [CheckRoleBase(new[] { (int)BaseRole.MiddleAdmin, (int)BaseRole.GeneralAdmin })]
 
 
     public class UserController : ControllerBase
@@ -153,6 +153,7 @@ namespace AITechWebAPI.Controllers
                 OtherLangs = requestBody.OtherLangs ?? "",
                 PasswordHash = requestBody.Password.ToHash(),
                 RoleId = requestBody.RoleId,
+                PermissionsVersion = requestBody.PermissionsVersion,
 
             };
             var result = await _UserRep.AddUserAsync(User);
@@ -207,6 +208,7 @@ namespace AITechWebAPI.Controllers
                 PasswordHash = theRow.Result.PasswordHash,
                 RoleId = requestBody.RoleId ?? theRow.Result.RoleId,
                 OtherLangs = requestBody.OtherLangs ?? "",
+                PermissionsVersion = requestBody.PermissionsVersion,
 
             };
             result = await _UserRep.EditUserAsync(User);
@@ -280,6 +282,8 @@ namespace AITechWebAPI.Controllers
                     PasswordHash = requestBody.Password.ToHash(),
                     RoleId = requestBody.RoleId,
                     OtherLangs = requestBody.OtherLangs ?? "",
+                    PermissionsVersion = requestBody.PermissionsVersion,
+
 
                 };
                 result = await _UserRep.AddUserAsync(User);
@@ -366,6 +370,7 @@ namespace AITechWebAPI.Controllers
                     PasswordHash = theRow.Result.PasswordHash,
                     RoleId = requestBody.RoleId ?? theRow.Result.RoleId,
                     OtherLangs = requestBody.OtherLangs ?? "",
+                    PermissionsVersion = requestBody.PermissionsVersion,
                 };
                 result = await _UserRep.EditUserAsync(User);
             }

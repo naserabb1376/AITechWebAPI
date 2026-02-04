@@ -5,7 +5,7 @@ namespace AITechWebAPI.Models.Role
 {
     public class GetRoleListRequestBody : GetListRequestBody
     {
-        [Display(Name = "کد دسترسی")]
-        public long PermissionId { get; set; } = 0;
+        //[Display(Name = "کد دسترسی")]
+        //public long PermissionId { get; set; } = 0;
     }
 }

@@ -6,6 +6,7 @@ using AITechWebAPI.ViewModels;
 using AutoMapper;
 using Microsoft.AspNetCore.JsonPatch.Adapters;
 using Microsoft.JSInterop;
+using MTPermissionCenter.EFCore.Entities;
 using NobatPlusDATA.Domain;
 
 
@@ -52,7 +53,7 @@ namespace AITechWebAPI.Tools
 
             CreateMap<Category, CategoryVM>();
             CreateMap<City, CityVM>();
-            CreateMap<Permission, PermissionVM>();
+            CreateMap<MTPermissionCenter_Permission, PermissionVM>();
             CreateMap<Role, RoleVM>();
             CreateMap<SessionAssignment, SessionAssignmentVM>();
             CreateMap<Setting, SettingVM>();
@@ -121,9 +122,8 @@ namespace AITechWebAPI.Tools
             CreateMap<PaymentHistory, PaymentHistoryVM>()
 .ForMember(dest => dest.UserName, opt => opt.MapFrom(src => $"{src.User.FirstName} {src.User.LastName}"));
 
-            CreateMap<PermissionRole, PermissionRoleVM>()
+            CreateMap<MTPermissionCenter_PermissionRole, PermissionRoleVM>()
 .ForMember(dest => dest.PermissionName, opt => opt.MapFrom(src => src.Permission.Name))
-.ForMember(dest => dest.RoleName, opt => opt.MapFrom(src => src.Role.Name))
 .ForMember(dest => dest.RouteName, opt => opt.MapFrom(src => src.Permission.Routename))
 .ForMember(dest => dest.PermissionType, opt => opt.MapFrom(src => src.Permission.PermissionType));
 

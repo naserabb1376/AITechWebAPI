@@ -5,20 +5,21 @@ using System.Text;
 using System.Threading.Tasks;
 using AITechDATA.Domain;
 using AITechDATA.ResultObjects;
+using MTPermissionCenter.EFCore.Entities;
 
 namespace AITechDATA.DataLayer.Repositories
 {
     public interface IPermissionRep
     {
-        Task<ListResultObject<Permission>> GetAllPermissionsAsync(long roleId =0,string permissionType="",int pageIndex = 1, int pageSize = 20, string searchText = "",string sortQuery ="");
+        Task<ListResultObject<MTPermissionCenter_Permission>> GetAllPermissionsAsync(long roleId =0,string permissionType="",int pageIndex = 1, int pageSize = 20, string searchText = "",string sortQuery ="");
 
-        Task<RowResultObject<Permission>> GetPermissionByIdAsync(long permissionId);
+        Task<RowResultObject<MTPermissionCenter_Permission>> GetPermissionByIdAsync(long permissionId);
 
-        Task<BitResultObject> AddPermissionAsync(Permission permission);
+        Task<BitResultObject> AddPermissionAsync(MTPermissionCenter_Permission permission);
 
-        Task<BitResultObject> EditPermissionAsync(Permission permission);
+        Task<BitResultObject> EditPermissionAsync(MTPermissionCenter_Permission permission);
 
-        Task<BitResultObject> RemovePermissionAsync(Permission permission);
+        Task<BitResultObject> RemovePermissionAsync(MTPermissionCenter_Permission permission);
 
         Task<BitResultObject> RemovePermissionAsync(long permissionId);
 

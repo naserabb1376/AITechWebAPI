@@ -115,4 +115,16 @@
     <Folder Include="FileCenter\User\Images\Public\" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Reference Include="MTPermissionCenter.Abstractions">
+      <HintPath>..\..\MTPermissionCenter\MTPermissionCenter.EFCore\bin\Release\net8.0\MTPermissionCenter.Abstractions.dll</HintPath>
+    </Reference>
+    <Reference Include="MTPermissionCenter.AspNetCore">
+      <HintPath>..\..\MTPermissionCenter\MTPermissionCenter.AspNetCore\bin\Release\net8.0\MTPermissionCenter.AspNetCore.dll</HintPath>
+    </Reference>
+    <Reference Include="MTPermissionCenter.EFCore">
+      <HintPath>..\..\MTPermissionCenter\MTPermissionCenter.EFCore\bin\Release\net8.0\MTPermissionCenter.EFCore.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+
 </Project>

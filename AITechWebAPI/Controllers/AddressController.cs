@@ -25,7 +25,7 @@ namespace AITechWebAPI.Controllers
     [ApiController]
     [Authorize]
     [Produces("application/json")]
-    [CheckRoleBase(new[] { (int)BaseRole.MiddleAdmin, (int)BaseRole.GeneralAdmin })]
+    // [CheckRoleBase(new[] { (int)BaseRole.MiddleAdmin, (int)BaseRole.GeneralAdmin })]
 
     public class AddressController : ControllerBase
     {
@@ -146,7 +146,7 @@ namespace AITechWebAPI.Controllers
         }
 
         [HttpPut("EditAddress_Base")]
-        public async Task<ActionResult<BitResultObject>> EditAddress_Base(AddEditAddressRequestBody requestBody)
+        public async Task<ActionResult<BitResultObject>> EditAddress_Base(AddEditSelfAddressRequestBody requestBody)
         {
             var result = new BitResultObject();
             if (!ModelState.IsValid)

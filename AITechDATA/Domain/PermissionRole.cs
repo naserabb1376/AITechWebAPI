@@ -16,7 +16,7 @@ namespace AITechDATA.Domain
 
         public long PerrmissionId { get; set; }
 
-        [ForeignKey("RoleId")]
+        [ForeignKey("PerrmissionId")]
         public Permission Permission { get; set; }
     }
 }

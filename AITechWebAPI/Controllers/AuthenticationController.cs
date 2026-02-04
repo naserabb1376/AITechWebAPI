@@ -108,9 +108,9 @@ namespace AITechWebAPI.Controllers
                         authenticateResult.Result.StudentDetails = newStudent;
                     }
                     var refreshToken = ToolBox.GenerateToken(); // تولید رفرش توکن
-                    var permissionObj = await _permissionRep.GetAllPermissionsAsync(authenticateResult.Result.RoleId, "action", 1, 0);
-                    var permissionsJson = JsonConvert.SerializeObject(permissionObj.Results.Select(x => x.Routename).ToList()).ToHash();
-                    var accessToken = ToolBox.GenerateAccessToken(authenticateResult.Result,permissionsJson); // تولید رفرش توکن
+                    //var permissionObj = await _permissionRep.GetAllPermissionsAsync(authenticateResult.Result.RoleId, "action", 1, 0);
+                    //var permissionsJson = JsonConvert.SerializeObject(permissionObj.Results.Select(x => x.Routename).ToList()).ToHash();
+                    var accessToken = ToolBox.GenerateAccessToken(authenticateResult.Result); // تولید رفرش توکن
                     var refreshTokenExpiryDate = DateTime.Now.ToShamsi().AddDays(30); // تنظیم تاریخ انقضای رفرش توکن برای 30 روز
 
 
@@ -224,7 +224,7 @@ namespace AITechWebAPI.Controllers
                 var refreshToken = ToolBox.GenerateToken(); // تولید رفرش توکن
                 var permissionObj = await _permissionRep.GetAllPermissionsAsync(user.Result.RoleId,"action",1,0);
                 var permissionsJson = JsonConvert.SerializeObject(permissionObj.Results.Select(x => x.Routename).ToList()).ToHash();
-                var accessToken = ToolBox.GenerateAccessToken(user.Result,permissionsJson); // تولید رفرش توکن
+                var accessToken = ToolBox.GenerateAccessToken(user.Result); // تولید رفرش توکن
                 var refreshTokenExpiryDate = DateTime.Now.ToShamsi().AddDays(30); // تنظیم تاریخ انقضای رفرش توکن برای 30 روز
 
 
@@ -344,6 +344,8 @@ namespace AITechWebAPI.Controllers
                     CreateDate = DateTime.Now.ToShamsi(),
                     UpdateDate = DateTime.Now.ToShamsi(),
                     AddressId = (address != null && address.ID > 0) ? address.ID : null,
+                    PermissionsVersion = 1,
+                    IsActive = true,
                 };
                 //if(user.RoleId == 1) // user is student
                 //{
@@ -937,6 +939,9 @@ namespace AITechWebAPI.Controllers
                     CreateDate = DateTime.Now.ToShamsi(),
                     UpdateDate = DateTime.Now.ToShamsi(),
                     AddressId = (address != null && address.ID > 0) ? address.ID : null,
+                    PermissionsVersion = 1,
+                    IsActive = true,
+
                 };
                 ////if(user.RoleId == 1) // user is student
                 ////{

@@ -134,7 +134,7 @@ namespace AITechWebAPI.Tools
         }
 
         // تابع تولید Access Token (JWT)
-        public static string GenerateAccessToken(User login,string permissionsJson)
+        public static string GenerateAccessToken(User login)
         {
             var key = Configuration["Jwt:Key"];
             var issuer = Configuration["Jwt:Issuer"];
@@ -142,7 +142,7 @@ namespace AITechWebAPI.Tools
 
             var securityKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(key));
             var signingCredentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
-            List<Claim> claims = SetClaims(login,permissionsJson);
+            List<Claim> claims = SetClaims(login);
 
             var token = new JwtSecurityToken(
                 issuer,
@@ -156,7 +156,7 @@ namespace AITechWebAPI.Tools
             return tokenString;
         }
 
-        private static List<Claim> SetClaims(User login, string permissionsJson)
+        private static List<Claim> SetClaims(User login)
         {
             return new List<Claim>
             {
@@ -166,7 +166,8 @@ namespace AITechWebAPI.Tools
             new Claim("FullName", $"{login.FirstName} {login.LastName}"),
             new Claim("Role", login.RoleId.ToString()),
             new Claim("StudentId", login.StudentDetails?.ID.ToString() ?? "0"),
-            new Claim("PermissionsJson", permissionsJson)
+            //new Claim("PermissionsJson", permissionsJson),
+            new Claim("permVer", login.PermissionsVersion.ToString()),
             };
         }
 

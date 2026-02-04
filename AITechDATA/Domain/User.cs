@@ -2,11 +2,12 @@
   using System.ComponentModel.DataAnnotations;
 using AiTech.Domains;
 using Microsoft.AspNetCore.Identity;
+using MTPermissionCenter.Abstractions;
 
 namespace AITechDATA.Domain
 {
     // User: جدول کاربران
-    public class User : BaseEntity
+    public class User : BaseEntity,IHasPermissionVersion
     {
         public string FirstName { get; set; }
         public string LastName { get; set; }
@@ -14,6 +15,7 @@ namespace AITechDATA.Domain
         public string NationalCode { get; set; }
         public string Username { get; set; }
         public string PasswordHash { get; set; } // هش رمز عبور
+        public long PermissionsVersion { get; set; } = 1;
         public long RoleId { get; set; } // کلید خارجی به Role
         public Role Role { get; set; } // ارتباط با Role
         public long? AddressId { get; set; } // کلید خارجی به Address

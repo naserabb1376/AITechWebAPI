@@ -1,18 +1,19 @@
-﻿using AITechDATA.DataLayer.Repositories;
+﻿using AITechDATA.CustomResponses;
+using AITechDATA.DataLayer.Repositories;
 using AITechDATA.Domain;
 using AITechDATA.ResultObjects;
-using Microsoft.EntityFrameworkCore;
 using AITechDATA.Tools;
+using Microsoft.EntityFrameworkCore;
+using MTPermissionCenter.Abstractions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using AITechDATA.CustomResponses;
 
 namespace AITechDATA.DataLayer.Services
 {
-    public class UserRep : IUserRep
+    public class UserRep : IUserRep, IUserRoleProvider
     {
         private AITechContext _context;
 
@@ -354,6 +355,14 @@ namespace AITechDATA.DataLayer.Services
                 result.ErrorMessage = $"{ex.Message} - {ex.InnerException?.Message}";
             }
             return result;
+        }
+
+        public async Task<long?> GetUserRoleIdAsync(long userId, CancellationToken ct = default)
+        {
+            return await _context.Users.AsNoTracking()
+                       .Where(u => u.ID == userId)
+                       .Select(u => (long?)u.RoleId)
+                       .SingleOrDefaultAsync(ct);
         }
     }
 }

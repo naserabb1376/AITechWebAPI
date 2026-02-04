@@ -10,9 +10,9 @@ namespace AITechWebAPI.Models.Permission
         [Required(ErrorMessage = "لطفا {0} را وارد کنید")]
         public string Name { get; set; }
 
-        [Display(Name = "نام انگلیسی دسترسی")]
+        [Display(Name = "کلید دسترسی")]
         [Required(ErrorMessage = "لطفا {0} را وارد کنید")]
-        public string Name_EN { get; set; }
+        public string Key { get; set; }
 
         [Display(Name = "آیکون دسترسی")]
         [Required(ErrorMessage = "لطفا {0} را وارد کنید")]
@@ -28,10 +28,6 @@ namespace AITechWebAPI.Models.Permission
 
         [Display(Name = "نوع دسترسی")]
         public string? PermissionType { get; set; }
-
-        [Display(Name = "شرح دسترسی انگلیسی")]
-        [Required(ErrorMessage = "لطفا {0} را وارد کنید")]
-        public string Description_EN { get; set; } // توضیحات دسترسی
 
         [Display(Name = "زبان های دیگر")]
         public string? OtherLangs { get; set; } = "";

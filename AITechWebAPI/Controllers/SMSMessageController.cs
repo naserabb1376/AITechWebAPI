@@ -28,7 +28,7 @@ namespace AITechAPI.Controllers
     [Authorize]
     [Produces("application/json")]
 
-    [CheckRoleBase(new[] { (int)BaseRole.MiddleAdmin, (int)BaseRole.GeneralAdmin })]
+    // [CheckRoleBase(new[] { (int)BaseRole.MiddleAdmin, (int)BaseRole.GeneralAdmin })]
 
     public class SMSMessageController : ControllerBase
     {

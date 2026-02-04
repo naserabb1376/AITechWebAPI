@@ -14,6 +14,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
+using MTPermissionCenter.EFCore.Entities;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
@@ -25,21 +26,23 @@ namespace AITechWebAPI.Controllers
     [ApiController]
     [Produces("application/json")]
     [Authorize]
-    [CheckRoleBase(new[] { (int)BaseRole.GeneralAdmin })]
+    // [CheckRoleBase(new[] { (int)BaseRole.GeneralAdmin })]
 
     public class PermissionController : ControllerBase
     {
         private IPermissionRep _PermissionRep;
         private IPermissionRoleRep _PermissionRoleRep;
+        IPermissionInvalidationService _PermissionInvalidationService;
         private ILogRep _logRep;
         private readonly IMapper _mapper;
 
 
-        public PermissionController(IPermissionRep PermissionRep,IPermissionRoleRep permissionRoleRep, ILogRep logRep,IMapper mapper)
+        public PermissionController(IPermissionRep PermissionRep,IPermissionRoleRep permissionRoleRep, ILogRep logRep,IPermissionInvalidationService permissionInvalidationService,IMapper mapper)
         {
             _PermissionRep = PermissionRep;
             _PermissionRoleRep = permissionRoleRep;
             _logRep = logRep;
+            _PermissionInvalidationService = permissionInvalidationService;
             _mapper = mapper;
         }
 
@@ -97,20 +100,19 @@ namespace AITechWebAPI.Controllers
             {
                 return BadRequest(requestBody);
             }
-            Permission Permission = new Permission()
+            MTPermissionCenter_Permission Permission = new MTPermissionCenter_Permission()
             {
                 CreateDate = DateTime.Now.ToShamsi(),
                 UpdateDate = DateTime.Now.ToShamsi(),
                 Description = requestBody.Description ?? "",
                 Name = requestBody.Name,
-                Name_EN = requestBody.Name_EN,
+                Key = requestBody.Key,
                 Icon = requestBody.Icon,
                 Routename = requestBody.Routename,
-                Description_EN = requestBody.Description_EN,
                 PermissionType = requestBody.PermissionType ??"",
                 OtherLangs = requestBody.OtherLangs ?? "",
-
-
+                IsActive = true,
+                
             };
             var result = await _PermissionRep.AddPermissionAsync(Permission);
             if (result.Status)
@@ -128,17 +130,17 @@ namespace AITechWebAPI.Controllers
 
                 #endregion AddLog
 
-                PermissionRole permissionRole = new PermissionRole() 
+                MTPermissionCenter_PermissionRole permissionRole = new MTPermissionCenter_PermissionRole() 
                 { 
                     CreateDate = DateTime.Now.ToShamsi(),
                     UpdateDate = DateTime.Now.ToShamsi(),
-                    OtherLangs = "",
                     IsActive = true,
-                    PerrmissionId = result.ID,
+                    PermissionId = result.ID,
                     RoleId = 4,
+                    OwnerOnly = false,
                 };
 
-                result = await _PermissionRoleRep.AddPermissionRolesAsync(new List<PermissionRole> { permissionRole });
+                result = await _PermissionRoleRep.AddPermissionRolesAsync(new List<MTPermissionCenter_PermissionRole> { permissionRole });
                 if (result.Status)
                 {
                     #region AddLog
@@ -153,6 +155,9 @@ namespace AITechWebAPI.Controllers
                     await _logRep.AddLogAsync(log);
 
                     #endregion AddLog
+
+                    await _PermissionInvalidationService.BumpRoleUsersVersionAsync(new List<long> {4});
+
 
                     return Ok(result);
                 }
@@ -175,17 +180,17 @@ namespace AITechWebAPI.Controllers
                 result.ErrorMessage = theRow.ErrorMessage;
             }
 
-            Permission Permission = new Permission()
+            MTPermissionCenter_Permission Permission = new MTPermissionCenter_Permission()
             {
                 CreateDate = theRow.Result.CreateDate,
                 UpdateDate = DateTime.Now.ToShamsi(),
                 ID = requestBody.ID,
                 Description = requestBody.Description ?? "",
                 Name = requestBody.Name,
-                Name_EN = requestBody.Name_EN,
+                Key = requestBody.Key,
+                IsActive = true,
                 Icon = requestBody.Icon,
                 Routename = requestBody.Routename,
-                Description_EN = requestBody.Description_EN,
                 PermissionType = requestBody.PermissionType ?? "",
                 OtherLangs = requestBody.OtherLangs ?? "",
 
@@ -238,5 +243,129 @@ namespace AITechWebAPI.Controllers
             }
             return BadRequest(result);
         }
-    }
+
+
+		[HttpPost("InitPermissions")]
+        [AllowAnonymous]
+		public async Task<ActionResult<BitResultObject>> InitPermissions(/*[FromBody] List<ControllerActionInfo> requestBody*/)
+		{
+            var result = new BitResultObject();
+            int addCount = 0,noAddCount=0;
+			//if (!ModelState.IsValid)
+			//{
+			//	return BadRequest(requestBody);
+			//}
+
+            try
+            {
+				//foreach (var action in requestBody)
+				//{
+                    var permissionInfo = await _PermissionRep.GetAllPermissionsAsync(0, "action", 1,0, "EditUser_Base");
+                    var roleIds = new long[] { 1, 2, 7 };
+                    foreach (var roleId in roleIds)
+                    {
+						MTPermissionCenter_PermissionRole permissionRole = new MTPermissionCenter_PermissionRole()
+						{
+							CreateDate = DateTime.Now.ToShamsi(),
+							UpdateDate = DateTime.Now.ToShamsi(),
+							IsActive = true,
+							PermissionId = permissionInfo.Results.FirstOrDefault().ID,
+							RoleId = roleId,
+							OwnerOnly = true,
+						};
+
+						result = await _PermissionRoleRep.AddPermissionRolesAsync(new List<MTPermissionCenter_PermissionRole> { permissionRole });
+
+                        if (result.Status)
+                        {
+                            addCount++;
+                        }
+
+                        else
+                        {
+                            noAddCount++;
+                        }
+					}
+
+					//MTPermissionCenter_Permission Permission = new MTPermissionCenter_Permission()
+					//{
+					//	CreateDate = DateTime.Now.ToShamsi(),
+					//	UpdateDate = DateTime.Now.ToShamsi(),
+					//	Description = "",
+					//	Name = action.ActionName,
+					//	Key = action.PermissionKey,
+					//	Icon = "",
+					//	Routename = "",
+					//	PermissionType = "Action",
+					//	OtherLangs = "",
+					//	IsActive = true,
+
+					//};
+					//result = await _PermissionRep.AddPermissionAsync(Permission);
+
+					//if (result.Status)
+					//{
+					//	#region AddLog
+
+					//	Log log = new Log()
+					//	{
+					//		CreateDate = DateTime.Now.ToShamsi(),
+					//		UpdateDate = DateTime.Now.ToShamsi(),
+					//		LogTime = DateTime.Now.ToShamsi(),
+					//		ActionName = this.ControllerContext.RouteData.Values["action"].ToString(),
+					//	};
+					//	await _logRep.AddLogAsync(log);
+
+					//	#endregion AddLog
+
+
+
+						
+
+				//}
+
+
+				if (result.Status)
+				{
+					#region AddLog
+
+					Log log = new Log()
+					{
+						CreateDate = DateTime.Now.ToShamsi(),
+						UpdateDate = DateTime.Now.ToShamsi(),
+						LogTime = DateTime.Now.ToShamsi(),
+						ActionName = $"{this.ControllerContext.RouteData.Values["action"].ToString()}/AddPermissionRolesAsync",
+					};
+					await _logRep.AddLogAsync(log);
+
+					#endregion AddLog
+
+					//await _PermissionInvalidationService.BumpRoleUsersVersionAsync(new List<long> { 4 });
+
+
+					//}
+				}
+			}
+            catch (Exception ex)
+            {
+                result.ErrorMessage = $"{ex.Message}\n{ex.InnerException?.Message}";
+                result.Status = false;
+
+                return BadRequest(result);
+            }
+
+            result.ErrorMessage = $"AddCount: {addCount} , NoAddCount: {noAddCount}";
+
+			return Ok(result);
+		}
+	}
+
+	public class ControllerActionInfo
+	{
+		public string ActionName { get; set; } = "";
+		public string PermissionKey { get; set; } = "";
+		public bool HasAuth { get; set; }
+		public string AdminRoles { get; set; }
+
+	}
 }

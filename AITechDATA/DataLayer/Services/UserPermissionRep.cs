@@ -13,26 +13,26 @@ using MTPermissionCenter.EFCore.Entities;
 
 namespace AITechDATA.DataLayer.Services
 {
-    public class PermissionRoleRep : IPermissionRoleRep
+    public class UserPermissionRep : IUserPermissionRep
     {
         private AITechContext _context;
 
-        public PermissionRoleRep(AITechContext context)
+        public UserPermissionRep(AITechContext context)
         {
             _context = context;
         }
 
-        public async Task<BitResultObject> AddPermissionRolesAsync(List<MTPermissionCenter_PermissionRole> PermissionRoles)
+        public async Task<BitResultObject> AddUserPermissionsAsync(List<MTPermissionCenter_UserPermission> UserPermissions)
         {
             BitResultObject result = new BitResultObject();
             try
             {
-                await _context.PermissionRoles.AddRangeAsync(PermissionRoles);
+                await _context.UserPermissions.AddRangeAsync(UserPermissions);
                 await _context.SaveChangesAsync();
-                result.ID = PermissionRoles.FirstOrDefault().ID;
-                foreach (var permissionRole in PermissionRoles)
+                result.ID = UserPermissions.FirstOrDefault().ID;
+                foreach (var UserPermission in UserPermissions)
                 {
-                    _context.Entry(permissionRole).State = EntityState.Detached;
+                    _context.Entry(UserPermission).State = EntityState.Detached;
                 }
             }
             catch (Exception ex)
@@ -43,17 +43,17 @@ namespace AITechDATA.DataLayer.Services
             return result;
         }
 
-        public async Task<BitResultObject> EditPermissionRolesAsync(List<MTPermissionCenter_PermissionRole> PermissionRoles)
+        public async Task<BitResultObject> EditUserPermissionsAsync(List<MTPermissionCenter_UserPermission> UserPermissions)
         {
             BitResultObject result = new BitResultObject();
             try
             {
-                _context.PermissionRoles.UpdateRange(PermissionRoles);
+                _context.UserPermissions.UpdateRange(UserPermissions);
                 await _context.SaveChangesAsync();
-                result.ID = PermissionRoles.FirstOrDefault().ID;
-                foreach (var permissionRole in PermissionRoles)
+                result.ID = UserPermissions.FirstOrDefault().ID;
+                foreach (var UserPermission in UserPermissions)
                 {
-                    _context.Entry(permissionRole).State = EntityState.Detached;
+                    _context.Entry(UserPermission).State = EntityState.Detached;
                 }
             }
             catch (Exception ex)
@@ -64,15 +64,15 @@ namespace AITechDATA.DataLayer.Services
             return result;
         }
 
-        public async Task<BitResultObject> ExistPermissionRoleAsync(long PermissionRoleId)
+        public async Task<BitResultObject> ExistUserPermissionAsync(long UserPermissionId)
         {
             BitResultObject result = new BitResultObject();
             try
             {
-                result.Status = await _context.PermissionRoles
+                result.Status = await _context.UserPermissions
                     .AsNoTracking()
-                    .AnyAsync(x => x.ID == PermissionRoleId);
-                result.ID = PermissionRoleId;
+                    .AnyAsync(x => x.ID == UserPermissionId);
+                result.ID = UserPermissionId;
             }
             catch (Exception ex)
             {
@@ -82,20 +82,20 @@ namespace AITechDATA.DataLayer.Services
             return result;
         }
 
-        public async Task<ListResultObject<MTPermissionCenter_PermissionRole>> GetAllPermissionRolesAsync(long RoleId = 0, long PerrmissionId = 0, string permissionType = "", int pageIndex = 1, int pageSize = 20, string searchText = "", string sortQuery = "")
+        public async Task<ListResultObject<MTPermissionCenter_UserPermission>> GetAllUserPermissionsAsync(long UserId = 0, long PerrmissionId = 0, string permissionType = "", int pageIndex = 1, int pageSize = 20, string searchText = "", string sortQuery = "")
         {
-            ListResultObject<MTPermissionCenter_PermissionRole> results = new ListResultObject<MTPermissionCenter_PermissionRole>();
+            ListResultObject<MTPermissionCenter_UserPermission> results = new ListResultObject<MTPermissionCenter_UserPermission>();
             try
             {
-                var query = _context.PermissionRoles.Include(x => x.Permission).AsNoTracking();
+                var query = _context.UserPermissions.Include(x => x.Permission).AsNoTracking();
                 if (PerrmissionId > 0)
                 {
                     query = query.Where(x => x.PermissionId == PerrmissionId);
                 }
 
-                if (RoleId > 0)
+                if (UserId > 0)
                 {
-                    query = query.Where(x => x.RoleId == RoleId);
+                    query = query.Where(x => x.UserId == UserId);
 
                 }
 
@@ -129,15 +129,15 @@ namespace AITechDATA.DataLayer.Services
             return results;
         }
 
-        public async Task<RowResultObject<MTPermissionCenter_PermissionRole>> GetPermissionRoleByIdAsync(long PermissionRoleId)
+        public async Task<RowResultObject<MTPermissionCenter_UserPermission>> GetUserPermissionByIdAsync(long UserPermissionId)
         {
-            RowResultObject<MTPermissionCenter_PermissionRole> result = new RowResultObject<MTPermissionCenter_PermissionRole>();
+            RowResultObject<MTPermissionCenter_UserPermission> result = new RowResultObject<MTPermissionCenter_UserPermission>();
             try
             {
-                result.Result = await _context.PermissionRoles
+                result.Result = await _context.UserPermissions
                     .AsNoTracking()
                     .Include(x => x.Permission)
-                    .SingleOrDefaultAsync(x => x.ID == PermissionRoleId);
+                    .SingleOrDefaultAsync(x => x.ID == UserPermissionId);
             }
             catch (Exception ex)
             {
@@ -147,17 +147,17 @@ namespace AITechDATA.DataLayer.Services
             return result;
         }
 
-        public async Task<BitResultObject> RemovePermissionRolesAsync(List<MTPermissionCenter_PermissionRole> PermissionRoles)
+        public async Task<BitResultObject> RemoveUserPermissionsAsync(List<MTPermissionCenter_UserPermission> UserPermissions)
         {
             BitResultObject result = new BitResultObject();
             try
             {
-                _context.PermissionRoles.RemoveRange(PermissionRoles);
+                _context.UserPermissions.RemoveRange(UserPermissions);
                 await _context.SaveChangesAsync();
-                result.ID = PermissionRoles.FirstOrDefault().ID;
-                foreach (var permissionRole in PermissionRoles)
+                result.ID = UserPermissions.FirstOrDefault().ID;
+                foreach (var UserPermission in UserPermissions)
                 {
-                    _context.Entry(permissionRole).State = EntityState.Detached;
+                    _context.Entry(UserPermission).State = EntityState.Detached;
                 }
             }
             catch (Exception ex)
@@ -168,30 +168,30 @@ namespace AITechDATA.DataLayer.Services
             return result;
         }
 
-        public async Task<BitResultObject> RemovePermissionRolesAsync(List<long> PermissionRoleIds)
+        public async Task<BitResultObject> RemoveUserPermissionsAsync(List<long> UserPermissionIds)
         {
             BitResultObject result = new BitResultObject();
             try
             {
-                var PermissionRolesToRemove = new List<MTPermissionCenter_PermissionRole>();
+                var UserPermissionsToRemove = new List<MTPermissionCenter_UserPermission>();
 
-                foreach (var PermissionRoleId in PermissionRoleIds)
+                foreach (var UserPermissionId in UserPermissionIds)
                 {
-                    var PermissionRole = await GetPermissionRoleByIdAsync(PermissionRoleId);
-                    if (PermissionRole.Result != null)
+                    var UserPermission = await GetUserPermissionByIdAsync(UserPermissionId);
+                    if (UserPermission.Result != null)
                     {
-                        PermissionRolesToRemove.Add(PermissionRole.Result);
+                        UserPermissionsToRemove.Add(UserPermission.Result);
                     }
                 }
 
-                if (PermissionRolesToRemove.Any())
+                if (UserPermissionsToRemove.Any())
                 {
-                    result = await RemovePermissionRolesAsync(PermissionRolesToRemove);
+                    result = await RemoveUserPermissionsAsync(UserPermissionsToRemove);
                 }
                 else
                 {
                     result.Status = false;
-                    result.ErrorMessage = "No matching PermissionRoles found to remove.";
+                    result.ErrorMessage = "No matching UserPermissions found to remove.";
                 }
             }
             catch (Exception ex)

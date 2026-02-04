@@ -8,6 +8,8 @@ using AiTech.Domains;
 using AITechDATA.Domain;
 using AITechDATA.Tools;
 using NobatPlusDATA.Domain;
+using MTPermissionCenter.EFCore;
+using MTPermissionCenter.EFCore.Entities;
 
 namespace AITechDATA.DataLayer
 {
@@ -36,7 +38,6 @@ namespace AITechDATA.DataLayer
         public DbSet<Group> Groups { get; set; }
         public DbSet<Image> Images { get; set; }
         public DbSet<LoginMethod> LoginMethods { get; set; }
-        public DbSet<PermissionRole> PermissionRoles { get; set; }
         public DbSet<UserCourse> UserCourses { get; set; }
         public DbSet<UserGroup> UserGroups { get; set; }
         public DbSet<News> News { get; set; }
@@ -46,7 +47,6 @@ namespace AITechDATA.DataLayer
         public DbSet<Notification> Notifications { get; set; }
         public DbSet<Parent> Parents { get; set; }
         public DbSet<PaymentHistory> PaymentHistories { get; set; }
-        public DbSet<Permission> Permissions { get; set; }
         public DbSet<PreRegistration> PreRegistrations { get; set; }
         public DbSet<Role> Roles { get; set; }
         public DbSet<Session> Sessions { get; set; }
@@ -74,6 +74,14 @@ namespace AITechDATA.DataLayer
         public DbSet<ClassForAi> ClassForAi { get; set; }
 
 
+        // MTPermissionCenter
+
+        public DbSet<MTPermissionCenter_Permission> Permissions { get; set; }
+        public DbSet<MTPermissionCenter_PermissionRole> PermissionRoles { get; set; }
+        public DbSet<MTPermissionCenter_UserPermission> UserPermissions { get; set; }
+
+
+
 
 
         //protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
@@ -96,6 +104,18 @@ namespace AITechDATA.DataLayer
                     .GetMethod(nameof(SqlServerJsonFunctions.JsonQuery))!)
                 .HasName("JSON_QUERY")
                 .IsBuiltIn();
+
+            // dynamic auth config
+            modelBuilder.AddMTPermissionCenter();
+
+            // demo config
+            modelBuilder.Entity<Role>().HasIndex(x => x.Name).IsUnique();
+
+            modelBuilder.Entity<User>()
+                .HasOne(u => u.Role)
+                .WithMany(r => r.Users)
+                .HasForeignKey(u => u.RoleId)
+                .OnDelete(DeleteBehavior.Restrict);
 
             modelBuilder.Entity<StudentDetails>()
                 .HasOne(sd => sd.User) // یک StudentDetails به یک User تعلق دارد
@@ -150,17 +170,17 @@ namespace AITechDATA.DataLayer
            .HasForeignKey(x => x.GroupId)
            .OnDelete(DeleteBehavior.Cascade);
 
-            modelBuilder.Entity<PermissionRole>()
-          .HasOne(x => x.Permission)
-          .WithMany(x => x.PermissionRoles)
-          .HasForeignKey(x => x.PerrmissionId)
-          .OnDelete(DeleteBehavior.Cascade);
+          //  modelBuilder.Entity<PermissionRole>()
+          //.HasOne(x => x.Permission)
+          //.WithMany(x => x.PermissionRoles)
+          //.HasForeignKey(x => x.PerrmissionId)
+          //.OnDelete(DeleteBehavior.Cascade);
 
-            modelBuilder.Entity<PermissionRole>()
-          .HasOne(x => x.Role)
-          .WithMany(x => x.PermissionRoles)
-          .HasForeignKey(x => x.RoleId)
-          .OnDelete(DeleteBehavior.Cascade);
+          //  modelBuilder.Entity<PermissionRole>()
+          //.HasOne(x => x.Role)
+          //.WithMany(x => x.PermissionRoles)
+          //.HasForeignKey(x => x.RoleId)
+          //.OnDelete(DeleteBehavior.Cascade);
 
             modelBuilder.Entity<Assignment>()
           .HasOne(x => x.User)

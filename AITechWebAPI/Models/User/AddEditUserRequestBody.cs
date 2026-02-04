@@ -63,6 +63,8 @@ namespace AITechWebAPI.Models.User
 
         [Display(Name = "زبان های دیگر")]
         public string? OtherLangs { get; set; } = "";
+
+        public long PermissionsVersion { get; set; } = 1;
     }
 
     public class AddEditUserProRequestBody
@@ -126,6 +128,8 @@ namespace AITechWebAPI.Models.User
         [Display(Name = "زبان های دیگر")]
         public string? OtherLangs { get; set; } = "";
 
+        public long PermissionsVersion { get; set; } = 1;
+
     }
 
     public class EditUserRequestBody
@@ -175,6 +179,8 @@ namespace AITechWebAPI.Models.User
         [Display(Name = "زبان های دیگر")]
         public string? OtherLangs { get; set; } = "";
 
+        public long PermissionsVersion { get; set; } = 1;
+
     }
 
     public class EditUserProRequestBody
@@ -221,6 +227,9 @@ namespace AITechWebAPI.Models.User
 
         [Display(Name = "زبان های دیگر")]
         public string? OtherLangs { get; set; } = "";
+
+        public long PermissionsVersion { get; set; } = 1;
+
 
     }
 }

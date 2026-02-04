@@ -14,6 +14,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
+using MTPermissionCenter.EFCore.Entities;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
@@ -25,19 +26,21 @@ namespace AITechWebAPI.Controllers
     [ApiController]
     [Authorize]
     [Produces("application/json")]
-    [CheckRoleBase(new[] { (int)BaseRole.GeneralAdmin })]
+    // [CheckRoleBase(new[] { (int)BaseRole.GeneralAdmin })]
 
     public class PermissionRoleController : ControllerBase
     {
         IPermissionRoleRep _PermissionRoleRep;
+        IPermissionInvalidationService _PermissionInvalidationService;
         ILogRep _logRep;
         private readonly IMapper _mapper;
 
 
-        public PermissionRoleController(IPermissionRoleRep PermissionRoleRep,ILogRep logRep,IMapper mapper)
+        public PermissionRoleController(IPermissionRoleRep PermissionRoleRep,ILogRep logRep,IPermissionInvalidationService permissionInvalidationService,IMapper mapper)
         {
            _PermissionRoleRep = PermissionRoleRep;
            _logRep = logRep;
+            _PermissionInvalidationService = permissionInvalidationService;
             _mapper = mapper;
         }
 
@@ -96,12 +99,14 @@ namespace AITechWebAPI.Controllers
                 return BadRequest(requestBody);
             }
 
-            var PermissionRoles = requestBody.Select(x=> new PermissionRole()
+            var PermissionRoles = requestBody.Select(x=> new MTPermissionCenter_PermissionRole()
             {
                 CreateDate = DateTime.Now.ToShamsi(),
                 UpdateDate = DateTime.Now.ToShamsi(),
-                PerrmissionId = x.PermissionId,
+                PermissionId = x.PermissionId,
                 RoleId = x.RoleId,
+                OwnerOnly = x.OwnerOnly,
+                IsActive = true
             }).ToList();
             
             var result = await _PermissionRoleRep.AddPermissionRolesAsync(PermissionRoles);
@@ -121,6 +126,7 @@ namespace AITechWebAPI.Controllers
 
                 #endregion
 
+                await _PermissionInvalidationService.BumpRoleUsersVersionAsync(PermissionRoles.Select(x=> x.RoleId).ToList());
 
                 return Ok(result);
             }
@@ -136,7 +142,7 @@ namespace AITechWebAPI.Controllers
             }
 
             var result = new BitResultObject();
-            var PermissionRoles = new List<PermissionRole>();
+            var PermissionRoles = new List<MTPermissionCenter_PermissionRole>();
 
             foreach (var body in requestBody)
             {
@@ -148,13 +154,15 @@ namespace AITechWebAPI.Controllers
                     return BadRequest(result);
                 }
 
-                var PermissionRole = new PermissionRole
+                var PermissionRole = new MTPermissionCenter_PermissionRole
                 {
                     CreateDate = theRow.Result.CreateDate,
                     UpdateDate = DateTime.Now.ToShamsi(),
                     ID = body.ID,
-                    PerrmissionId = body.PermissionId,
+                    PermissionId = body.PermissionId,
                     RoleId = body.RoleId,
+                    IsActive = true,
+                    OwnerOnly = body.OwnerOnly,
                 };
 
                 PermissionRoles.Add(PermissionRole);
@@ -175,6 +183,8 @@ namespace AITechWebAPI.Controllers
                 await _logRep.AddLogAsync(log);
 
                 #endregion
+
+                await _PermissionInvalidationService.BumpRoleUsersVersionAsync(PermissionRoles.Select(x => x.RoleId).ToList());
 
                 return Ok(result);
             }
@@ -205,6 +215,8 @@ namespace AITechWebAPI.Controllers
                 await _logRep.AddLogAsync(log);
 
                 #endregion
+
+                await _PermissionInvalidationService.BumpRoleUsersVersionAsync(ids);
 
                 return Ok(result);
             }

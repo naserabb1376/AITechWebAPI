@@ -25,7 +25,7 @@ namespace AITechWebAPI.Controllers
     [ApiController]
     [Produces("application/json")]
     [Authorize]
-    [CheckRoleBase(new[] { (int)BaseRole.MiddleAdmin, (int)BaseRole.GeneralAdmin, (int)BaseRole.ContentAdmin })]
+    // [CheckRoleBase(new[] { (int)BaseRole.MiddleAdmin, (int)BaseRole.GeneralAdmin, (int)BaseRole.ContentAdmin })]
 
     public class MinutesController : ControllerBase
     {

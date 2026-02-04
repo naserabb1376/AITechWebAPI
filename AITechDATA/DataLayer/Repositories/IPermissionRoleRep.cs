@@ -1,24 +1,25 @@
-﻿using System;
+﻿using AITechDATA.Domain;
+using AITechDATA.ResultObjects;
+using MTPermissionCenter.EFCore.Entities;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using AITechDATA.Domain;
-using AITechDATA.ResultObjects;
 
 namespace AITechDATA.DataLayer.Repositories
 {
     public interface IPermissionRoleRep
     {
-        Task<ListResultObject<PermissionRole>> GetAllPermissionRolesAsync(long RoleId = 0, long PerrmissionId = 0,string permissionType="", int pageIndex = 1, int pageSize = 20, string searchText = "", string sortQuery = "");
+        Task<ListResultObject<MTPermissionCenter_PermissionRole>> GetAllPermissionRolesAsync(long RoleId = 0, long PerrmissionId = 0,string permissionType="", int pageIndex = 1, int pageSize = 20, string searchText = "", string sortQuery = "");
 
-        Task<RowResultObject<PermissionRole>> GetPermissionRoleByIdAsync(long PermissionRoleId);
+        Task<RowResultObject<MTPermissionCenter_PermissionRole>> GetPermissionRoleByIdAsync(long PermissionRoleId);
 
-        Task<BitResultObject> AddPermissionRolesAsync(List<PermissionRole> PermissionRoles);
+        Task<BitResultObject> AddPermissionRolesAsync(List<MTPermissionCenter_PermissionRole> PermissionRoles);
 
-        Task<BitResultObject> EditPermissionRolesAsync(List<PermissionRole> PermissionRoles);
+        Task<BitResultObject> EditPermissionRolesAsync(List<MTPermissionCenter_PermissionRole> PermissionRoles);
 
-        Task<BitResultObject> RemovePermissionRolesAsync(List<PermissionRole> PermissionRoles);
+        Task<BitResultObject> RemovePermissionRolesAsync(List<MTPermissionCenter_PermissionRole> PermissionRoles);
 
         Task<BitResultObject> RemovePermissionRolesAsync(List<long> PermissionRoleIds);
 
