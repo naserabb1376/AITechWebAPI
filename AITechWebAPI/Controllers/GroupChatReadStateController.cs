@@ -243,6 +243,23 @@ namespace AITechWebAPI.Controllers
             var userId = User.GetCurrentUserId();
 
             await _GroupChatReadStateRep.MarkAsSeenAsync(requestBody.GroupId, userId, requestBody.LastReadMessageId);
+
+
+            #region AddLog
+
+            Log log = new Log()
+            {
+                CreateDate = DateTime.Now.ToShamsi(),
+                UpdateDate = DateTime.Now.ToShamsi(),
+                LogTime = DateTime.Now.ToShamsi(),
+                ActionName = this.ControllerContext.RouteData.Values["action"].ToString(),
+
+            };
+            await _logRep.AddLogAsync(log);
+
+            #endregion
+
+
             return Ok(new { success = true });
         }
     }

@@ -369,6 +369,22 @@ namespace AITechWebAPI.Controllers
                 userId: userId
             );
 
+
+            #region AddLog
+
+            Log log = new Log()
+            {
+                CreateDate = DateTime.Now.ToShamsi(),
+                UpdateDate = DateTime.Now.ToShamsi(),
+                LogTime = DateTime.Now.ToShamsi(),
+                ActionName = this.ControllerContext.RouteData.Values["action"].ToString(),
+
+            };
+            await _logRep.AddLogAsync(log);
+
+            #endregion
+
+
             // 3) فقط خروجی لازم رو برگردون (Attach را از طریق Hub انجام می‌دهیم)
             return Ok(new SendWithAttachmentResponse
             {
@@ -483,15 +499,21 @@ namespace AITechWebAPI.Controllers
             using (var stream = new FileStream(fullPath, FileMode.Create))
                 await file.CopyToAsync(stream);
 
-            // Log
-            var log = new Log
+
+            #region AddLog
+
+            Log log = new Log()
             {
                 CreateDate = DateTime.Now.ToShamsi(),
                 UpdateDate = DateTime.Now.ToShamsi(),
                 LogTime = DateTime.Now.ToShamsi(),
-                ActionName = $"UploadChatAttachment:{{Entity={entityName},Type={fileType},Row={rowId},Path={fullPath},Id={resultId}}}",
+                ActionName = this.ControllerContext.RouteData.Values["action"].ToString(),
+
             };
             await _logRep.AddLogAsync(log);
+
+            #endregion
+
 
             return (fileName, downloadUrl, resultId, file.Length, fileType);
         }
