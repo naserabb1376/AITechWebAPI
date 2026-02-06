@@ -21,6 +21,9 @@ namespace AITechWebAPI.Models.TicketMessage
         [Range(1, long.MaxValue, ErrorMessage = "مقدار {0} باید بزرگتر از 0 باشد")]
         public long UserId { get; set; }
 
+        [Display(Name = "کد معلم")]
+        public long? TeacherId { get; set; }
+
         public bool IsAdminResponse { get; set; }
 
         [Display(Name = "زبان های دیگر")]

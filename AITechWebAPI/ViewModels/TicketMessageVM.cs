@@ -10,5 +10,6 @@ namespace AITechWebAPI.ViewModels
         public string UserName { get; set; } // نام کاربری User
         public string MessageContent { get; set; } // متن پیام
         public bool IsAdminResponse { get; set; } // مشخص می‌کند پیام از سمت ادمین است یا کاربر
+        public long? ResponserRoleId { get; set; }
     }
 }

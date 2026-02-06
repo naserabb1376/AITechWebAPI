@@ -104,7 +104,11 @@ namespace AITechWebAPI.Controllers
                 CreateDate = DateTime.Now.ToShamsi(),
                 UpdateDate = DateTime.Now.ToShamsi(),
                 UserId = requestBody.UserId,
-               // Description = requestBody.Description,
+                EducationalGrade = requestBody.EducationalGrade,
+                StudyField = requestBody.StudyField,
+                Description = requestBody.Description,
+                OtherLangs = requestBody.OtherLangs,
+                IsActive = true,
             };
             var result = await _EducationalBackgroundRep.AddEducationalBackgroundAsync(EducationalBackground);
             if (result.Status)
@@ -150,7 +154,11 @@ namespace AITechWebAPI.Controllers
                 UpdateDate = DateTime.Now.ToShamsi(),
                 UserId = theRow.Result.UserId,
                 ID = requestBody.ID,
-                // Description = requestBody.Description,
+                EducationalGrade = requestBody.EducationalGrade,
+                StudyField = requestBody.StudyField,
+                Description = requestBody.Description,
+                OtherLangs = requestBody.OtherLangs,
+                IsActive = true,
 
 
             };

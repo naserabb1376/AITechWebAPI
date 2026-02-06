@@ -13,6 +13,8 @@ namespace AITechDATA.Domain
         public string Description { get; set; } // توضیحات تیکت
         public long UserId { get; set; } // کلید خارجی به User (کاربری که تیکت را ثبت کرده است)
         public User User { get; set; } // ارتباط با User
+        public long? TeacherId { get; set; } // کلید خارجی به Teacher (معلم مربوط به تیکت)
+        public User? Teacher { get; set; } // ارتباط با Teacher
         public ICollection<TicketMessage> Messages { get; set; } // پیام‌های مرتبط با تیکت
     }
 }

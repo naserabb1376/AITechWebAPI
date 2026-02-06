@@ -11,7 +11,7 @@ namespace AITechDATA.DataLayer.Repositories
 {
     public interface ITicketRep
     {
-        Task<TicketListCustomResponse<Ticket>> GetAllTicketsAsync(long UserId = 0, int pageIndex = 1, int pageSize = 20, string searchText = "", string sortQuery = "");
+        Task<TicketListCustomResponse<Ticket>> GetAllTicketsAsync(long UserId = 0, long TeacherId = 0, int pageIndex = 1, int pageSize = 20, string searchText = "", string sortQuery = "");
 
         Task<TicketRowCustomResponse<Ticket>> GetTicketByIdAsync(long ticketId);
 

@@ -14,6 +14,8 @@ namespace AITechWebAPI.ViewModels
         public long StudentDetailsId { get; set; } // کلید خارجی به StudentDetails
         public string RoleName { get; set; } // ارتباط با Role
         public long? AddressId { get; set; } // کلید خارجی به Address    }
+        public string? StudyField { get; set; } // رشته تحصیلی
+        public string? EducationalGrade { get; set; } // مقطع تحصیلی
     }
 
     public class TeacherVM : BaseVM

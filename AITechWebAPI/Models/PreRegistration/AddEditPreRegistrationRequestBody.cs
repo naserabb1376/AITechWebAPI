@@ -52,6 +52,9 @@ namespace AITechWebAPI.Models.PreRegistration
         [Display(Name = "میزان تسلط به زبان های برنامه نویسی")]
         public string? ProgrammingSkillLevel { get; set; } // میزان تسلط به زبان های برنامه نویسی
 
+        [Display(Name = " آدرس شبکه اجتماعی")]
+        public string? SocialAddress { get; set; } // آدرس شبکه اجتماعی
+
 
         [Display(Name = "تاریخ ثبت نام")]
         public string? RegistrationDate { get; set; } // تاریخ ثبت نام

@@ -8,5 +8,8 @@ namespace AITechWebAPI.Models.Ticket
         [Display(Name = "کد کاربر")]
         public long UserId { get; set; } = 0;
 
+        [Display(Name = "کد معلم")]
+        public long TeacherId { get; set; } = 0;
+
     }
 }

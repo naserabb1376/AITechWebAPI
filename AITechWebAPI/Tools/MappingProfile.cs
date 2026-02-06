@@ -140,7 +140,11 @@ namespace AITechWebAPI.Tools
 .ForMember(dest => dest.UserName, opt => opt.MapFrom(src => $"{src.User.FirstName} {src.User.LastName}"));
 
             CreateMap<Ticket, TicketVM>()
-.ForMember(dest => dest.UserName, opt => opt.MapFrom(src => $"{src.User.FirstName} {src.User.LastName}"));
+.ForMember(dest => dest.UserName, opt => opt.MapFrom(src => $"{src.User.FirstName} {src.User.LastName}"))
+.ForMember(dest => dest.UserName, opt => opt.MapFrom(src => $"{src.User.FirstName} {src.User.LastName}"))
+.ForMember(dest => dest.TeacherUserName, opt => opt.MapFrom(src => $"{src.Teacher.FirstName} {src.Teacher.LastName}"))
+.ForMember(dest => dest.TeacherUserId, opt => opt.MapFrom(src => src.TeacherId))
+;
 
             CreateMap<UserGroup, UserGroupVM>()
 .ForMember(dest => dest.UserName, opt => opt.MapFrom(src => $"{src.User.FirstName} {src.User.LastName}"))
@@ -152,7 +156,10 @@ namespace AITechWebAPI.Tools
 
             CreateMap<User, UserVM>()
 .ForMember(dest => dest.RoleName, opt => opt.MapFrom(src => src.Role.Name))
-.ForMember(dest => dest.StudentDetailsId, opt => opt.MapFrom(src => src.StudentDetails.ID));
+.ForMember(dest => dest.StudentDetailsId, opt => opt.MapFrom(src => src.StudentDetails.ID))
+.ForMember(dest => dest.EducationalGrade, opt => opt.MapFrom(src => src.EducationalBackground.EducationalGrade))
+.ForMember(dest => dest.StudyField, opt => opt.MapFrom(src => src.EducationalBackground.StudyField))
+;
 
             CreateMap<SMSMessage, SMSMessageVM>()
 .ForMember(dest => dest.UserFullName, opt => opt.MapFrom(src => src.User.FirstName + " " + src.User.LastName))

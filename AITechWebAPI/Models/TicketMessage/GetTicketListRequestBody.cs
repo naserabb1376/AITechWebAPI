@@ -11,5 +11,8 @@ namespace AITechWebAPI.Models.TicketMessage
         [Display(Name = "کد کاربر")]
         public long UserId { get; set; } = 0;
 
+        [Display(Name = "کد نقش پاسخگو")]
+        public long ResponserRoleId { get; set; } = 0;
+
     }
 }

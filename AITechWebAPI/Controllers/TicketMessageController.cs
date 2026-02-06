@@ -48,7 +48,7 @@ namespace AITechWebAPI.Controllers
             {
                 return BadRequest(requestBody);
             }
-            var result = await _TicketMessageRep.GetAllTicketMessagesAsync(requestBody.UserId,requestBody.TicketId,requestBody.PageIndex,requestBody.PageSize,requestBody.SearchText,requestBody.SortQuery);
+            var result = await _TicketMessageRep.GetAllTicketMessagesAsync(requestBody.UserId,requestBody.TicketId,requestBody.ResponserRoleId,requestBody.PageIndex,requestBody.PageSize,requestBody.SearchText,requestBody.SortQuery);
             if (result.Status)
             {
                 var resultVM = _mapper.Map<ListResultObject<TicketMessageVM>>(result);

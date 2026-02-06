@@ -50,7 +50,7 @@ namespace AITechWebAPI.Controllers
             {
                 return BadRequest(requestBody);
             }
-            var result = await _TicketRep.GetAllTicketsAsync(requestBody.UserId,requestBody.PageIndex,requestBody.PageSize,requestBody.SearchText,requestBody.SortQuery);
+            var result = await _TicketRep.GetAllTicketsAsync(requestBody.UserId,requestBody.TeacherId,requestBody.PageIndex,requestBody.PageSize,requestBody.SearchText,requestBody.SortQuery);
             if (result.Status)
             {
                 var resultVM = _mapper.Map<TicketListCustomResponse<TicketVM>>(result);

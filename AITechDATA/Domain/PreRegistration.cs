@@ -22,6 +22,7 @@ namespace AITechDATA.Domain
         public string? FavoriteField { get; set; } // حوزه علاقمندی
         public string? RecognitionLevel { get; set; } // میزان آشنایی با حوزه علاقمندی
         public string? ProgrammingSkillLevel { get; set; } // میزان تسلط به زبان های برنامه نویسی
+        public string? SocialAddress { get; set; } // آدرس شبک اجتماعی
 
         public DateTime RegistrationDate { get; set; } = DateTime.Now.ToShamsi(); // تاریخ ثبت‌نام
     }

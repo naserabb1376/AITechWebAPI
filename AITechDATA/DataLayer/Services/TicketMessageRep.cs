@@ -74,7 +74,7 @@ namespace AITechDATA.DataLayer.Services
             return result;
         }
 
-        public async Task<ListResultObject<TicketMessage>> GetAllTicketMessagesAsync(long userId = 0, long TicketId = 0, int pageIndex = 1, int pageSize = 20, string searchText = "", string sortQuery = "")
+        public async Task<ListResultObject<TicketMessage>> GetAllTicketMessagesAsync(long userId = 0, long TicketId = 0, long ResponserRoleId = 0, int pageIndex = 1, int pageSize = 20, string searchText = "", string sortQuery = "")
         {
             ListResultObject<TicketMessage> results = new ListResultObject<TicketMessage>();
             try
@@ -92,6 +92,11 @@ namespace AITechDATA.DataLayer.Services
                 if (TicketId > 0)
                 {
                     query = query.Where(x => x.TicketId == TicketId);
+                }
+
+                if (ResponserRoleId > 0)
+                {
+                    query = query.Where(x => x.ResponserRoleId == ResponserRoleId);
                 }
 
                 results.TotalCount = query.Count();

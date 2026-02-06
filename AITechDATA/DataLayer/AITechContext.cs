@@ -87,7 +87,7 @@ namespace AITechDATA.DataLayer
         //protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         //{
         //    ConfigurationHelper configurationHelper = new ConfigurationHelper();
-        //    optionsBuilder.UseSqlServer(configurationHelper.GetConnectionString("publicdb"));
+        //    optionsBuilder.UseSqlServer(configurationHelper.GetConnectionString("schooldb"));
         //    //  base.OnConfiguring(optionsBuilder);
         //}
 

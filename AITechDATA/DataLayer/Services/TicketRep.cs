@@ -26,6 +26,17 @@ namespace AITechDATA.DataLayer.Services
             BitResultObject result = new BitResultObject();
             try
             {
+                if (ticket.TeacherId > 0)
+                {
+                    var existUserGroup = await _context.UserGroups.Include(x => x.Group).AnyAsync(x=> x.UserId == ticket.UserId && x.Group.TeacherId == ticket.TeacherId);
+
+                    if (!existUserGroup)
+                    {
+                        result.Status = false;
+                        result.ErrorMessage = "شما با این مدرس درسی ندارید";
+                        return result;
+                    }
+                }
                 await _context.Tickets.AddAsync(ticket);
                 await _context.SaveChangesAsync();
                 result.ID = ticket.ID;
@@ -44,6 +55,19 @@ namespace AITechDATA.DataLayer.Services
             BitResultObject result = new BitResultObject();
             try
             {
+
+                if (ticket.TeacherId > 0)
+                {
+                    var existUserGroup = await _context.UserGroups.Include(x => x.Group).AnyAsync(x => x.UserId == ticket.UserId && x.Group.TeacherId == ticket.TeacherId);
+
+                    if (!existUserGroup)
+                    {
+                        result.Status = false;
+                        result.ErrorMessage = "شما با این مدرس درسی ندارید";
+                        return result;
+                    }
+                }
+
                 _context.Tickets.Update(ticket);
                 await _context.SaveChangesAsync();
                 result.ID = ticket.ID;
@@ -75,20 +99,26 @@ namespace AITechDATA.DataLayer.Services
             return result;
         }
 
-        public async Task<TicketListCustomResponse<Ticket>> GetAllTicketsAsync(long UserId = 0, int pageIndex = 1, int pageSize = 20, string searchText = "", string sortQuery = "")
+        public async Task<TicketListCustomResponse<Ticket>> GetAllTicketsAsync(long UserId = 0, long TeacherId = 0, int pageIndex = 1, int pageSize = 20, string searchText = "", string sortQuery = "")
         {
             TicketListCustomResponse<Ticket> results = new TicketListCustomResponse<Ticket>();
             try
             {
-                var query = _context.Tickets.Include(x => x.Messages).AsNoTracking();
+                var query = _context.Tickets.Include(x => x.Messages).Include(x=> x.User).Include(x=> x.Teacher).AsNoTracking();
 
                 if (UserId > 0)
                 {
                     query = query.Where(x => x.UserId == UserId);
                 }
 
+                if (TeacherId > 0)
+                {
+                    query = query.Where(x => x.TeacherId == TeacherId);
+                }
+
                 query = query.Where(x =>
                         (!string.IsNullOrEmpty(x.Subject) && x.Subject.Contains(searchText)) ||
+                        (!string.IsNullOrEmpty(x.User.Username) && x.Subject.Contains(searchText)) ||
                         (!string.IsNullOrEmpty(x.Description) && x.Description.Contains(searchText))
                     );
 
@@ -125,6 +155,7 @@ namespace AITechDATA.DataLayer.Services
                 result.Result = await _context.Tickets
                     .AsNoTracking()
                     .Include(x => x.User)
+                    .Include(x => x.Teacher)
                     .Include(x => x.Messages)
                     .SingleOrDefaultAsync(x => x.ID == ticketId);
 

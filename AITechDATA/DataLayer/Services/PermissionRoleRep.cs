@@ -27,9 +27,10 @@ namespace AITechDATA.DataLayer.Services
             BitResultObject result = new BitResultObject();
             try
             {
+                PermissionRoles = PermissionRoles.Where(p=>  ! _context.PermissionRoles.Any(x=> x.PermissionId == p.PermissionId && x.RoleId == p.RoleId)).ToList();
                 await _context.PermissionRoles.AddRangeAsync(PermissionRoles);
                 await _context.SaveChangesAsync();
-                result.ID = PermissionRoles.FirstOrDefault().ID;
+                result.ID = PermissionRoles.Count> 0 ?  PermissionRoles.FirstOrDefault().ID : 0;
                 foreach (var permissionRole in PermissionRoles)
                 {
                     _context.Entry(permissionRole).State = EntityState.Detached;
@@ -48,9 +49,10 @@ namespace AITechDATA.DataLayer.Services
             BitResultObject result = new BitResultObject();
             try
             {
+                PermissionRoles = PermissionRoles.Where(p => !_context.PermissionRoles.Any(x => x.PermissionId == p.PermissionId && x.RoleId == p.RoleId)).ToList();
                 _context.PermissionRoles.UpdateRange(PermissionRoles);
                 await _context.SaveChangesAsync();
-                result.ID = PermissionRoles.FirstOrDefault().ID;
+                result.ID = PermissionRoles.Count > 0 ? PermissionRoles.FirstOrDefault().ID : 0;
                 foreach (var permissionRole in PermissionRoles)
                 {
                     _context.Entry(permissionRole).State = EntityState.Detached;

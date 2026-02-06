@@ -9,5 +9,8 @@ namespace AITechWebAPI.ViewModels
         public string Description { get; set; } // توضیحات تیکت
         public long UserId { get; set; } // کلید خارجی به User (کاربری که تیکت را ثبت کرده است)
         public string UserName { get; set; } // ارتباط با User
+        public long? TeacherUserId { get; set; } 
+        public string? TeacherUserName { get; set; }
+
     }
 }

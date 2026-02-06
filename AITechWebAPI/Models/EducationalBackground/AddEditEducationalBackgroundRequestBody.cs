@@ -22,6 +22,10 @@ namespace AITechWebAPI.Models.EducationalBackground
         [Display(Name = "توضیحات")]
         public string? Description { get; set; } //
 
+        [Display(Name = "زبان های دیگر")]
+        public string? OtherLangs { get; set; } = "";
+
+
 
     }
 }
