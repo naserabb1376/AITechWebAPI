@@ -53,7 +53,7 @@ namespace AITechWebAPI.Controllers
             {
                 return BadRequest(requestBody);
             }
-            var result = await _PermissionRep.GetAllPermissionsAsync(requestBody.RoleId,requestBody.PermissionType ?? "menu", requestBody.PageIndex, requestBody.PageSize, requestBody.SearchText, requestBody.SortQuery);
+            var result = await _PermissionRep.GetAllPermissionsAsync(requestBody.RoleId,requestBody.PermissionType ?? "menu",requestBody.MenuParentId,requestBody.MenuIds, requestBody.PageIndex, requestBody.PageSize, requestBody.SearchText, requestBody.SortQuery);
             if (result.Status)
             {
                 var resultVM = _mapper.Map<ListResultObject<PermissionVM>>(result);
@@ -110,6 +110,8 @@ namespace AITechWebAPI.Controllers
                 Icon = requestBody.Icon,
                 Routename = requestBody.Routename,
                 PermissionType = requestBody.PermissionType ??"",
+                MenuIds = requestBody.MenuIds,
+                MenuParentId = requestBody.MenuParentId,
                 OtherLangs = requestBody.OtherLangs ?? "",
                 IsActive = true,
                 
@@ -192,6 +194,8 @@ namespace AITechWebAPI.Controllers
                 Icon = requestBody.Icon,
                 Routename = requestBody.Routename,
                 PermissionType = requestBody.PermissionType ?? "",
+                MenuIds = requestBody.MenuIds,
+                MenuParentId = requestBody.MenuParentId,
                 OtherLangs = requestBody.OtherLangs ?? "",
 
             };

@@ -75,7 +75,7 @@ namespace AITechDATA.DataLayer.Services
             return result;
         }
 
-        public async Task<ListResultObject<MTPermissionCenter_Permission>> GetAllPermissionsAsync(long roleId = 0,string permissionType="", int pageIndex = 1, int pageSize = 20, string searchText = "", string sortQuery = "")
+        public async Task<ListResultObject<MTPermissionCenter_Permission>> GetAllPermissionsAsync(long roleId = 0,string permissionType="", long MenuParentId = 0, string MenuIds = "", int pageIndex = 1, int pageSize = 20, string searchText = "", string sortQuery = "")
         {
             ListResultObject<MTPermissionCenter_Permission> results = new ListResultObject<MTPermissionCenter_Permission>();
             try
@@ -91,14 +91,36 @@ namespace AITechDATA.DataLayer.Services
                 {
                     query = query.Where(x => x.PermissionType.ToLower() == permissionType.ToLower());
                 }
-             
+
+                if (MenuParentId > 0)
+                {
+                    query = query.Where(x => x.MenuParentId == MenuParentId);
+                }
+
+                if (!string.IsNullOrWhiteSpace(MenuIds))
+                {
+                    var inpMenuIdsArr = MenuIds
+                        .Split(',', StringSplitOptions.RemoveEmptyEntries)
+                        .Select(x => x.Trim())
+                        .ToArray();
+
                     query = query.Where(x =>
+                        x.MenuIds != null &&
+                        x.MenuIds
+                            .Split(',', StringSplitOptions.RemoveEmptyEntries)
+                            .Any(id => inpMenuIdsArr.Contains(id))
+                    );
+                }
+
+
+                query = query.Where(x =>
                       (!string.IsNullOrEmpty(x.Name) && x.Name.Contains(searchText))
                    || (!string.IsNullOrEmpty(x.PermissionType) && x.PermissionType.Contains(searchText))
                    || (!string.IsNullOrEmpty(x.Icon) && x.Icon.Contains(searchText))
                    || (!string.IsNullOrEmpty(x.Routename) && x.Routename.Contains(searchText))
                    || (!string.IsNullOrEmpty(x.Key) && x.Key.Contains(searchText))
                    || (!string.IsNullOrEmpty(x.Description) && x.Description.Contains(searchText))
+                   || (!string.IsNullOrEmpty(x.MenuIds) && x.MenuIds.Contains(searchText))
                   );
 
                 results.TotalCount = query.Count();

@@ -29,6 +29,13 @@ namespace AITechWebAPI.Models.Permission
         [Display(Name = "نوع دسترسی")]
         public string? PermissionType { get; set; }
 
+        [Display(Name = "کد منوها")]
+        public string? MenuIds { get; set; }
+
+        [Display(Name = "کد منوی والد")]
+        public long? MenuParentId { get; set; }
+
+
         [Display(Name = "زبان های دیگر")]
         public string? OtherLangs { get; set; } = "";
 

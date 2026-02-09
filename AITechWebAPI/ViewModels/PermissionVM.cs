@@ -10,6 +10,8 @@ namespace AITechWebAPI.ViewModels
         public string? Routename { get; set; }
         public string? PermissionType { get; set; }
         public string? Description { get; set; }
+        public string? MenuIds { get; set; }
+        public long? MenuParentId { get; set; }
 
     }
 }
