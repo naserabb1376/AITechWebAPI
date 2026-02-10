@@ -127,6 +127,11 @@ namespace AITechWebAPI.Tools
 .ForMember(dest => dest.RouteName, opt => opt.MapFrom(src => src.Permission.Routename))
 .ForMember(dest => dest.PermissionType, opt => opt.MapFrom(src => src.Permission.PermissionType));
 
+            CreateMap<MTPermissionCenter_UserPermission, UserPermissionVM>()
+.ForMember(dest => dest.PermissionName, opt => opt.MapFrom(src => src.Permission.Name))
+.ForMember(dest => dest.RouteName, opt => opt.MapFrom(src => src.Permission.Routename))
+.ForMember(dest => dest.PermissionType, opt => opt.MapFrom(src => src.Permission.PermissionType));
+
             CreateMap<Session, SessionVM>()
 .ForMember(dest => dest.GroupName, opt => opt.MapFrom(src => src.Group.Name));
 
