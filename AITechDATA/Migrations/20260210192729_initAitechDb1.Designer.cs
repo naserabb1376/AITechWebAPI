@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace AITechDATA.Migrations
 {
     [DbContext(typeof(AITechContext))]
-    [Migration("20260206203316_sebdTicketToTeacher1")]
-    partial class sebdTicketToTeacher1
+    [Migration("20260210192729_initAitechDb1")]
+    partial class initAitechDb1
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -2015,6 +2015,12 @@ namespace AITechDATA.Migrations
                     b.Property<string>("Key")
                         .IsRequired()
                         .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("MenuIds")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<long?>("MenuParentId")
+                        .HasColumnType("bigint");
 
                     b.Property<string>("Name")
                         .IsRequired()
