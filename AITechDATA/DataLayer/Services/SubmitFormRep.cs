@@ -27,6 +27,11 @@ namespace AITechDATA.DataLayer.Services
             BitResultObject result = new BitResultObject();
             try
             {
+                bool exists = await _context.SubmitForms.AnyAsync(x=> x.FormKey.ToLower() == SubmitForm.FormKey.ToLower());
+                if (exists)
+                {
+                    throw new Exception("این کلید فرم در سیستم موجود است");
+                }
                 await _context.SubmitForms.AddAsync(SubmitForm);
                 await _context.SaveChangesAsync();
                 result.ID = SubmitForm.ID;
@@ -45,6 +50,11 @@ namespace AITechDATA.DataLayer.Services
             BitResultObject result = new BitResultObject();
             try
             {
+                bool exists = await _context.SubmitForms.AnyAsync(x => x.FormKey.ToLower() == SubmitForm.FormKey.ToLower() && x.ID != SubmitForm.ID);
+                if (exists)
+                {
+                    throw new Exception("این کلید فرم در سیستم موجود است");
+                }
                 _context.SubmitForms.Update(SubmitForm);
                 await _context.SaveChangesAsync();
                 result.ID = SubmitForm.ID;
