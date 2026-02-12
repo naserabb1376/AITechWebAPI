@@ -332,6 +332,8 @@ namespace AITechWebAPI.Tools
             var ext = Path.GetExtension(path);
             return types.TryGetValue(ext, out var contentType) ? contentType : "application/octet-stream";
         }
+
+
     }
 
 }

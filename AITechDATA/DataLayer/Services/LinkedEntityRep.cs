@@ -1,14 +1,17 @@
 ﻿using AITechDATA.DataLayer.Repositories;
 using AITechDATA.Domain;
 using AITechDATA.ResultObjects;
-using Microsoft.EntityFrameworkCore;
 using AITechDATA.Tools;
+using Humanizer;
+using Microsoft.Data.SqlClient;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using static System.Net.Mime.MediaTypeNames;
 
 namespace AITechDATA.DataLayer.Services
@@ -77,7 +80,7 @@ namespace AITechDATA.DataLayer.Services
         }
 
         public async Task<ListResultObject<LinkedEntity>> GetAllLinkedEntitiesAsync(
-      string entityName = "", long ForeignKeyId = 0,long LinkedEntityId=0, long creatorId = 0,
+      string sourcetableName = "", string desttableName = "", long sourceRowId = 0, long destRowId = 0, string linkType = "", long creatorId = 0,
       int pageIndex = 1, int pageSize = 20,
       string searchText = "", string sortQuery = "")
         {
@@ -88,23 +91,34 @@ namespace AITechDATA.DataLayer.Services
                 var query = _context.LinkedEntities.AsNoTracking().AsQueryable();
 
                 // شرط‌های دینامیک فقط در صورت معتبر بودن
-                if (ForeignKeyId > 0)
-                    query = query.Where(x => x.ForeignKeyId == ForeignKeyId);
 
-                if (LinkedEntityId > 0)
-                    query = query.Where(x => x.LinkedEntityId == LinkedEntityId);
+                if (!string.IsNullOrEmpty(sourcetableName))
+                    query = query.Where(x => x.SourceTableName.ToLower() == sourcetableName.ToLower());
+
+                if (!string.IsNullOrEmpty(desttableName))
+                    query = query.Where(x => x.DestTableName.ToLower() == desttableName.ToLower());
+
+                if (!string.IsNullOrEmpty(linkType))
+                    query = query.Where(x => x.LinkType.ToLower() == linkType.ToLower());
+
+                if (sourceRowId > 0)
+                    query = query.Where(x => x.SourceRowId == sourceRowId);
+
+                if (destRowId > 0)
+                    query = query.Where(x => x.DestRowId == destRowId);
 
                 if (creatorId > 0)
                     query = query.Where(x => x.CreatorId == creatorId);
 
 
-                if (!string.IsNullOrEmpty(entityName))
-                    query = query.Where(x => x.EntityName == entityName);
+              
 
                 if (!string.IsNullOrEmpty(searchText))
                 {
                     query = query.Where(x =>
                         (!string.IsNullOrEmpty(x.LinkType) && x.LinkType.Contains(searchText)) ||
+                        (!string.IsNullOrEmpty(x.SourceTableName) && x.SourceTableName.Contains(searchText)) ||
+                        (!string.IsNullOrEmpty(x.DestTableName) && x.DestTableName.Contains(searchText)) ||
                         (!string.IsNullOrEmpty(x.Description) && x.Description.Contains(searchText))
                     );
                 }
@@ -113,7 +127,6 @@ namespace AITechDATA.DataLayer.Services
                 results.PageCount = DbTools.GetPageCount(results.TotalCount, pageSize);
 
                 results.Results = await query
-                    .OrderBy(x => x.Priority)
                     .SortBy(sortQuery)
                     .ToPaging(pageIndex, pageSize)
                     .ToListAsync();
@@ -127,8 +140,44 @@ namespace AITechDATA.DataLayer.Services
             return results;
         }
 
+        public async Task<ListResultObject<object>> GetLinkedObjectsAsync(
+string sourcetableName = "", string desttableName = "", long sourceRowId = 0, string linkType = "", 
+int pageIndex = 1, int pageSize = 20, string sortQuery = "")
+        {
+            ListResultObject<object> results = new ListResultObject<object>();
 
-      
+            try
+            {
+                var getIdsquery = await GetAllLinkedEntitiesAsync(sourcetableName,desttableName,sourceRowId,0,linkType,0,pageIndex,pageSize);
+
+                var linkIds = string.Join(",", getIdsquery.Results.Select(x=> x.DestRowId).ToList());
+
+                var linkIdsExpr = getIdsquery.Results.Count > 0 ? $"and {desttableName}.ID IN ({linkIds})" : $"and {desttableName}.ID IN (0)";
+
+                string sqlQuery = @$"
+SELECT  {desttableName}.* ,Images.GetUrl as imageGetUrl FROM {desttableName} 
+inner join images
+on Images.ForeignKeyId = {desttableName}.ID
+WHERE Images.EntityType = '{desttableName.ToLower().Singularize()}' {linkIdsExpr}
+and Courses.IsActive = 1 and Images.IsActive = 1
+";
+
+                var dt = await _context.ToDataTableAsync(sqlQuery);
+
+                results.TotalCount = dt.Rows.Count;
+                results.PageCount = DbTools.GetPageCount(results.TotalCount, pageSize);
+
+                results.Results = JsonConvert.DeserializeObject<List<object>>(dt.ConvertDtToJson());
+            }
+            catch (Exception ex)
+            {
+                results.Status = false;
+                results.ErrorMessage = $"{ex.Message} - {ex.InnerException?.Message}";
+            }
+
+            return results;
+        }
+
 
         public async Task<RowResultObject<LinkedEntity>> GetLinkedEntityByIdAsync(long LinkedEntityId)
         {
@@ -137,7 +186,6 @@ namespace AITechDATA.DataLayer.Services
             {
                 result.Result = await _context.LinkedEntities
                     .AsNoTracking()
-                    //.Include(x => x.Assignment)
                     .SingleOrDefaultAsync(x => x.ID == LinkedEntityId);
             }
             catch (Exception ex)

@@ -1,12 +1,15 @@
 ﻿using AITechDATA.DataLayer;
+using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Globalization;
 using System.Linq;
 using System.Linq.Dynamic.Core;
 using System.Security.Cryptography;
 using System.Text;
+using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace AITechDATA.Tools
@@ -240,6 +243,56 @@ namespace AITechDATA.Tools
         public static string TimeSpanToString(this TimeSpan timeSpan)
         {
             return timeSpan.ToString(@"hh\:mm\:ss");
+        }
+
+        public static async Task<DataTable> ToDataTableAsync(
+     this DbContext context,
+     string sql,
+     IEnumerable<SqlParameter>? parameters = null,
+     CancellationToken ct = default)
+        {
+            var dt = new DataTable();
+
+            await using var conn = (SqlConnection)context.Database.GetDbConnection();
+            if (conn.State != ConnectionState.Open)
+                await conn.OpenAsync(ct);
+
+            await using var cmd = conn.CreateCommand();
+            cmd.CommandText = sql;
+            cmd.CommandType = CommandType.Text;
+
+            if (parameters != null)
+                cmd.Parameters.AddRange(parameters.ToArray());
+
+            await using var reader = await cmd.ExecuteReaderAsync(ct);
+            dt.Load(reader); // ✅ DataTable پر میشه
+
+            return dt;
+        }
+
+        public static string ConvertDtToJson(this DataTable dt, bool indented = false)
+        {
+            var rows = new List<Dictionary<string, object?>>(dt.Rows.Count);
+
+            foreach (DataRow row in dt.Rows)
+            {
+                var obj = new Dictionary<string, object?>(StringComparer.OrdinalIgnoreCase);
+
+                foreach (DataColumn col in dt.Columns)
+                {
+                    var val = row[col];
+                    obj[col.ColumnName] = val == DBNull.Value ? null : val;
+                }
+
+                rows.Add(obj);
+            }
+
+            var options = new JsonSerializerOptions
+            {
+                WriteIndented = indented
+            };
+
+            return JsonSerializer.Serialize(rows, options);
         }
     }
 }

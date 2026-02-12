@@ -10,7 +10,8 @@ namespace AITechDATA.DataLayer.Repositories
 {
     public interface ILinkedEntityRep
     {
-        Task<ListResultObject<LinkedEntity>> GetAllLinkedEntitiesAsync(string entityName = "", long ForeignKeyId = 0, long LinkedEntityId = 0, long creatorId = 0, int pageIndex = 1, int pageSize = 20, string searchText = "", string sortQuery = "");
+        Task<ListResultObject<LinkedEntity>> GetAllLinkedEntitiesAsync(string sourcetableName = "", string desttableName = "", long sourceRowId = 0, long destRowId = 0,string linkType="", long creatorId = 0, int pageIndex = 1, int pageSize = 20, string searchText = "", string sortQuery = "");
+        Task<ListResultObject<object>> GetLinkedObjectsAsync(string sourcetableName = "", string desttableName = "", long sourceRowId = 0, string linkType = "", int pageIndex = 1, int pageSize = 20, string sortQuery = "");
 
         Task<RowResultObject<LinkedEntity>> GetLinkedEntityByIdAsync(long LinkedEntityId);
 

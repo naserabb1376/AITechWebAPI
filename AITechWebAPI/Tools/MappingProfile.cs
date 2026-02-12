@@ -61,6 +61,8 @@ namespace AITechWebAPI.Tools
             CreateMap<PreRegistration, PreRegistrationVM>();
             CreateMap<User, TeacherVM>();
             CreateMap<Meeting, MeetingVM>();
+            CreateMap<SubmitForm, SubmitFormVM>();
+            CreateMap<FormField, FormFieldVM>();
 
             CreateMap<Course, CourseVM>()
              .ForMember(dest => dest.CategoryName, opt => opt.MapFrom(src => src.Category.CategoryName));
@@ -157,7 +159,16 @@ namespace AITechWebAPI.Tools
 
             CreateMap<UserCourse, UserCourseVM>()
 .ForMember(dest => dest.UserName, opt => opt.MapFrom(src => $"{src.User.FirstName} {src.User.LastName}"))
-.ForMember(dest => dest.CourseName, opt => opt.MapFrom(src => src.Course.Title));
+.ForMember(dest => dest.CourseName, opt => opt.MapFrom(src => src.Course.Title))
+;
+
+            CreateMap<FieldInForm, FieldInFormVM>()
+.ForMember(dest => dest.FormKey, opt => opt.MapFrom(src => src.Form.FormKey))
+.ForMember(dest => dest.EntityName, opt => opt.MapFrom(src => src.Form.EntityName))
+.ForMember(dest => dest.FormTitle, opt => opt.MapFrom(src => src.Form.Title))
+.ForMember(dest => dest.FieldName, opt => opt.MapFrom(src => src.FormField.FieldName))
+.ForMember(dest => dest.DisplayName, opt => opt.MapFrom(src => src.FormField.DisplayName))
+;
 
             CreateMap<User, UserVM>()
 .ForMember(dest => dest.RoleName, opt => opt.MapFrom(src => src.Role.Name))

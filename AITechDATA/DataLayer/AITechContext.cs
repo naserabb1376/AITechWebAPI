@@ -68,6 +68,9 @@ namespace AITechDATA.DataLayer
         public DbSet<ClassGrade> ClassGrades { get; set; }
         public DbSet<GroupChatMessage> GroupChatMessages { get; set; }
         public DbSet<GroupChatReadState> GroupChatReadStates { get; set; }
+        public DbSet<SubmitForm> SubmitForms { get; set; }
+        public DbSet<FormField> FormFields { get; set; }
+        public DbSet<FieldInForm> FieldInForms { get; set; }
 
 
         // Manual
@@ -87,7 +90,7 @@ namespace AITechDATA.DataLayer
         //protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         //{
         //    ConfigurationHelper configurationHelper = new ConfigurationHelper();
-        //    optionsBuilder.UseSqlServer(configurationHelper.GetConnectionString("schooldb"));
+        //    optionsBuilder.UseSqlServer(configurationHelper.GetConnectionString("publicdb"));
         //    //  base.OnConfiguring(optionsBuilder);
         //}
 
@@ -110,6 +113,14 @@ namespace AITechDATA.DataLayer
 
             // demo config
             modelBuilder.Entity<Role>().HasIndex(x => x.Name).IsUnique();
+
+            modelBuilder.Entity<FieldInForm>()
+          .HasIndex(x => new { x.FormId, x.FormFieldId })
+          .IsUnique();
+
+            modelBuilder.Entity<SubmitForm>()
+         .HasIndex(x => new { x.FormKey})
+         .IsUnique();
 
             modelBuilder.Entity<User>()
                 .HasOne(u => u.Role)

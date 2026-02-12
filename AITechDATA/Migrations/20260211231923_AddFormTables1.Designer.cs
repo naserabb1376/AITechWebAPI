@@ -4,6 +4,7 @@ using AITechDATA.DataLayer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace AITechDATA.Migrations
 {
     [DbContext(typeof(AITechContext))]
-    partial class AITechContextModelSnapshot : ModelSnapshot
+    [Migration("20260211231923_AddFormTables1")]
+    partial class AddFormTables1
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -1134,12 +1137,12 @@ namespace AITechDATA.Migrations
                     b.Property<string>("Description")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<long>("DestRowId")
-                        .HasColumnType("bigint");
-
-                    b.Property<string>("DestTableName")
+                    b.Property<string>("EntityName")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<long>("ForeignKeyId")
+                        .HasColumnType("bigint");
 
                     b.Property<bool>("IsActive")
                         .HasColumnType("bit");
@@ -1148,14 +1151,16 @@ namespace AITechDATA.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<long>("LinkedEntityId")
+                        .HasColumnType("bigint");
+
                     b.Property<string>("OtherLangs")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<long>("SourceRowId")
-                        .HasColumnType("bigint");
+                    b.Property<int>("Priority")
+                        .HasColumnType("int");
 
-                    b.Property<string>("SourceTableName")
-                        .IsRequired()
+                    b.Property<string>("Title")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime?>("UpdateDate")

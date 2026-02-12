@@ -14,6 +14,7 @@ using AITechDATA.Tools;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+using AITechWebAPI.Tools;
 
 namespace AITechWebAPI.Controllers
 {
@@ -33,18 +34,43 @@ namespace AITechWebAPI.Controllers
         }
 
         [HttpPost("GetAllLinkedEntities_Base")]
-        public async Task<ActionResult<ListResultObject<LinkedEntity>>> GetAllLinkedEntities_Base(GetLinkedEntityListRequestBody requestBody)
+        [AllowAnonymous]
+        public async Task<ActionResult<ListResultObject<object>>> GetAllLinkedEntities_Base(GetLinkedEntityListRequestBody requestBody)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(requestBody);
             }
-            var result = await _LinkedEntityRep.GetAllLinkedEntitiesAsync(requestBody.EntityName, requestBody.ForeignKeyId,requestBody.LinkedEntityId, requestBody.CreatorId, requestBody.PageIndex, requestBody.PageSize, requestBody.SearchText, requestBody.SortQuery);
-            if (result.Status)
+
+            if (requestBody.TargetType.ToLower().Contains("link"))
             {
-                return Ok(result);
+                if (string.IsNullOrEmpty(requestBody.SourceTableName) || string.IsNullOrEmpty(requestBody.DestTableName) || requestBody.SourceRowId <= 0)
+                {
+                    var invalidData = new BitResultObject()
+                    {
+                        ID = 0,
+                        Status = false,
+                        ErrorMessage = $"در این حالت ورود مقدار جدول مبدا، جدول مقصد و کد رکورد مبدا الزامی است"
+                    };
+                    return BadRequest(invalidData);
+                }
+                var result = await _LinkedEntityRep.GetLinkedObjectsAsync(requestBody.SourceTableName,requestBody.DestTableName, requestBody.SourceRowId,requestBody.LinkType, requestBody.PageIndex, requestBody.PageSize, requestBody.SortQuery);
+                if (result.Status)
+                {
+                    return Ok(result);
+                }
+                return BadRequest(result);
             }
-            return BadRequest(result);
+
+            else
+            {
+                var result = await _LinkedEntityRep.GetAllLinkedEntitiesAsync(requestBody.SourceTableName, requestBody.DestTableName, requestBody.SourceRowId, requestBody.DestRowId, requestBody.LinkType, requestBody.CreatorId, requestBody.PageIndex, requestBody.PageSize, requestBody.SearchText, requestBody.SortQuery);
+                if (result.Status)
+                {
+                    return Ok(result);
+                }
+                return BadRequest(result);
+            }
         }
 
         [HttpPost("GetLinkedEntityById_Base")]
@@ -88,14 +114,15 @@ namespace AITechWebAPI.Controllers
             {
                 CreateDate = DateTime.Now.ToShamsi(),
                 UpdateDate = DateTime.Now.ToShamsi(),
-                ForeignKeyId = requestBody.ForeignKeyId,
-                EntityName = requestBody.EntityName,
-                LinkedEntityId = requestBody.LinkedEntityId,
-                Priority = requestBody.Priority,
+                SourceRowId = requestBody.SourceRowId,
+                DestRowId = requestBody.DestRowId,
+                SourceTableName = requestBody.SourceTableName,
+                DestTableName = requestBody.DestTableName,
                 LinkType = requestBody.LinkType,
-                CreatorId = requestBody.CreatorId ?? 0,
+                CreatorId = requestBody.CreatorId ?? User.GetCurrentUserId(),
                 Description = requestBody.Description ?? "",
-                Title = requestBody.Title ?? "",
+                IsActive = requestBody.IsActive,
+                OtherLangs = requestBody.OtherLangs,
 
             };
             var result = await _LinkedEntityRep.AddLinkedEntityAsync(LinkedEntity);
@@ -139,14 +166,15 @@ namespace AITechWebAPI.Controllers
                 CreateDate = theRow.Result.CreateDate,
                 UpdateDate = DateTime.Now.ToShamsi(),
                 ID = requestBody.ID,
-                ForeignKeyId = requestBody.ForeignKeyId,
-                EntityName = requestBody.EntityName,
-                LinkedEntityId = requestBody.LinkedEntityId,
-                Priority = requestBody.Priority,
+                SourceRowId = requestBody.SourceRowId,
+                DestRowId = requestBody.DestRowId,
+                SourceTableName = requestBody.SourceTableName,
+                DestTableName = requestBody.DestTableName,
                 LinkType = requestBody.LinkType,
-                CreatorId = requestBody.CreatorId ?? 0,
+                CreatorId = requestBody.CreatorId ?? theRow.Result.CreatorId,
                 Description = requestBody.Description ?? "",
-                Title = requestBody.Title ?? "",
+                IsActive = requestBody.IsActive,
+                OtherLangs = requestBody.OtherLangs,
 
             };
             result = await _LinkedEntityRep.EditLinkedEntityAsync(LinkedEntity);

@@ -211,6 +211,9 @@ namespace AITechWebAPI
             builder.Services.AddScoped<IGroupChatReadStateRep, GroupChatReadStateRep>();
             builder.Services.AddScoped<IUserRoleProvider, UserRep>();
             builder.Services.AddScoped<IGroupChatReadStateRep, GroupChatReadStateRep>();
+            builder.Services.AddScoped<ISubmitFormRep, SubmitFormRep>();
+            builder.Services.AddScoped<IFormFieldRep, FormFieldRep>();
+            builder.Services.AddScoped<IFieldInFormRep, FieldInFormRep>();
 
 
             #endregion ImportDbServices
