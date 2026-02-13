@@ -59,7 +59,8 @@ namespace AITechWebAPI.Controllers
             {
                 return BadRequest(requestBody);
             }
-            var result = await _GroupChatMessageRep.GetAllGroupChatMessagesAsync(requestBody.GroupId,requestBody.SenderUserId,requestBody.ReplyToMessageId,requestBody.WithDeleted,requestBody.PageIndex,requestBody.PageSize,requestBody.SearchText,requestBody.SortQuery);
+            long roleId = User.GetCurrentRoleId();
+            var result = await _GroupChatMessageRep.GetAllGroupChatMessagesAsync(roleId,requestBody.GroupId,requestBody.SenderUserId,requestBody.ReplyToMessageId,requestBody.WithDeleted,requestBody.PageIndex,requestBody.PageSize,requestBody.SearchText,requestBody.SortQuery);
             if (result.Status)
             {
                 var resultVM = _mapper.Map<ListResultObject<GroupChatMessageVM>>(result);
@@ -241,8 +242,9 @@ namespace AITechWebAPI.Controllers
             {
                 return BadRequest(requestBody);
             }
+            long roleId = User.GetCurrentRoleId();
             var senderUserId = User.GetCurrentUserId();
-            var result = await _GroupChatMessageRep.GetMessagesAsync(requestBody.GroupId,senderUserId, requestBody.PageIndex, requestBody.PageSize);
+            var result = await _GroupChatMessageRep.GetMessagesAsync(roleId,requestBody.GroupId,senderUserId, requestBody.PageIndex, requestBody.PageSize);
             if (result != null)
             {
                 return Ok(result);
@@ -259,7 +261,8 @@ namespace AITechWebAPI.Controllers
                 return BadRequest(requestBody);
             }
             var senderUserId = User.GetCurrentUserId();
-            var result = await _GroupChatMessageRep.SendMessageAsync(requestBody.GroupId,senderUserId, new SendGroupMessageRequest() { ReplyToMessageId=requestBody.ReplyToMessageId,Text = requestBody.MessageText});
+            long roleId = User.GetCurrentRoleId();
+            var result = await _GroupChatMessageRep.SendMessageAsync(roleId,requestBody.GroupId,senderUserId, new SendGroupMessageRequest() { ReplyToMessageId=requestBody.ReplyToMessageId,Text = requestBody.MessageText});
             if (result != null)
             {
 
@@ -291,7 +294,8 @@ namespace AITechWebAPI.Controllers
                 return BadRequest(requestBody);
             }
             var senderUserId = User.GetCurrentUserId();
-            var result = await _GroupChatMessageRep.EditMessageAsync(requestBody.MessageId,requestBody.GroupId, senderUserId, new EditGroupMessageRequest() { Text = requestBody.MessageText });
+            long roleId = User.GetCurrentRoleId();
+            var result = await _GroupChatMessageRep.EditMessageAsync(roleId,requestBody.MessageId,requestBody.GroupId, senderUserId, new EditGroupMessageRequest() { Text = requestBody.MessageText });
             if (result != null)
             {
 
@@ -338,7 +342,8 @@ namespace AITechWebAPI.Controllers
                 return BadRequest(requestBody);
             }
             var senderUserId = User.GetCurrentUserId();
-            await _GroupChatMessageRep.SoftDeleteMessageAsync(requestBody.GroupId,requestBody.MessageId,senderUserId);
+            long roleId = User.GetCurrentRoleId();
+            await _GroupChatMessageRep.SoftDeleteMessageAsync(roleId, requestBody.GroupId,requestBody.MessageId,senderUserId);
             return NoContent();
         }
 
@@ -351,9 +356,10 @@ namespace AITechWebAPI.Controllers
                 throw new ArgumentException("فایلی انتخاب نشده است.");
 
             var userId = User.GetCurrentUserId();
+            long roleId = User.GetCurrentRoleId();
 
             // 1) اول پیام رو بساز تا messageId داشته باشیم
-            var created = await _GroupChatMessageRep.SendMessageAsync(request.GroupId, userId, new SendGroupMessageRequest
+            var created = await _GroupChatMessageRep.SendMessageAsync(roleId,request.GroupId, userId, new SendGroupMessageRequest
             {
                 Text = request.MessageText ?? "📎 فایل ارسال شد",
                 ReplyToMessageId = null

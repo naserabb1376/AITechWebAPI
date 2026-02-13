@@ -217,6 +217,16 @@ namespace AITechWebAPI.Tools
             return long.Parse(idStr);
         }
 
+        public static long GetCurrentRoleId(this ClaimsPrincipal user)
+        {
+            var idStr = user.FindFirstValue("Role");
+
+            if (string.IsNullOrWhiteSpace(idStr))
+                throw new UnauthorizedAccessException("RoleId claim not found.");
+
+            return long.Parse(idStr);
+        }
+
         public static bool SendEmail(string emailAddress, string subject, string body)
         {
             var issuer = Configuration["Jwt:Issuer"];

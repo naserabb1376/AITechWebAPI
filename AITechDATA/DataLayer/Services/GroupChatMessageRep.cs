@@ -80,14 +80,14 @@ namespace AITechDATA.DataLayer.Services
 
         }
 
-        public async Task<ListResultObject<GroupChatMessage>> GetAllGroupChatMessagesAsync(long GroupId = 0, long SenderUserId = 0, long ReplyToMessageId = 0,bool withDeleted = false, int pageIndex = 1, int pageSize = 20, string searchText = "", string sortQuery = "")
+        public async Task<ListResultObject<GroupChatMessage>> GetAllGroupChatMessagesAsync(long roleId = 0, long GroupId = 0, long SenderUserId = 0, long ReplyToMessageId = 0,bool withDeleted = false, int pageIndex = 1, int pageSize = 20, string searchText = "", string sortQuery = "")
         {
             ListResultObject<GroupChatMessage> results = new ListResultObject<GroupChatMessage>();
             try
             {
                 if (GroupId > 0 && SenderUserId > 0)
                 {
-                    var canAccess = await CanAccessGroupChatAsync(GroupId, SenderUserId);
+                    var canAccess = await CanAccessGroupChatAsync(GroupId, SenderUserId,roleId);
                     if (!canAccess)
                     {
                         results.ErrorMessage = "شما به این گروه چت دسترسی ندارید";
@@ -207,8 +207,13 @@ namespace AITechDATA.DataLayer.Services
 
         // Messenger
 
-        public async Task<bool> CanAccessGroupChatAsync(long groupId, long userId)
+        public async Task<bool> CanAccessGroupChatAsync(long groupId, long userId, long roleId)
         {
+            // ادمین
+            var isAdmin = roleId == 3 || roleId == 4 || roleId == 7;
+
+            if (isAdmin) return true;
+
             // استاد گروه
             var isTeacher = await _context.Groups
                 .AsNoTracking()
@@ -224,7 +229,7 @@ namespace AITechDATA.DataLayer.Services
             return isStudent;
         }
 
-        public async Task<GroupChatMessageDto> SendMessageAsync(long groupId, long senderUserId, SendGroupMessageRequest request)
+        public async Task<GroupChatMessageDto> SendMessageAsync(long roleId, long groupId, long senderUserId, SendGroupMessageRequest request)
         {
             //var since = DateTime.UtcNow.AddSeconds(-2);
 
@@ -240,7 +245,7 @@ namespace AITechDATA.DataLayer.Services
             if (string.IsNullOrWhiteSpace(request.Text))
                 throw new ArgumentException("متن پیام را وارد کنید");
 
-            var canAccess = await CanAccessGroupChatAsync(groupId, senderUserId);
+            var canAccess = await CanAccessGroupChatAsync(groupId, senderUserId, roleId);
             if (!canAccess)
                 throw new UnauthorizedAccessException("شما به این گروه دسترسی ندارید");
 
@@ -270,9 +275,9 @@ namespace AITechDATA.DataLayer.Services
             return await BuildDtoAsync(message.ID);
         }
 
-        public async Task<List<GroupChatMessageDto>> GetMessagesAsync(long groupId, long userId, int pageIndex, int pageSize)
+        public async Task<List<GroupChatMessageDto>> GetMessagesAsync(long roleId, long groupId, long userId, int pageIndex, int pageSize)
         {
-            var canAccess = await CanAccessGroupChatAsync(groupId, userId);
+            var canAccess = await CanAccessGroupChatAsync(groupId, userId, roleId);
             if (!canAccess)
                 throw new UnauthorizedAccessException("شما به این گروه دسترسی ندارید");
 
@@ -309,12 +314,12 @@ namespace AITechDATA.DataLayer.Services
             return list;
         }
 
-        public async Task<GroupChatMessageDto> EditMessageAsync(long groupId, long messageId, long userId, EditGroupMessageRequest request)
+        public async Task<GroupChatMessageDto> EditMessageAsync(long roleId, long groupId, long messageId, long userId, EditGroupMessageRequest request)
         {
             if (string.IsNullOrWhiteSpace(request.Text))
                 throw new ArgumentException("متن پیام را وارد کنید");
 
-            var canAccess = await CanAccessGroupChatAsync(groupId, userId);
+            var canAccess = await CanAccessGroupChatAsync(groupId, userId, roleId);
             if (!canAccess)
                 throw new UnauthorizedAccessException("شما به این گروه دسترسی ندارید");
 
@@ -337,9 +342,9 @@ namespace AITechDATA.DataLayer.Services
             return await BuildDtoAsync(message.ID);
         }
 
-        public async Task SoftDeleteMessageAsync(long groupId, long messageId, long userId)
+        public async Task SoftDeleteMessageAsync(long roleId, long groupId, long messageId, long userId)
         {
-            var canAccess = await CanAccessGroupChatAsync(groupId, userId);
+            var canAccess = await CanAccessGroupChatAsync(groupId, userId, roleId);
             if (!canAccess)
                 throw new UnauthorizedAccessException("شما به این گروه دسترسی ندارید");
 
@@ -394,7 +399,7 @@ namespace AITechDATA.DataLayer.Services
 
         // Attachment 
 
-        public async Task<GroupChatMessageDto> AttachFileToMessageAsync(long groupId, long messageId, long userId, AttachFileToMessageRequest request)
+        public async Task<GroupChatMessageDto> AttachFileToMessageAsync(long roleId, long groupId, long messageId, long userId, AttachFileToMessageRequest request)
         {
             if (request == null)
                 throw new ArgumentException("اطلاعات فایل نامعتبر است");
@@ -410,7 +415,7 @@ namespace AITechDATA.DataLayer.Services
                 throw new ArgumentException("نوع فایل فقط می‌تواند images یا files باشد");
 
             // دسترسی به گروه
-            var canAccess = await CanAccessGroupChatAsync(groupId, userId);
+            var canAccess = await CanAccessGroupChatAsync(groupId, userId, roleId);
             if (!canAccess)
                 throw new UnauthorizedAccessException("شما به این گروه دسترسی ندارید");
 

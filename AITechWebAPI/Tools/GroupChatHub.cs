@@ -32,8 +32,9 @@ namespace AITechWebAPI.Tools
         public async Task JoinGroup(long groupId)
         {
             var userId = Context.User!.GetCurrentUserId();
+            long roleId = Context.User!.GetCurrentRoleId();
 
-            var canAccess = await _chatService.CanAccessGroupChatAsync(groupId, userId);
+            var canAccess = await _chatService.CanAccessGroupChatAsync(groupId, userId,roleId);
             if (!canAccess)
                 throw new HubException("Access denied to this group chat.");
 
@@ -54,7 +55,8 @@ namespace AITechWebAPI.Tools
             try
             {
                 var userId = Context.User!.GetCurrentUserId();
-                var created = await _chatService.SendMessageAsync(groupId, userId, request);
+                long roleId = Context.User!.GetCurrentRoleId();
+                var created = await _chatService.SendMessageAsync(roleId,groupId, userId, request);
                 await Clients.Group($"group:{groupId}").SendAsync("MessageReceived", created);
             }
             catch (Exception ex)
@@ -67,8 +69,9 @@ namespace AITechWebAPI.Tools
         public async Task EditMessage(long groupId, long messageId, EditGroupMessageRequest request)
         {
             var userId = Context.User!.GetCurrentUserId();
+            long roleId = Context.User!.GetCurrentRoleId();
 
-            var updated = await _chatService.EditMessageAsync(groupId, messageId, userId, request);
+            var updated = await _chatService.EditMessageAsync(roleId,groupId, messageId, userId, request);
 
             await Clients.Group(Room(groupId)).SendAsync("MessageEdited", updated);
         }
@@ -76,8 +79,8 @@ namespace AITechWebAPI.Tools
         public async Task DeleteMessage(long groupId, long messageId)
         {
             var userId = Context.User!.GetCurrentUserId();
-
-            await _chatService.SoftDeleteMessageAsync(groupId, messageId, userId);
+            long roleId = Context.User!.GetCurrentRoleId();
+            await _chatService.SoftDeleteMessageAsync(roleId, groupId, messageId, userId);
 
             await Clients.Group(Room(groupId)).SendAsync("MessageDeleted", new { groupId, messageId });
         }
@@ -119,8 +122,9 @@ namespace AITechWebAPI.Tools
         public async Task AttachFile(long groupId, long messageId, AttachFileToMessageRequest request)
         {
             var userId = Context.User!.GetCurrentUserId();
+            long roleId = Context.User!.GetCurrentRoleId();
 
-            var updated = await _chatService.AttachFileToMessageAsync(groupId, messageId, userId, request);
+            var updated = await _chatService.AttachFileToMessageAsync(roleId, groupId, messageId, userId, request);
 
             await Clients.Group($"group:{groupId}")
                 .SendAsync("MessageAttachmentUpdated", updated);
