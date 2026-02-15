@@ -212,7 +212,7 @@ namespace AITechWebAPI.Tools
             var idStr = user.FindFirstValue("userId");
 
             if (string.IsNullOrWhiteSpace(idStr))
-                throw new UnauthorizedAccessException("UserId claim not found.");
+                idStr = "0";
 
             return long.Parse(idStr);
         }
@@ -222,7 +222,7 @@ namespace AITechWebAPI.Tools
             var idStr = user.FindFirstValue("Role");
 
             if (string.IsNullOrWhiteSpace(idStr))
-                throw new UnauthorizedAccessException("RoleId claim not found.");
+                idStr = "0";
 
             return long.Parse(idStr);
         }
