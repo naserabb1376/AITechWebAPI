@@ -37,7 +37,10 @@ namespace AITechWebAPI.Tools
             CreateMap(typeof(TicketListCustomResponse<>), typeof(TicketListCustomResponse<>));
 
             CreateMap<Group, GroupVM>()
-.ForMember(dest => dest.CourseTitle, opt => opt.MapFrom(src => src.Course.Title));
+.ForMember(dest => dest.CourseTitle, opt => opt.MapFrom(src => src.Course.Title))
+.ForMember(dest => dest.TeacherName, opt => opt.MapFrom(src => $"{src.Teacher.FirstName} {src.Teacher.LastName}"))
+.ForMember(dest => dest.TeacherId, opt => opt.MapFrom(src => src.TeacherId))
+;
 
             CreateMap<Address, AddressVM>()
                 .ForMember(dest => dest.CityName, opt => opt.MapFrom(src => src.City.CityName));

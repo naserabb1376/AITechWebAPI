@@ -15,6 +15,7 @@ namespace AITechWebAPI.ViewModels
         public string GroupType { get; set; } // نوع برگزاری گروه (حضوری، غیر حضوری)
         public string TeacherName { get; set; } // کلید خارجی به استاد
         public long CourseId { get; set; } // کلید خارجی به Course
+        public long TeacherId { get; set; } // کلید خارجی به Teacher
         public string CourseTitle { get; set; }
 
     }
