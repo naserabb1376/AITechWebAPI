@@ -458,7 +458,7 @@ namespace AITechWebAPI.Controllers
 
                 else
                 {
-                    result.Status = true;
+                    result.Status = false;
                     result.ErrorMessage = $"پرداخت ناموفق بود";
                     result.ID = paymentHistory.Result.ID;
                     return Ok(result);
