@@ -7,5 +7,8 @@ namespace AITechWebAPI.Models.Parent
     {
         [Display(Name = "کد دانش آموز")]
         public long StudentDetailsId { get; set; } = 0;
+
+        [Display(Name = "کد کاربر")]
+        public long UserId { get; set; } = 0;
     }
 }
