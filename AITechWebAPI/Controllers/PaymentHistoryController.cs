@@ -14,6 +14,7 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using Microsoft.IdentityModel.Tokens;
 using Parbad;
 using Parbad.Abstraction;
@@ -278,76 +279,130 @@ namespace AITechWebAPI.Controllers
                     break;
             }
 
-            
-
-            PaymentHistory PaymentHistory = new PaymentHistory()
+            if (rowAmount > 0)
             {
-                CreateDate = DateTime.Now.ToShamsi(),
-                UpdateDate = DateTime.Now.ToShamsi(),
-                ForeignKeyId = requestBody.ForeignKeyId,
-                EntityType = requestBody.EntityType,
-                Amount = rowAmount,
-                UserId = requestBody.UserId,
-                PaymentDate = DateTime.Now.ToShamsi(),
-                PaymentStatus = false,
-                
-                //  Description = requestBody.Description,
-            };
-            var Addresult = await _PaymentHistoryRep.AddPaymentHistoryAsync(PaymentHistory);
-            if (Addresult.Status)
-            {
-                #region AddLog
-
-                Log log = new Log()
+                PaymentHistory PaymentHistory = new PaymentHistory()
                 {
                     CreateDate = DateTime.Now.ToShamsi(),
                     UpdateDate = DateTime.Now.ToShamsi(),
-                    LogTime = DateTime.Now.ToShamsi(),
-                    ActionName = this.ControllerContext.RouteData.Values["action"].ToString(),
+                    ForeignKeyId = requestBody.ForeignKeyId,
+                    EntityType = requestBody.EntityType,
+                    Amount = rowAmount,
+                    UserId = requestBody.UserId,
+                    PaymentDate = DateTime.Now.ToShamsi(),
+                    PaymentStatus = false,
 
+                    //  Description = requestBody.Description,
                 };
-                await _logRep.AddLogAsync(log);
-
-                #endregion
-
-
-                #region PaymentGateway
-
-                var zarInvoice = new ZarinPalInvoice(description: $"{Addresult.ID} - {PaymentHistory.PaymentDate}");
-                // var callbackUrl = Url.Action("VerifyPayment", "PaymentHistory", new { payId = Addresult.ID }, Request.Scheme);
-                var callbackUrl = $"https://aitechac.com/payment/verify?PayId={Addresult.ID}&UserId={requestBody.UserId}&EntityType={requestBody.EntityType}&ForeignKeyId={requestBody.ForeignKeyId}";
-
-                var invoice = await _onlinePayment.RequestAsync(invoice =>
+                var Addresult = await _PaymentHistoryRep.AddPaymentHistoryAsync(PaymentHistory);
+                if (Addresult.Status)
                 {
-                    invoice.SetCallbackUrl(callbackUrl)
-                           .SetAmount(rowAmount)
-                            .SetZarinPalData(zarInvoice)
-                            .UseZarinPal();
+                    #region AddLog
 
-                    invoice.UseAutoIncrementTrackingNumber();
-                   
-                });
+                    Log log = new Log()
+                    {
+                        CreateDate = DateTime.Now.ToShamsi(),
+                        UpdateDate = DateTime.Now.ToShamsi(),
+                        LogTime = DateTime.Now.ToShamsi(),
+                        ActionName = this.ControllerContext.RouteData.Values["action"].ToString(),
 
-                if (invoice.IsSucceed)
-                {
-                    result.Result.PayGatewayUrl = invoice.GatewayTransporter.Descriptor.Url;
-                    result.ErrorMessage = "";
+                    };
+                    await _logRep.AddLogAsync(log);
+
+                    #endregion
+
+
+                    #region PaymentGateway
+
+                    var zarInvoice = new ZarinPalInvoice(description: $"{Addresult.ID} - {PaymentHistory.PaymentDate}");
+                    // var callbackUrl = Url.Action("VerifyPayment", "PaymentHistory", new { payId = Addresult.ID }, Request.Scheme);
+                    var callbackUrl = $"https://aitechac.com/payment/verify?PayId={Addresult.ID}&UserId={requestBody.UserId}&EntityType={requestBody.EntityType}&ForeignKeyId={requestBody.ForeignKeyId}";
+
+                    var invoice = await _onlinePayment.RequestAsync(invoice =>
+                    {
+                        invoice.SetCallbackUrl(callbackUrl)
+                               .SetAmount(rowAmount)
+                                .SetZarinPalData(zarInvoice)
+                                .UseZarinPal();
+
+                        invoice.UseAutoIncrementTrackingNumber();
+
+                    });
+
+                    if (invoice.IsSucceed)
+                    {
+                        result.Result.PayGatewayUrl = invoice.GatewayTransporter.Descriptor.Url;
+                        result.ErrorMessage = "";
+                    }
+
+
+
+                    else
+                    {
+                        result.ErrorMessage = invoice.Message;
+                        result.Result.PayGatewayUrl = "";
+                    }
+
+                    #endregion
+
+
+
+                    return Ok(result);
                 }
+            }
 
-          
+            else
+            {
+                var userRow = await _UserRep.GetUserByIdAsync(requestBody.UserId);
 
+
+                PreRegistration PreRegistration = new PreRegistration()
+                {
+                    CreateDate = DateTime.Now.ToShamsi(),
+                    UpdateDate = DateTime.Now.ToShamsi(),
+                    Email = userRow.Result.Email,
+                    FirstName = userRow.Result.FirstName,
+                    LastName = userRow.Result.LastName,
+                    PhoneNumber = userRow.Result.Username,
+
+                    EducationalClass = null,
+                    SchoolName = null,
+                    FavoriteField = null,
+                    RecognitionLevel = null,
+                    ProgrammingSkillLevel = null,
+
+                    ForeignKeyId = requestBody.ForeignKeyId,
+                    EntityType = requestBody.EntityType ?? "",
+                    RegistrationDate = DateTime.Now.ToShamsi(),
+                    OtherLangs = null,
+                    // Description = requestBody.Description,
+                };
+                var addPreRegistrationResult = await _PreRegistrationRep.AddPreRegistrationAsync(PreRegistration);
+
+                if (addPreRegistrationResult.Status)
+                {
+
+                    #region AddLog
+
+                    Log log = new Log()
+                    {
+                        CreateDate = DateTime.Now.ToShamsi(),
+                        UpdateDate = DateTime.Now.ToShamsi(),
+                        LogTime = DateTime.Now.ToShamsi(),
+                        ActionName = this.ControllerContext.RouteData.Values["action"].ToString(),
+
+                    };
+                    await _logRep.AddLogAsync(log);
+
+                    #endregion
+
+                }
                 else
                 {
-                    result.ErrorMessage = invoice.Message;
-                    result.Result.PayGatewayUrl = "";
+                    return BadRequest(addPreRegistrationResult);
                 }
-
-                #endregion
-
-
-
-                return Ok(result);
             }
+
             return BadRequest(result);
         }
 
