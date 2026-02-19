@@ -1,4 +1,5 @@
 ﻿using AITechDATA.DataLayer;
+using AITechDATA.Domain;
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using System;
@@ -293,6 +294,33 @@ namespace AITechDATA.Tools
             };
 
             return JsonSerializer.Serialize(rows, options);
+        }
+
+        public static ShowDiscountDto GetDiscount(this AITechContext _context,decimal fee,string entityName,long foreignkeyId,long userId,long roleId)
+        {
+            ShowDiscountDto result = new ShowDiscountDto()
+            {
+                DiscountedFee = fee,
+                DiscountPercent = 0,
+            };
+
+            var groupIds = _context.UserGroups.AsNoTracking().Where(g => g.IsActive && g.UserId == userId).Select(x=> x.GroupId).ToList();
+            var discount =  _context.Discounts.Include(x => x.DiscountTargets).AsNoTracking().Where(x => 
+            x.EntityName.ToLower() == entityName.ToLower() && x.ForeignKeyId == foreignkeyId 
+            && x.ExpireDate >= DateTime.Now && x.IsActive && !x.CodeRequired
+            && (x.DiscountTargets.Any(t=> (t.IsActive && (
+            (t.TargetEntityName.ToLower() == "group" && groupIds.Contains(t.TargetId)) ||
+            (t.TargetEntityName.ToLower() == "role" && t.TargetId == roleId) ||
+            (t.TargetEntityName.ToLower() == "user" && t.TargetId == userId) 
+            ))))).OrderByDescending(x => x.DiscountPercent).FirstOrDefault();
+
+            if (discount != null && discount.DiscountPercent > 0)
+            {
+                result.DiscountPercent = discount.DiscountPercent;
+                result.DiscountedFee = fee - (fee * discount.DiscountPercent / 100m);
+            }
+
+            return result;
         }
     }
 }

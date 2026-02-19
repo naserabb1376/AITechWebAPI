@@ -102,7 +102,9 @@ namespace AITechDATA.DataLayer.Services
             return result;
         }
 
-        public async Task<ListResultObject<Group>> GetAllGroupsAsync(
+        public async Task<ListResultObject<GroupDto>> GetAllGroupsAsync(
+            long ClientUserId,
+            long ClientRoleId,
             long studentId = 0,
             long courseId = 0,
             long teacherId = 0,
@@ -113,7 +115,7 @@ namespace AITechDATA.DataLayer.Services
             string searchText = "",
             string sortQuery = "")
         {
-            var results = new ListResultObject<Group>();
+            var results = new ListResultObject<GroupDto>();
 
             try
             {
@@ -172,7 +174,38 @@ namespace AITechDATA.DataLayer.Services
 
                 results.TotalCount = await query.CountAsync();
                 results.PageCount = DbTools.GetPageCount(results.TotalCount, pageSize);
-                results.Results = await query
+                results.Results = await query.Select(x=> new GroupDto()
+                {
+                    ChatMessages = x.ChatMessages,
+                    Course = x.Course,
+                    CourseId = x.CourseId,
+                    PaymentHistories = x.PaymentHistories,
+                    Sessions = x.Sessions,
+                    Students = x.Students,
+                    Teacher = x.Teacher,
+
+                    CreateDate = x.CreateDate,
+                    UpdateDate = x.UpdateDate,
+                    OtherLangs = x.OtherLangs,
+                    IsActive = x.IsActive,
+                    ID = x.ID,
+
+                    TeacherId = x.TeacherId,
+                    Status = x.Status,
+                    Note = x.Note,
+                    DayOfWeek = x.DayOfWeek,
+                    EndDate = x.EndDate,
+                    EndTime = x.EndTime,
+                    GroupType = x.GroupType,
+                    StartDate = x.StartDate,
+                    StartTime = x.StartTime,
+                    Fee = x.Fee,
+                    Name = x.Name,
+
+                    DiscountPercent = _context.GetDiscount(x.Fee, "group", x.ID, ClientUserId, ClientRoleId).DiscountPercent,
+                    DiscountedFee = _context.GetDiscount(x.Fee, "group", x.ID, ClientUserId, ClientRoleId).DiscountedFee
+
+                })
                     .OrderByDescending(x => x.CreateDate)
                     .SortBy(sortQuery)
                     .ToPaging(pageIndex, pageSize)
@@ -188,9 +221,9 @@ namespace AITechDATA.DataLayer.Services
         }
 
 
-        public async Task<RowResultObject<Group>> GetGroupByIdAsync(long groupId)
+        public async Task<RowResultObject<GroupDto>> GetGroupByIdAsync(long groupId,long ClientUserId = 0, long ClientRoleId = 0)
         {
-            RowResultObject<Group> result = new RowResultObject<Group>();
+            RowResultObject<GroupDto> result = new RowResultObject<GroupDto>();
             try
             {
                 result.Result = await _context.Groups
@@ -198,8 +231,39 @@ namespace AITechDATA.DataLayer.Services
                     .Include(x => x.Course)
                     .Include(x => x.Teacher)
                     .Include(x => x.Sessions)
-                 //   .Include(x => x.PreRegistrations)
                     .Include(x => x.Students)
+                    .Select(x => new GroupDto()
+                    {
+                        ChatMessages = x.ChatMessages,
+                        Course = x.Course,
+                        CourseId = x.CourseId,
+                        PaymentHistories = x.PaymentHistories,
+                        Sessions = x.Sessions,
+                        Students = x.Students,
+                        Teacher = x.Teacher,
+
+                        CreateDate = x.CreateDate,
+                        UpdateDate = x.UpdateDate,
+                        OtherLangs = x.OtherLangs,
+                        IsActive = x.IsActive,
+                        ID = x.ID,
+
+                        TeacherId = x.TeacherId,
+                        Status = x.Status,
+                        Note = x.Note,
+                        DayOfWeek = x.DayOfWeek,
+                        EndDate = x.EndDate,
+                        EndTime = x.EndTime,
+                        GroupType = x.GroupType,
+                        StartDate = x.StartDate,
+                        StartTime = x.StartTime,
+                        Fee = x.Fee,
+                        Name = x.Name,
+
+                        DiscountPercent = _context.GetDiscount(x.Fee, "group", x.ID, ClientUserId, ClientRoleId).DiscountPercent,
+                        DiscountedFee = _context.GetDiscount(x.Fee, "group", x.ID, ClientUserId, ClientRoleId).DiscountedFee
+
+                    })
                     .SingleOrDefaultAsync(x => x.ID == groupId);
             }
             catch (Exception ex)
@@ -234,7 +298,37 @@ namespace AITechDATA.DataLayer.Services
             try
             {
                 var group = await GetGroupByIdAsync(groupId);
-                result = await RemoveGroupAsync(group.Result);
+                var x = group.Result;
+                var thegroup =new Group()
+                {
+                    ChatMessages = x.ChatMessages,
+                    Course = x.Course,
+                    CourseId = x.CourseId,
+                    PaymentHistories = x.PaymentHistories,
+                    Sessions = x.Sessions,
+                    Students = x.Students,
+                    Teacher = x.Teacher,
+
+                    CreateDate = x.CreateDate,
+                    UpdateDate = x.UpdateDate,
+                    OtherLangs = x.OtherLangs,
+                    IsActive = x.IsActive,
+                    ID = x.ID,
+
+                    TeacherId = x.TeacherId,
+                    Status = x.Status,
+                    Note = x.Note,
+                    DayOfWeek = x.DayOfWeek,
+                    EndDate = x.EndDate,
+                    EndTime = x.EndTime,
+                    GroupType = x.GroupType,
+                    StartDate = x.StartDate,
+                    StartTime = x.StartTime,
+                    Fee = x.Fee,
+                    Name = x.Name,
+
+                };
+                result = await RemoveGroupAsync(thegroup);
             }
             catch (Exception ex)
             {

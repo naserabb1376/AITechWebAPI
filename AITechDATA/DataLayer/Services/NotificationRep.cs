@@ -74,7 +74,7 @@ namespace AITechDATA.DataLayer.Services
             return result;
         }
 
-        public async Task<ListResultObject<Notification>> GetAllNotificationsAsync(long userId = 0, int pageIndex = 1, int pageSize = 20, string searchText = "",string sortQuery ="")
+        public async Task<ListResultObject<Notification>> GetAllNotificationsAsync(long userId = 0, long senderUserId = 0, int pageIndex = 1, int pageSize = 20, string searchText = "",string sortQuery ="")
         {
             ListResultObject<Notification> results = new ListResultObject<Notification>();
             try
@@ -84,6 +84,11 @@ namespace AITechDATA.DataLayer.Services
                 if (userId > 0)
                 {
                     query = query.Where(x => x.UserId == userId);
+                }
+
+                if (senderUserId > 0)
+                {
+                    query = query.Where(x => x.SenderUserId == senderUserId);
                 }
 
                 query = query.Where(x =>

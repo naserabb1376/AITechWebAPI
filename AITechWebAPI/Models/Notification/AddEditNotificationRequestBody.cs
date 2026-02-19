@@ -11,6 +11,16 @@ namespace AITechWebAPI.Models.Notification
         [Range(1, long.MaxValue, ErrorMessage = "مقدار {0} باید بزرگتر از 0 باشد")]
         public long UserID { get; set; }
 
+        [Display(Name = "کد کاربر ارسال کننده")]
+        //[Required(ErrorMessage = "لطفا {0} را وارد کنید")]
+        //[Range(1, long.MaxValue, ErrorMessage = "مقدار {0} باید بزرگتر از 0 باشد")]
+        public long? SenderUserID { get; set; }
+
+        [Display(Name = "سطح اعلان")]
+        [Required(ErrorMessage = "لطفا {0} را وارد کنید")]
+        [Range(1, int.MaxValue, ErrorMessage = "مقدار {0} باید بزرگتر از 0 باشد")]
+        public int NotificationPassLevel { get; set; }
+
         [Display(Name = "متن اعلان")]
         [Required(ErrorMessage = "لطفا {0} را وارد کنید")]
         public string Message { get; set; }

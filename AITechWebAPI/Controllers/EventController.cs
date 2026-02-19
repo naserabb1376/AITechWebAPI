@@ -51,7 +51,11 @@ namespace AITechWebAPI.Controllers
             {
                 return BadRequest(requestBody);
             }
-            var result = await _EventRep.GetAllEventsAsync(requestBody.UserId,requestBody.PageIndex,requestBody.PageSize,requestBody.SearchText,requestBody.SortQuery);
+
+            var clientRoleId = User.GetCurrentRoleId();
+            var clientUserId = User.GetCurrentUserId();
+
+            var result = await _EventRep.GetAllEventsAsync(clientUserId,clientRoleId,requestBody.UserId,requestBody.PageIndex,requestBody.PageSize,requestBody.SearchText,requestBody.SortQuery);
             if (result.Status)
             {
                 var resultVM = _mapper.Map<EventListCustomResponse<EventVM>>(result);
@@ -68,7 +72,10 @@ namespace AITechWebAPI.Controllers
             {
                 return BadRequest(requestBody);
             }
-            var result = await _EventRep.GetEventByIdAsync(requestBody.ID);
+            var clientRoleId = User.GetCurrentRoleId();
+            var clientUserId = User.GetCurrentUserId();
+
+            var result = await _EventRep.GetEventByIdAsync(requestBody.ID,clientUserId,clientRoleId);
             if (result.Status)
             {
                 var resultVM = _mapper.Map<EventRowCustomResponse<EventVM>>(result);

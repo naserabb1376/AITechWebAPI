@@ -41,11 +41,12 @@ namespace AITechWebAPI.Controllers
         IEventRep _EventRep;
         IUserRep _UserRep;
         IPreRegistrationRep _PreRegistrationRep;
+        IDiscountRep _discountRep;
         ILogRep _logRep;
         private readonly IMapper _mapper;
 
 
-        public PaymentHistoryController(IPaymentHistoryRep PaymentHistoryRep,IGroupRep groupRep,IEventRep eventRep,IUserRep userRep,IPreRegistrationRep preRegistrationRep,ILogRep logRep,IMapper mapper, IOnlinePayment onlinePayment)
+        public PaymentHistoryController(IPaymentHistoryRep PaymentHistoryRep,IGroupRep groupRep,IEventRep eventRep,IUserRep userRep,IPreRegistrationRep preRegistrationRep,IDiscountRep discountRep,ILogRep logRep,IMapper mapper, IOnlinePayment onlinePayment)
         {
             _onlinePayment = onlinePayment;
             _PaymentHistoryRep = PaymentHistoryRep;
@@ -53,6 +54,7 @@ namespace AITechWebAPI.Controllers
             _EventRep = eventRep;
             _UserRep = userRep;
             _PreRegistrationRep = preRegistrationRep;
+            _discountRep = discountRep;
            _logRep = logRep;
             _mapper = mapper;
         }
@@ -235,7 +237,7 @@ namespace AITechWebAPI.Controllers
         {
             RowResultObject<RequestPaymentResultBody> result = new RowResultObject<RequestPaymentResultBody>();
             result.Result = new RequestPaymentResultBody();
-            decimal rowAmount = 0;
+            decimal rowAmount = 0,discountedrowAmount = 0;
 
             if (!ModelState.IsValid)
             {
@@ -258,6 +260,7 @@ namespace AITechWebAPI.Controllers
                         }
 
                         rowAmount = theRow.Result.Fee;
+                        discountedrowAmount = theRow.Result.DiscountedFee;
 
                     }
                     break;
@@ -274,10 +277,23 @@ namespace AITechWebAPI.Controllers
                         }
 
                         rowAmount = theRow.Result.Fee ?? 0;
+                        discountedrowAmount = theRow.Result.DiscountedFee ?? 0;
+
 
                     }
                     break;
             }
+
+            if (discountedrowAmount == rowAmount && requestBody.DiscountId > 0)
+            {
+                var discount = await _discountRep.GetDiscountByIdAsync(requestBody.DiscountId.Value);
+                if (discount.Result.IsActive && discount.Result.EntityName.ToLower() == requestBody.EntityType.ToLower() && discount.Result.ForeignKeyId == requestBody.ForeignKeyId && DateTime.Now.ToShamsi() >= discount.Result.ExpireDate)
+                {
+                    discountedrowAmount =  rowAmount - (rowAmount * discount.Result.DiscountPercent / 100m);
+                }
+            }
+
+            rowAmount = discountedrowAmount;
 
             if (rowAmount > 0)
             {

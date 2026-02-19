@@ -75,27 +75,12 @@ namespace AITechDATA.DataLayer.Services
             return result;
         }
 
-        public async Task<EventListCustomResponse<Event>> GetAllEventsAsync(long userId = 0,int pageIndex = 1, int pageSize = 20, string searchText = "",string sortQuery ="")
+        public async Task<EventListCustomResponse<EventDto>> GetAllEventsAsync(long ClientUserId, long ClientRoleId, long userId = 0,int pageIndex = 1, int pageSize = 20, string searchText = "",string sortQuery ="")
         {
-            EventListCustomResponse<Event> results = new EventListCustomResponse<Event>();
+            EventListCustomResponse<EventDto> results = new EventListCustomResponse<EventDto>();
             try
             {
-                var query = _context.Events.AsNoTracking().Include(x => x.User)
-.Select(a => new Event()
-                {
-                    ID = a.ID,
-                    Title = a.Title,
-                    UserId = a.UserId,
-                    User = a.User,
-                    Note = a.Note,
-                    CreateDate = a.CreateDate,
-                    UpdateDate = a.UpdateDate,
-                    EventDate = a.EventDate,
-                    Keywords = a.Keywords,
-                    Description = "",
-                    OtherLangs = "",
-
-                });
+                var query = _context.Events.Include(x => x.User).AsNoTracking();
                 if (userId > 0)
                 {
                     query = query.Where(x => x.UserId == userId);
@@ -109,7 +94,27 @@ namespace AITechDATA.DataLayer.Services
 
                 results.TotalCount = query.Count();
                 results.PageCount = DbTools.GetPageCount(results.TotalCount, pageSize);
-                results.Results = await query.OrderByDescending(x => x.EventDate)
+                results.Results = await query.Select(x=> new EventDto()
+                {
+                    CreateDate = x.CreateDate,
+                    UpdateDate = x.UpdateDate,
+                    User = x.User,
+                    UserId = x.UserId,
+                    ID = x.ID,
+                    Description = x.Description,
+                    IsActive = x.IsActive,
+                    OtherLangs = x.OtherLangs,
+                    Note = x.Note,
+                    EventDate = x.EventDate,
+                    Keywords = x.Keywords,
+                    Fee = x.Fee,
+                    Title = x.Title,
+                    DiscountPercent = _context.GetDiscount(x.Fee ?? 0, "event", x.ID, ClientUserId, ClientRoleId).DiscountPercent,
+                    DiscountedFee = _context.GetDiscount(x.Fee ?? 0, "event", x.ID, ClientUserId, ClientRoleId).DiscountedFee
+
+                })
+                    
+                    .OrderByDescending(x => x.EventDate)
                      .SortBy(sortQuery).ToPaging(pageIndex, pageSize)
                     .ToListAsync();
 
@@ -129,18 +134,37 @@ namespace AITechDATA.DataLayer.Services
             return results;
         }
 
-        public async Task<EventRowCustomResponse<Event>> GetEventByIdAsync(long eventId)
+        public async Task<EventRowCustomResponse<EventDto>> GetEventByIdAsync(long eventId, long ClientUserId=0, long ClientRoleId=0)
         {
-            EventRowCustomResponse<Event> result = new EventRowCustomResponse<Event>();
+            EventRowCustomResponse<EventDto> result = new EventRowCustomResponse<EventDto>();
             try
             {
                 result.Result = await _context.Events
                     .AsNoTracking()
+                    .Select(x => new EventDto()
+                    {
+                        CreateDate = x.CreateDate,
+                        UpdateDate = x.UpdateDate,
+                        User = x.User,
+                        UserId = x.UserId,
+                        ID = x.ID,
+                        Description = x.Description,
+                        IsActive = x.IsActive,
+                        OtherLangs = x.OtherLangs,
+                        Note = x.Note,
+                        EventDate = x.EventDate,
+                        Keywords = x.Keywords,
+                        Fee = x.Fee,
+                        Title = x.Title,
+                        DiscountPercent = _context.GetDiscount(x.Fee ?? 0, "event", x.ID, ClientUserId, ClientRoleId).DiscountPercent,
+                        DiscountedFee = _context.GetDiscount(x.Fee ?? 0, "event", x.ID, ClientUserId, ClientRoleId).DiscountedFee
+
+                    })
                     .SingleOrDefaultAsync(x => x.ID == eventId);
 
                 if (result.Result != null)
                 {
-                    result.ResultImages = new Dictionary<Event, List<Image>?>
+                    result.ResultImages = new Dictionary<EventDto, List<Image>?>
 {
     { result.Result, await _context.Images
         .Where(img => img.ForeignKeyId == eventId && img.EntityType == "Event")
@@ -183,7 +207,25 @@ namespace AITechDATA.DataLayer.Services
             try
             {
                 var eventObj = await GetEventByIdAsync(eventId);
-                result = await RemoveEventAsync(eventObj.Result);
+                var x = eventObj.Result;
+                var theEvent = new Event()
+                {
+                    CreateDate = x.CreateDate,
+                    UpdateDate = x.UpdateDate,
+                    User = x.User,
+                    UserId = x.UserId,
+                    ID = x.ID,
+                    Description = x.Description,
+                    IsActive = x.IsActive,
+                    OtherLangs = x.OtherLangs,
+                    Note = x.Note,
+                    EventDate = x.EventDate,
+                    Keywords = x.Keywords,
+                    Fee = x.Fee,
+                    Title = x.Title,
+
+                };
+                result = await RemoveEventAsync(theEvent);
             }
             catch (Exception ex)
             {

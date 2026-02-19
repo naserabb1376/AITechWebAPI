@@ -4,7 +4,7 @@ using AITechDATA.Domain;
 using AITechDATA.ResultObjects;
 using AITechDATA.Tools;
 using AITechWebAPI.Models;
-using AITechWebAPI.Models.Notification;
+using AITechWebAPI.Models.DiscountTarget;
 using AITechWebAPI.Models.Public;
 using AITechWebAPI.Validations;
 using AITechWebAPI.ViewModels;
@@ -14,6 +14,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
+using MTPermissionCenter.EFCore.Entities;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
@@ -21,67 +22,66 @@ using static AITechWebAPI.Tools.ToolBox;
 
 namespace AITechWebAPI.Controllers
 {
-    [Route("Notification")]
+    [Route("DiscountTarget")]
     [ApiController]
     [Authorize]
     [Produces("application/json")]
-    // [CheckRoleBase(new[] { (int)BaseRole.MiddleAdmin, (int)BaseRole.GeneralAdmin })]
+    // [CheckRoleBase(new[] { (int)BaseRole.GeneralAdmin })]
 
-
-    public class NotificationController : ControllerBase
+    public class DiscountTargetController : ControllerBase
     {
-        INotificationRep _NotificationRep;
+        IDiscountTargetRep _DiscountTargetRep;
         ILogRep _logRep;
         private readonly IMapper _mapper;
 
 
-        public NotificationController(INotificationRep NotificationRep,ILogRep logRep,IMapper mapper)
+        public DiscountTargetController(IDiscountTargetRep DiscountTargetRep,ILogRep logRep,IMapper mapper)
         {
-           _NotificationRep = NotificationRep;
+           _DiscountTargetRep = DiscountTargetRep;
            _logRep = logRep;
             _mapper = mapper;
         }
 
-        [HttpPost("GetAllNotifications_Base")]
-        public async Task<ActionResult<ListResultObject<NotificationVM>>> GetAllNotifications_Base(GetNotificationListRequestBody requestBody)
+        [HttpPost("GetAllDiscountTargets_Base")]
+        public async Task<ActionResult<ListResultObject<DiscountTargetVM>>> GetAllDiscountTargets_Base(GetDiscountTargetListRequestBody requestBody)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(requestBody);
             }
-            var result = await _NotificationRep.GetAllNotificationsAsync(requestBody.UserId,requestBody.SenderUserId,requestBody.PageIndex,requestBody.PageSize,requestBody.SearchText,requestBody.SortQuery);
+            var result = await _DiscountTargetRep.GetAllDiscountTargetsAsync(requestBody.DiscountId, requestBody.TargetId, requestBody.PageIndex,requestBody.PageSize,requestBody.SearchText,requestBody.SortQuery);
             if (result.Status)
             {
-                var resultVM = _mapper.Map<ListResultObject<NotificationVM>>(result);
+                var resultVM = _mapper.Map<ListResultObject<DiscountTargetVM>>(result);
                 return Ok(resultVM);
             }
             return BadRequest(result);
         }
 
-        [HttpPost("GetNotificationById_Base")]
-        public async Task<ActionResult<RowResultObject<NotificationVM>>> GetNotificationById_Base(GetRowRequestBody requestBody)
+        [HttpPost("GetDiscountTargetById_Base")]
+        public async Task<ActionResult<RowResultObject<DiscountTargetVM>>> GetDiscountTargetById_Base(GetRowRequestBody requestBody)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(requestBody);
             }
-            var result = await _NotificationRep.GetNotificationByIdAsync(requestBody.ID);
+            var result = await _DiscountTargetRep.GetDiscountTargetByIdAsync(requestBody.ID);
             if (result.Status)
             {
-                var resultVM = _mapper.Map<RowResultObject<NotificationVM>>(result);
+                var resultVM = _mapper.Map<RowResultObject<DiscountTargetVM>>(result);
                 return Ok(resultVM);
             }
             return BadRequest(result);
         }
 
-        [HttpPost("ExistNotification_Base")]
-        public async Task<ActionResult<BitResultObject>> ExistNotification_Base(GetRowRequestBody requestBody)
+        [HttpPost("ExistDiscountTarget_Base")]
+        public async Task<ActionResult<BitResultObject>> ExistDiscountTarget_Base(GetRowRequestBody requestBody)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(requestBody);
             }
-            var result = await _NotificationRep.ExistNotificationAsync(requestBody.ID);
+            var result = await _DiscountTargetRep.ExistDiscountTargetAsync(requestBody.ID);
             if (string.IsNullOrEmpty(result.ErrorMessage))
             {
                 return Ok(result);
@@ -89,25 +89,26 @@ namespace AITechWebAPI.Controllers
             return BadRequest(result);
         }
 
-        [HttpPost("AddNotification_Base")]
-        public async Task<ActionResult<BitResultObject>> AddNotification_Base(AddEditNotificationRequestBody requestBody)
+        [HttpPost("AddDiscountTargets_Base")]
+        public async Task<ActionResult<BitResultObject>> AddDiscountTargets_Base(List<AddEditDiscountTargetRequestBody> requestBody)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(requestBody);
             }
-            Notification Notification = new Notification()
+
+            var DiscountTargets = requestBody.Select(x=> new DiscountTarget()
             {
                 CreateDate = DateTime.Now.ToShamsi(),
                 UpdateDate = DateTime.Now.ToShamsi(),
-                UserId = requestBody.UserID,
-                Message = requestBody.Message,
-                IsRead = requestBody.NotificationSeenStatus,
-                NotificationPassLevel = requestBody.NotificationPassLevel,
-                SenderUserId = requestBody.SenderUserID ?? User.GetCurrentUserId(),
-                OtherLangs = requestBody.OtherLangs ?? "",
-            };
-            var result = await _NotificationRep.AddNotificationAsync(Notification);
+                TargetEntityName = x.TargetEntityName,
+                DiscountId = x.DiscountId,
+                TargetId = x.TargetId,
+                IsActive = x.IsActive,
+                
+            }).ToList();
+            
+            var result = await _DiscountTargetRep.AddDiscountTargetsAsync(DiscountTargets);
             if (result.Status)
             {
                 #region AddLog
@@ -124,82 +125,88 @@ namespace AITechWebAPI.Controllers
 
                 #endregion
 
-
                 return Ok(result);
             }
             return BadRequest(result);
         }
 
-        [HttpPut("EditNotification_Base")]
-        public async Task<ActionResult<BitResultObject>> EditNotification_Base(AddEditNotificationRequestBody requestBody)
+        [HttpPut("EditDiscountTargets_Base")]
+        public async Task<ActionResult<BitResultObject>> EditDiscountTargets_Base(List<AddEditDiscountTargetRequestBody> requestBody)
         {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(requestBody);
+            }
+
             var result = new BitResultObject();
-            if (!ModelState.IsValid)
+            var DiscountTargets = new List<DiscountTarget>();
+
+            foreach (var body in requestBody)
             {
-                return BadRequest(requestBody);
-            }
-            var theRow = await _NotificationRep.GetNotificationByIdAsync(requestBody.ID);
-            if (!theRow.Status)
-            {
-                result.Status = theRow.Status;
-                result.ErrorMessage = theRow.ErrorMessage;
+                var theRow = await _DiscountTargetRep.GetDiscountTargetByIdAsync(body.ID);
+                if (!theRow.Status)
+                {
+                    result.Status = theRow.Status;
+                    result.ErrorMessage = theRow.ErrorMessage;
+                    return BadRequest(result);
+                }
+
+                var DiscountTarget = new DiscountTarget
+                {
+                    CreateDate = theRow.Result.CreateDate,
+                    UpdateDate = DateTime.Now.ToShamsi(),
+                    ID = body.ID,
+                    DiscountId = body.DiscountId,
+                    TargetId = body.TargetId,
+                    TargetEntityName = body.TargetEntityName,
+                    IsActive = body.IsActive,
+                };
+
+                DiscountTargets.Add(DiscountTarget);
             }
 
-            Notification Notification = new Notification()
-            {
-                CreateDate = theRow.Result.CreateDate,
-                UpdateDate = DateTime.Now.ToShamsi(),
-                ID = requestBody.ID,
-                UserId = requestBody.UserID,
-                Message = requestBody.Message,
-                IsRead = requestBody.NotificationSeenStatus,
-                OtherLangs = requestBody.OtherLangs ?? "",
-                NotificationPassLevel = requestBody.NotificationPassLevel,
-                SenderUserId = theRow.Result.SenderUserId ?? User.GetCurrentUserId(),
-            };
-            result = await _NotificationRep.EditNotificationAsync(Notification);
+            result = await _DiscountTargetRep.EditDiscountTargetsAsync(DiscountTargets);
             if (result.Status)
             {
-
                 #region AddLog
 
-                Log log = new Log()
+                Log log = new Log
                 {
                     CreateDate = DateTime.Now.ToShamsi(),
                     UpdateDate = DateTime.Now.ToShamsi(),
                     LogTime = DateTime.Now.ToShamsi(),
                     ActionName = this.ControllerContext.RouteData.Values["action"].ToString(),
-
                 };
                 await _logRep.AddLogAsync(log);
 
                 #endregion
 
+
                 return Ok(result);
             }
+
             return BadRequest(result);
         }
 
-        [HttpDelete("DeleteNotification_Base")]
-        public async Task<ActionResult<BitResultObject>> DeleteNotification_Base(GetRowRequestBody requestBody)
+        [HttpDelete("DeleteDiscountTargets_Base")]
+        public async Task<ActionResult<BitResultObject>> DeleteDiscountTargets_Base(List<long> ids)
         {
             if (!ModelState.IsValid)
             {
-                return BadRequest(requestBody);
+                return BadRequest(ids);
             }
-            var result = await _NotificationRep.RemoveNotificationAsync(requestBody.ID);
+
+            var result = await _DiscountTargetRep.RemoveDiscountTargetsAsync(ids);
             if (result.Status)
             {
-
                 #region AddLog
 
-                Log log = new Log()
+                Log log = new Log
                 {
                     CreateDate = DateTime.Now.ToShamsi(),
                     UpdateDate = DateTime.Now.ToShamsi(),
                     LogTime = DateTime.Now.ToShamsi(),
                     ActionName = this.ControllerContext.RouteData.Values["action"].ToString(),
-
                 };
                 await _logRep.AddLogAsync(log);
 
@@ -207,6 +214,7 @@ namespace AITechWebAPI.Controllers
 
                 return Ok(result);
             }
+
             return BadRequest(result);
         }
     }

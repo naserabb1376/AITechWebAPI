@@ -17,6 +17,8 @@ namespace AITechWebAPI.ViewModels
         public long CourseId { get; set; } // کلید خارجی به Course
         public long TeacherId { get; set; } // کلید خارجی به Teacher
         public string CourseTitle { get; set; }
+        public int DiscountPercent { get; set; }
+        public decimal DiscountedFee { get; set; }
 
     }
 }

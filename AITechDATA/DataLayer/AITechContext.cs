@@ -71,6 +71,8 @@ namespace AITechDATA.DataLayer
         public DbSet<SubmitForm> SubmitForms { get; set; }
         public DbSet<FormField> FormFields { get; set; }
         public DbSet<FieldInForm> FieldInForms { get; set; }
+        public DbSet<Discount> Discounts { get; set; }
+        public DbSet<DiscountTarget> DiscountTargets { get; set; }
 
 
         // Manual
@@ -289,6 +291,12 @@ namespace AITechDATA.DataLayer
 .HasOne(x => x.User)
 .WithMany(x => x.Events)
 .HasForeignKey(x => x.UserId)
+.OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<DiscountTarget>()
+.HasOne(x => x.Discount)
+.WithMany(x => x.DiscountTargets)
+.HasForeignKey(x => x.DiscountId)
 .OnDelete(DeleteBehavior.Cascade);
 
             modelBuilder.Entity<News>()

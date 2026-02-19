@@ -18,6 +18,9 @@ namespace AITechWebAPI.Models.PaymentHistory
         [Range(1, long.MaxValue, ErrorMessage = "مقدار {0} باید بزرگتر از 0 باشد")]
         public long UserId { get; set; }
 
+        [Display(Name = "شناسه تخفیف")]
+        public long? DiscountId { get; set; }
+
     }
 
     public class VerifyPaymentRequestBody

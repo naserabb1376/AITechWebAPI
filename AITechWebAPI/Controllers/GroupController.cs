@@ -48,7 +48,11 @@ namespace AITechWebAPI.Controllers
             {
                 return BadRequest(requestBody);
             }
-            var result = await _GroupRep.GetAllGroupsAsync(requestBody.StudentId,requestBody.CourseId,requestBody.TeacherId, requestBody.GroupStatus,requestBody.GroupType,requestBody.PageIndex, requestBody.PageSize, requestBody.SearchText, requestBody.SortQuery);
+
+            var clientRoleId = User.GetCurrentRoleId();
+            var clientUserId = User.GetCurrentUserId();
+
+            var result = await _GroupRep.GetAllGroupsAsync(clientUserId,clientRoleId,requestBody.StudentId,requestBody.CourseId,requestBody.TeacherId, requestBody.GroupStatus,requestBody.GroupType,requestBody.PageIndex, requestBody.PageSize, requestBody.SearchText, requestBody.SortQuery);
             if (result.Status)
             {
                 var resultVM = _mapper.Map<ListResultObject<GroupVM>>(result);
@@ -64,7 +68,11 @@ namespace AITechWebAPI.Controllers
             {
                 return BadRequest(requestBody);
             }
-            var result = await _GroupRep.GetGroupByIdAsync(requestBody.ID);
+
+            var clientRoleId = User.GetCurrentRoleId();
+            var clientUserId = User.GetCurrentUserId();
+
+            var result = await _GroupRep.GetGroupByIdAsync(requestBody.ID,clientUserId,clientRoleId);
             if (result.Status)
             {
                 var resultVM = _mapper.Map<RowResultObject<GroupVM>>(result);

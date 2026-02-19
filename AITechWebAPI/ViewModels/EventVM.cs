@@ -11,6 +11,8 @@ namespace AITechWebAPI.ViewModels
         public decimal? Fee { get; set; } // هزینه گروه
         public DateTime EventDate { get; set; } // تاریخ رویداد
         public string Keywords { get; set; } // کلمات کلیدی برای سئو
+        public int DiscountPercent { get; set; }
+        public decimal? DiscountedFee { get; set; }
 
         public long UserId { get; set; } // کلید خارجی به User
         public string UserName { get; set; } // ارتباط با User

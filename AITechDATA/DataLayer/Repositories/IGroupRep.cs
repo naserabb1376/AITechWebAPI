@@ -10,9 +10,9 @@ namespace AITechDATA.DataLayer.Repositories
 {
     public interface IGroupRep
     {
-        Task<ListResultObject<Group>> GetAllGroupsAsync(long studentId = 0,long courseId = 0,long teacherId=0, string groupStatus = "", string groupType = "", int pageIndex = 1, int pageSize = 20, string searchText = "", string sortQuery = "");
+        Task<ListResultObject<GroupDto>> GetAllGroupsAsync(long ClientUserId, long ClientRoleId, long studentId = 0,long courseId = 0,long teacherId=0, string groupStatus = "", string groupType = "", int pageIndex = 1, int pageSize = 20, string searchText = "", string sortQuery = "");
 
-        Task<RowResultObject<Group>> GetGroupByIdAsync(long groupId);
+        Task<RowResultObject<GroupDto>> GetGroupByIdAsync(long groupId, long ClientUserId = 0, long ClientRoleId = 0);
 
         Task<BitResultObject> AddGroupAsync(Group group);
 

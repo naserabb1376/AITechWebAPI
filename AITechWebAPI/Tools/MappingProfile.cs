@@ -36,7 +36,7 @@ namespace AITechWebAPI.Tools
             CreateMap(typeof(TicketRowCustomResponse<>), typeof(TicketRowCustomResponse<>));
             CreateMap(typeof(TicketListCustomResponse<>), typeof(TicketListCustomResponse<>));
 
-            CreateMap<Group, GroupVM>()
+            CreateMap<GroupDto, GroupVM>()
 .ForMember(dest => dest.CourseTitle, opt => opt.MapFrom(src => src.Course.Title))
 .ForMember(dest => dest.TeacherName, opt => opt.MapFrom(src => $"{src.Teacher.FirstName} {src.Teacher.LastName}"))
 .ForMember(dest => dest.TeacherId, opt => opt.MapFrom(src => src.TeacherId))
@@ -65,6 +65,7 @@ namespace AITechWebAPI.Tools
             CreateMap<User, TeacherVM>();
             CreateMap<Meeting, MeetingVM>();
             CreateMap<SubmitForm, SubmitFormVM>();
+            CreateMap<Discount, DiscountVM>();
             CreateMap<FormField, FormFieldVM>();
 
             CreateMap<Course, CourseVM>()
@@ -92,7 +93,7 @@ namespace AITechWebAPI.Tools
             CreateMap<Article, ArticleVM>()
             .ForMember(dest => dest.CategoryName, opt => opt.MapFrom(src => src.Category.CategoryName));
 
-            CreateMap<Event, EventVM>()
+            CreateMap<EventDto, EventVM>()
   .ForMember(dest => dest.UserName, opt => opt.MapFrom(src => $"{src.User.FirstName} {src.User.LastName}"));
 
             CreateMap<LoginMethod, LoginMethodVM>()
@@ -171,6 +172,16 @@ namespace AITechWebAPI.Tools
 .ForMember(dest => dest.FormTitle, opt => opt.MapFrom(src => src.Form.Title))
 .ForMember(dest => dest.FieldName, opt => opt.MapFrom(src => src.FormField.FieldName))
 .ForMember(dest => dest.DisplayName, opt => opt.MapFrom(src => src.FormField.DisplayName))
+;
+
+            CreateMap<DiscountTarget, DiscountTargetVM>()
+.ForMember(dest => dest.ForeignKeyId, opt => opt.MapFrom(src => src.Discount.ForeignKeyId))
+.ForMember(dest => dest.EntityName, opt => opt.MapFrom(src => src.Discount.EntityName))
+.ForMember(dest => dest.DiscountCode, opt => opt.MapFrom(src => src.Discount.DiscountCode))
+.ForMember(dest => dest.DiscountPercent, opt => opt.MapFrom(src => src.Discount.DiscountPercent))
+.ForMember(dest => dest.Description, opt => opt.MapFrom(src => src.Discount.Description))
+.ForMember(dest => dest.CreatorId, opt => opt.MapFrom(src => src.Discount.CreatorId))
+.ForMember(dest => dest.ExpireDate, opt => opt.MapFrom(src => src.Discount.ExpireDate))
 ;
 
             CreateMap<User, UserVM>()

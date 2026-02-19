@@ -215,6 +215,8 @@ namespace AITechWebAPI
             builder.Services.AddScoped<ISubmitFormRep, SubmitFormRep>();
             builder.Services.AddScoped<IFormFieldRep, FormFieldRep>();
             builder.Services.AddScoped<IFieldInFormRep, FieldInFormRep>();
+            builder.Services.AddScoped<IDiscountRep, DiscountRep>();
+            builder.Services.AddScoped<IDiscountTargetRep, DiscountTargetRep>();
 
 
             #endregion ImportDbServices

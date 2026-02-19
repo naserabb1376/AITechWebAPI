@@ -5,7 +5,7 @@ using AITechDATA.ResultObjects;
 using AITechDATA.Tools;
 using AITechWebAPI.Models;
 using AITechWebAPI.Models.Public;
-using AITechWebAPI.Models.SubmitForm;
+using AITechWebAPI.Models.Discount;
 using AITechWebAPI.Tools;
 using AITechWebAPI.ViewModels;
 using AutoMapper;
@@ -20,88 +20,65 @@ using System.Text;
 
 namespace AITechWebAPI.Controllers
 {
-    [Route("SubmitForm")]
+    [Route("Discount")]
     [ApiController]
     [Authorize]
     [Produces("application/json")]
-    public class SubmitFormController : ControllerBase
+    public class DiscountController : ControllerBase
     {
-        private ISubmitFormRep _SubmitFormRep;
-        private IFieldInFormRep _FieldInForm;
+        private IDiscountRep _DiscountRep;
         private ILogRep _logRep;
         private readonly IMapper _mapper;
 
 
-        public SubmitFormController(ISubmitFormRep SubmitFormRep,IFieldInFormRep fieldInFormRep, ILogRep logRep,IMapper mapper)
+        public DiscountController(IDiscountRep DiscountRep, ILogRep logRep,IMapper mapper)
         {
-            _SubmitFormRep = SubmitFormRep;
-            _FieldInForm = fieldInFormRep;
+            _DiscountRep = DiscountRep;
             _logRep = logRep;
             _mapper = mapper;
         }
 
-        [HttpPost("GetAllSubmitForms_Base")]
-        public async Task<ActionResult<ListResultObject<SubmitFormVM>>> GetAllSubmitForms_Base(GetSubmitFormListRequestBody requestBody)
+        [HttpPost("GetAllDiscounts_Base")]
+        public async Task<ActionResult<ListResultObject<DiscountVM>>> GetAllDiscounts_Base(GetDiscountListRequestBody requestBody)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(requestBody);
             }
-            var result = await _SubmitFormRep.GetAllSubmitFormsAsync(requestBody.EntityName,requestBody.CreatorId,requestBody.PageIndex, requestBody.PageSize, requestBody.SearchText, requestBody.SortQuery);
+            var result = await _DiscountRep.GetAllDiscountsAsync(requestBody.EntityName,requestBody.ForeignKeyId,requestBody.CreatorId,requestBody.PageIndex, requestBody.PageSize, requestBody.SearchText, requestBody.SortQuery);
             if (result.Status)
             {
-                var resultVM = _mapper.Map<ListResultObject<SubmitFormVM>>(result);
+                var resultVM = _mapper.Map<ListResultObject<DiscountVM>>(result);
                 return Ok(resultVM);
             }
             return BadRequest(result);
         }
 
-        [HttpPost("GetSubmitFormById_Base")]
-        public async Task<ActionResult<RowResultObject<SubmitFormVM>>> GetSubmitFormById_Base(GetRowRequestBody requestBody)
+        [HttpPost("GetDiscountById_Base")]
+        public async Task<ActionResult<RowResultObject<DiscountVM>>> GetDiscountById_Base(GetRowRequestBody requestBody)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(requestBody);
             }
-            var result = await _SubmitFormRep.GetSubmitFormByIdAsync(requestBody.ID);
+            var result = await _DiscountRep.GetDiscountByIdAsync(requestBody.ID);
             if (result.Status)
             {
-                var resultVM = _mapper.Map<RowResultObject<SubmitFormVM>>(result);
+                var resultVM = _mapper.Map<RowResultObject<DiscountVM>>(result);
                 return Ok(resultVM);
             }
             return BadRequest(result);
         }
 
-        [HttpPost("GetSubmitFormObject")]
-        public async Task<ActionResult<RowResultObject<SubmitFormObjDto>>> GetSubmitFormObject(GetSubmitFormObjRequestBody requestBody)
+
+        [HttpPost("ExistDiscount_Base")]
+        public async Task<ActionResult<BitResultObject>> ExistDiscount_Base(ExistDiscountRequestBody requestBody)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(requestBody);
             }
-            long recordId = 0;
-            if (!requestBody.SearchField.ToLower().Contains("key"))
-            {
-                recordId = long.Parse(requestBody.SearchValue);
-            }
-
-            var result = await _SubmitFormRep.GetSubmitFormObjAsync(recordId,requestBody.SearchValue);
-            if (result.Status)
-            {
-                return Ok(result);
-            }
-            return BadRequest(result);
-        }
-
-
-        [HttpPost("ExistSubmitForm_Base")]
-        public async Task<ActionResult<BitResultObject>> ExistSubmitForm_Base(GetRowRequestBody requestBody)
-        {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(requestBody);
-            }
-            var result = await _SubmitFormRep.ExistSubmitFormAsync(requestBody.ID);
+            var result = await _DiscountRep.ExistDiscountAsync(requestBody.ExistType,requestBody.KeyValue);
             if (string.IsNullOrEmpty(result.ErrorMessage))
             {
                 return Ok(result);
@@ -109,44 +86,33 @@ namespace AITechWebAPI.Controllers
             return BadRequest(result);
         }
 
-        [HttpPost("AddSubmitForm")]
-        public async Task<ActionResult<BitResultObject>> AddSubmitForm(AddEditSubmitFormRequestBody requestBody)
+        [HttpPost("AddDiscount_Base")]
+        public async Task<ActionResult<RowResultObject<Discount>>> AddDiscount_Base(AddEditDiscountRequestBody requestBody)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(requestBody);
             }
-            SubmitForm SubmitForm = new SubmitForm()
+            Discount Discount = new Discount()
             {
                 CreateDate = DateTime.Now.ToShamsi(),
                 UpdateDate = DateTime.Now.ToShamsi(),
                 OtherLangs = requestBody.OtherLangs,
                 Description = requestBody.Description,
                 IsActive = requestBody.IsActive,
-                CreatorId = User.GetCurrentUserId(),
+                CreatorId = requestBody.CreatorId ?? User.GetCurrentUserId(),
                 EntityName = requestBody.EntityName,
-                Title = requestBody.FormTitle,
-                FormKey = requestBody.FormKey,
-                
+                ForeignKeyId = requestBody.ForeignKeyId,
+                CodeRequired = requestBody.CodeRequired,
+                DiscountPercent = requestBody.DiscountPercent,
+                ExpireDate = requestBody.ExpireDate.StringToDate().Value,
+                DiscountCode = requestBody.DiscountCode.GenerateDiscountCode(),
+
             };
-            var result = await _SubmitFormRep.AddSubmitFormAsync(SubmitForm);
+            var result = await _DiscountRep.AddDiscountAsync(Discount);
             if (result.Status)
             {
-                var fieldInForms = requestBody.FieldIds.Select(x=> new FieldInForm()
-                {
-                    CreateDate= DateTime.Now.ToShamsi(),
-                    UpdateDate = DateTime.Now.ToShamsi(),
-                    IsActive = requestBody.IsActive,
-                    FormId = result.ID,
-                    FormFieldId = x,
-
-                }).ToList();
-
-                result = await _FieldInForm.AddFieldInFormsAsync(fieldInForms);
-
-                if (result.Status)
-                {
-
+                
                     #region AddLog
 
                     Log log = new Log()
@@ -161,28 +127,28 @@ namespace AITechWebAPI.Controllers
                     #endregion AddLog
 
                     return Ok(result);
-                }
+            
 
             }
             return BadRequest(result);
         }
 
-        [HttpPut("EditSubmitForm")]
-        public async Task<ActionResult<BitResultObject>> EditSubmitForm(AddEditSubmitFormRequestBody requestBody)
+        [HttpPut("EditDiscount_Base")]
+        public async Task<ActionResult<RowResultObject<Discount>>> EditDiscount_Base(AddEditDiscountRequestBody requestBody)
         {
-            var result = new BitResultObject();
+            var result = new RowResultObject<Discount>();
             if (!ModelState.IsValid)
             {
                 return BadRequest(requestBody);
             }
-            var theRow = await _SubmitFormRep.GetSubmitFormByIdAsync(requestBody.ID);
+            var theRow = await _DiscountRep.GetDiscountByIdAsync(requestBody.ID);
             if (!theRow.Status)
             {
                 result.Status = theRow.Status;
                 result.ErrorMessage = theRow.ErrorMessage;
             }
 
-            SubmitForm SubmitForm = new SubmitForm()
+            Discount Discount = new Discount()
             {
                 CreateDate = theRow.Result.CreateDate,
                 UpdateDate = DateTime.Now.ToShamsi(),
@@ -190,29 +156,18 @@ namespace AITechWebAPI.Controllers
                 OtherLangs = requestBody.OtherLangs,
                 Description = requestBody.Description,
                 IsActive = requestBody.IsActive,
-                CreatorId = theRow.Result.CreatorId,
+                CreatorId = requestBody.CreatorId ?? theRow.Result.CreatorId,
                 EntityName = requestBody.EntityName,
-                Title = requestBody.FormTitle,
-                FormKey = requestBody.FormKey,
+                ForeignKeyId = requestBody.ForeignKeyId,
+                CodeRequired = requestBody.CodeRequired,
+                DiscountPercent = requestBody.DiscountPercent,
+                ExpireDate = requestBody.ExpireDate.StringToDate().Value,
+                DiscountCode = requestBody.DiscountCode.GenerateDiscountCode(), 
             };
-            result = await _SubmitFormRep.EditSubmitFormAsync(SubmitForm);
+            result = await _DiscountRep.EditDiscountAsync(Discount);
             if (result.Status)
             {
-                var fieldInForms = requestBody.FieldIds.Select(x => new FieldInForm()
-                {
-                    CreateDate = DateTime.Now.ToShamsi(),
-                    UpdateDate = DateTime.Now.ToShamsi(),
-                    IsActive = requestBody.IsActive,
-                    FormId = result.ID,
-                    FormFieldId = x,
-
-                }).ToList();
-
-                result = await _FieldInForm.AddFieldInFormsAsync(fieldInForms);
-
-                if (result.Status)
-                {
-
+              
                     #region AddLog
 
                     Log log = new Log()
@@ -227,19 +182,19 @@ namespace AITechWebAPI.Controllers
                     #endregion AddLog
 
                     return Ok(result);
-                }
+    
             }
             return BadRequest(result);
         }
 
-        [HttpDelete("DeleteSubmitForm_Base")]
-        public async Task<ActionResult<BitResultObject>> DeleteSubmitForm_Base(GetRowRequestBody requestBody)
+        [HttpDelete("DeleteDiscount_Base")]
+        public async Task<ActionResult<BitResultObject>> DeleteDiscount_Base(GetRowRequestBody requestBody)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(requestBody);
             }
-            var result = await _SubmitFormRep.RemoveSubmitFormAsync(requestBody.ID);
+            var result = await _DiscountRep.RemoveDiscountAsync(requestBody.ID);
             if (result.Status)
             {
                 #region AddLog

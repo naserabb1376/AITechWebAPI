@@ -31,16 +31,14 @@ namespace AITechWebAPI.Controllers
     public class FieldInFormController : ControllerBase
     {
         IFieldInFormRep _FieldInFormRep;
-        IPermissionInvalidationService _PermissionInvalidationService;
         ILogRep _logRep;
         private readonly IMapper _mapper;
 
 
-        public FieldInFormController(IFieldInFormRep FieldInFormRep,ILogRep logRep,IPermissionInvalidationService permissionInvalidationService,IMapper mapper)
+        public FieldInFormController(IFieldInFormRep FieldInFormRep,ILogRep logRep,IMapper mapper)
         {
            _FieldInFormRep = FieldInFormRep;
            _logRep = logRep;
-            _PermissionInvalidationService = permissionInvalidationService;
             _mapper = mapper;
         }
 
@@ -212,7 +210,6 @@ namespace AITechWebAPI.Controllers
 
                 #endregion
 
-                await _PermissionInvalidationService.BumpRoleUsersVersionAsync(ids);
 
                 return Ok(result);
             }
