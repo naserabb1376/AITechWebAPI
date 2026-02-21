@@ -139,7 +139,10 @@ namespace AITechWebAPI.Tools
 .ForMember(dest => dest.PermissionType, opt => opt.MapFrom(src => src.Permission.PermissionType));
 
             CreateMap<Session, SessionVM>()
-.ForMember(dest => dest.GroupName, opt => opt.MapFrom(src => src.Group.Name));
+.ForMember(dest => dest.GroupName, opt => opt.MapFrom(src => src.Group.Name))
+.ForMember(dest => dest.CourseTitle, opt => opt.MapFrom(src => src.Group.Course.Title))
+.ForMember(dest => dest.TeacherName, opt => opt.MapFrom(src => $"{src.Group.Teacher.FirstName} {src.Group.Teacher.LastName}"))
+;
 
             CreateMap<StudentDetails, StudentDetailsVM>()
 .ForMember(dest => dest.UserName, opt => opt.MapFrom(src => $"{src.User.FirstName} {src.User.LastName}"));
@@ -158,8 +161,10 @@ namespace AITechWebAPI.Tools
 ;
 
             CreateMap<UserGroup, UserGroupVM>()
-.ForMember(dest => dest.UserName, opt => opt.MapFrom(src => $"{src.User.FirstName} {src.User.LastName}"))
-.ForMember(dest => dest.GroupName, opt => opt.MapFrom(src => src.Group.Name));
+.ForMember(dest => dest.FullName, opt => opt.MapFrom(src => $"{src.User.FirstName} {src.User.LastName}"))
+.ForMember(dest => dest.GroupName, opt => opt.MapFrom(src => src.Group.Name))
+.ForMember(dest => dest.UserName, opt => opt.MapFrom(src => src.User.Username))
+;
 
             CreateMap<UserCourse, UserCourseVM>()
 .ForMember(dest => dest.UserName, opt => opt.MapFrom(src => $"{src.User.FirstName} {src.User.LastName}"))

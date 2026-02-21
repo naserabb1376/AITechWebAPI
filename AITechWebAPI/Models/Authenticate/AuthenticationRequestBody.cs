@@ -13,7 +13,7 @@ namespace AITechWebAPI.Models.Authenticate
 
         [Display(Name = "رمز عبور")]
         [MaxLength(20)]
-        [ConditionalRegularExpression("LoginType", @"^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{6,20}$", ErrorMessage = "رمز عبور باید شامل حرف و عدد باشد")]
+        [ConditionalRegularExpression("LoginType", @"^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d@#!_\-]{6,20}$", ErrorMessage = "رمز عبور باید شامل حرف و عدد باشد")]
         [Required(ErrorMessage = "لطفا {0} را وارد کنید")]
         public string Password { get; set; }
         public int LoginType { get; set; } = 1;

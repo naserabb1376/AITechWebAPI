@@ -15,5 +15,6 @@ namespace AITechWebAPI.ViewModels
         public string? SenderUserName { get; set; } // ارتباط با User
         public int NotificationPassLevel { get; set; }
         public bool IsRead { get; set; }
+        public string? NotificationResponse { get; set; }
     }
 }

@@ -10,6 +10,7 @@ namespace AITechWebAPI.ViewModels
         public long GroupId { get; set; }
 
         public string GroupName { get; set; }
+        public string FullName { get; set; }
 
     }
 }

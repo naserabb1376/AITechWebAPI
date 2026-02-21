@@ -94,7 +94,7 @@ namespace AITechDATA.DataLayer.Services
                 searchText = (searchText ?? string.Empty).Trim();
 
                 // 1) پایه‌ی فیلتر
-                var baseQuery = _context.UserGroups.Include(x => x.User).AsNoTracking();
+                var baseQuery = _context.UserGroups.AsNoTracking();
 
                 if (userId > 0)
                     baseQuery = baseQuery.Where(ug => ug.UserId == userId);
@@ -135,20 +135,9 @@ namespace AITechDATA.DataLayer.Services
 
                 // 4) Include های هدفمند
                 IQueryable<UserGroup> withIncludes = baseQuery;
-                if (userId > 0 && groupId == 0)
-                {
-                    withIncludes = withIncludes.Include(ug => ug.Group);
-                }
-                else if (groupId > 0 && userId == 0)
-                {
-                    withIncludes = withIncludes.Include(ug => ug.User);
-                }
-                else
-                {
-                    withIncludes = withIncludes
+                withIncludes = withIncludes
                         .Include(ug => ug.User)
                         .Include(ug => ug.Group);
-                }
 
                 // 5) مرتب‌سازی
                 IOrderedQueryable<UserGroup> ordered;

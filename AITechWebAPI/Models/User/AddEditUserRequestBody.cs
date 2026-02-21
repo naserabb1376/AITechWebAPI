@@ -57,7 +57,7 @@ namespace AITechWebAPI.Models.User
         [Display(Name = "رمز عبور")]
         [MaxLength(20)]
         [DataType(DataType.Password)] //Hide Characters
-        [RegularExpression(@"^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{6,20}$", ErrorMessage = "رمز عبور باید شامل حرف و عدد باشد")]
+        [RegularExpression(@"^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d@#!_\-]{6,20}$", ErrorMessage = "رمز عبور باید شامل حرف و عدد باشد")]
         [Required(ErrorMessage = "لطفا {0} را وارد کنید")]
         public string Password { get; set; }
 
@@ -108,7 +108,7 @@ namespace AITechWebAPI.Models.User
         [Display(Name = "رمز عبور")]
         [MaxLength(20)]
         [DataType(DataType.Password)] //Hide Characters
-        [RegularExpression(@"^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{6,20}$", ErrorMessage = "رمز عبور باید شامل حرف و عدد باشد")]
+        [RegularExpression(@"^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d@#!_\-]{6,20}$", ErrorMessage = "رمز عبور باید شامل حرف و عدد باشد")]
         [Required(ErrorMessage = "لطفا {0} را وارد کنید")]
         public string Password { get; set; }
 
@@ -173,7 +173,7 @@ namespace AITechWebAPI.Models.User
         //[Display(Name = "رمز عبور")]
         //[MaxLength(20)]
         //[DataType(DataType.Password)] //Hide Characters
-        //[RegularExpression(@"^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{6,20}$", ErrorMessage = "رمز عبور باید شامل حرف و عدد باشد")]
+        //[RegularExpression(@"^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d@#!_\-]{6,20}$", ErrorMessage = "رمز عبور باید شامل حرف و عدد باشد")]
         //public string? Password { get; set; }
 
         [Display(Name = "زبان های دیگر")]
@@ -220,7 +220,7 @@ namespace AITechWebAPI.Models.User
         //[Display(Name = "رمز عبور")]
         //[MaxLength(20)]
         //[DataType(DataType.Password)] //Hide Characters
-        //[RegularExpression(@"^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{6,20}$", ErrorMessage = "رمز عبور باید شامل حرف و عدد باشد")]
+        //[RegularExpression(@"^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d@#!_\-]{6,20}$", ErrorMessage = "رمز عبور باید شامل حرف و عدد باشد")]
         //public string? Password { get; set; }
 
         public AddEditAddressRequestBody? Address { get; set; }

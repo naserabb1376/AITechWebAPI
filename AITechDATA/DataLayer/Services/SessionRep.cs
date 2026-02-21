@@ -98,13 +98,18 @@ namespace AITechDATA.DataLayer.Services
                             .ThenInclude(s => s.Attendances)
                         .Include(x => x.Session)
                             .ThenInclude(s => s.SessionAssignments)
-                        .Select(x => x.Session);
+                        .Select(x => x.Session)
+                                                .Include(x => x.Group).ThenInclude(x => x.Teacher)
+                        .Include(x => x.Group).ThenInclude(x => x.Course)
+                        .Include(x => x.Attendances)
+                        .Include(x => x.SessionAssignments);
                 }
                 else
                 {
                     query = _context.Sessions
                         .AsNoTracking()
-                        .Include(x => x.Group)
+                        .Include(x => x.Group).ThenInclude(x=> x.Teacher)
+                        .Include(x => x.Group).ThenInclude(x=> x.Course)
                         .Include(x => x.Attendances)
                         .Include(x => x.SessionAssignments);
                 }
@@ -149,8 +154,9 @@ namespace AITechDATA.DataLayer.Services
             {
                 result.Result = await _context.Sessions
                     .AsNoTracking()
-                    .Include(x => x.Group)
-                    .Include(x => x.Attendances)
+                        .Include(x => x.Group).ThenInclude(x => x.Teacher)
+                        .Include(x => x.Group).ThenInclude(x => x.Course)
+.Include(x => x.Attendances)
                     .Include(x => x.SessionAssignments)
                     .SingleOrDefaultAsync(x => x.ID == sessionId);
             }

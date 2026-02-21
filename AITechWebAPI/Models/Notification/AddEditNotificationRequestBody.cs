@@ -31,7 +31,12 @@ namespace AITechWebAPI.Models.Notification
         
         [Display(Name = "وضعیت")]
         public bool NotificationSeenStatus { get; set; }
-        // public string? Description { get; set; }
+
+        [Display(Name = "پاسخ اعلان")]
+        public string? NotificationResponse { get; set; } = "";
+
+        [Display(Name = "وضعیت فعال")]
+        public bool IsActive { get; set; } = true;
 
         [Display(Name = "زبان های دیگر")]
         public string? OtherLangs { get; set; } = "";

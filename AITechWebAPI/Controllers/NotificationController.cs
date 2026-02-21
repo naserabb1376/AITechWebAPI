@@ -105,6 +105,8 @@ namespace AITechWebAPI.Controllers
                 IsRead = requestBody.NotificationSeenStatus,
                 NotificationPassLevel = requestBody.NotificationPassLevel,
                 SenderUserId = requestBody.SenderUserID ?? User.GetCurrentUserId(),
+                NotificationResponse = requestBody.NotificationResponse ?? "",
+                IsActive = requestBody.IsActive,
                 OtherLangs = requestBody.OtherLangs ?? "",
             };
             var result = await _NotificationRep.AddNotificationAsync(Notification);
@@ -156,6 +158,8 @@ namespace AITechWebAPI.Controllers
                 OtherLangs = requestBody.OtherLangs ?? "",
                 NotificationPassLevel = requestBody.NotificationPassLevel,
                 SenderUserId = theRow.Result.SenderUserId ?? User.GetCurrentUserId(),
+                NotificationResponse = requestBody.NotificationResponse ?? "",
+                IsActive = requestBody.IsActive,
             };
             result = await _NotificationRep.EditNotificationAsync(Notification);
             if (result.Status)

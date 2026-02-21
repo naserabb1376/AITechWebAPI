@@ -19,5 +19,6 @@ namespace AITechDATA.Domain
         public User? SenderUser { get; set; } // ارتباط با User
         public int NotificationPassLevel { get; set; }
         public bool IsRead { get; set; }
+        public string? NotificationResponse { get; set; }
     }
 }

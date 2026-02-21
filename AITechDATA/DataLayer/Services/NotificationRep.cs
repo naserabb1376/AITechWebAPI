@@ -92,8 +92,9 @@ namespace AITechDATA.DataLayer.Services
                 }
 
                 query = query.Where(x =>
-                        ((!string.IsNullOrEmpty(x.Message) && x.Message.Contains(searchText))
-                        ));
+                        ((!string.IsNullOrEmpty(x.Message) && x.Message.Contains(searchText)) ||
+                        ((!string.IsNullOrEmpty(x.NotificationResponse) && x.NotificationResponse.Contains(searchText))
+                        )));
 
                 results.TotalCount = query.Count();
                 results.PageCount = DbTools.GetPageCount(results.TotalCount, pageSize);
