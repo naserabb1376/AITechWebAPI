@@ -4,8 +4,10 @@ using AITechDATA.Domain;
 using AITechDATA.ResultObjects;
 using AITechDATA.Tools;
 using AITechWebAPI.Models;
+using AITechWebAPI.Models.Authenticate;
 using AITechWebAPI.Models.Parent;
 using AITechWebAPI.Models.Public;
+using AITechWebAPI.Tools;
 using AITechWebAPI.Validations;
 using AITechWebAPI.ViewModels;
 using AutoMapper;
@@ -17,6 +19,7 @@ using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+using VerifyCodeSMSService;
 using static AITechWebAPI.Tools.ToolBox;
 
 namespace AITechWebAPI.Controllers
@@ -74,13 +77,13 @@ namespace AITechWebAPI.Controllers
         }
 
         [HttpPost("ExistParent_Base")]
-        public async Task<ActionResult<BitResultObject>> ExistParent_Base(GetRowRequestBody requestBody)
+        public async Task<ActionResult<BitResultObject>> ExistParent_Base(ExistParentRequestBody requestBody)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(requestBody);
             }
-            var result = await _ParentRep.ExistParentAsync(requestBody.ID);
+            var result = await _ParentRep.ExistParentAsync(requestBody.FieldValue,requestBody.FieldName);
             if (string.IsNullOrEmpty(result.ErrorMessage))
             {
                 return Ok(result);
@@ -206,5 +209,7 @@ namespace AITechWebAPI.Controllers
             }
             return BadRequest(result);
         }
+
+       
     }
 }

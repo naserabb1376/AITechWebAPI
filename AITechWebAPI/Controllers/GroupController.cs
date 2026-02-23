@@ -122,6 +122,8 @@ namespace AITechWebAPI.Controllers
                 OtherLangs = requestBody.OtherLangs ?? "",
                 Status = (GroupStatus)Enum.Parse(typeof(GroupStatus), requestBody.GroupStatus),
                 GroupType = requestBody.GroupType,
+                GroupCapacity = requestBody.GroupCapacity,
+
             };
             var result = await _GroupRep.AddGroupAsync(Group);
             if (result.Status)
@@ -159,6 +161,8 @@ namespace AITechWebAPI.Controllers
                 result.ErrorMessage = theRow.ErrorMessage;
             }
 
+           
+
             Group Group = new Group()
             {
                 CreateDate = theRow.Result.CreateDate,
@@ -177,6 +181,7 @@ namespace AITechWebAPI.Controllers
                 OtherLangs = requestBody.OtherLangs ?? "",
                 Status = (GroupStatus)Enum.Parse(typeof(GroupStatus), requestBody.GroupStatus),
                 GroupType = requestBody.GroupType,
+                GroupCapacity = requestBody.GroupCapacity,
             };
             result = await _GroupRep.EditGroupAsync(Group);
             if (result.Status)

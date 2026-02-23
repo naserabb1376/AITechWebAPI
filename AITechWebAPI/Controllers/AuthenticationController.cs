@@ -35,9 +35,10 @@ namespace AITechWebAPI.Controllers
         private readonly IPermissionRep _permissionRep;
         private readonly IPermissionRoleRep _permissionRoleRep;
         private readonly IStudentDetailsRep _studentDetailsRep;
+        private readonly IParentRep _parentRep;
         private readonly IMapper _mapper;
 
-        public AuthenticationController(IConfiguration configuration,ILoginMethodRep loginRep, IUserRep userRep,IAddressRep addressRep,ILogRep logRep,ITokenRep tokenRep,IPermissionRep permissionRep,IPermissionRoleRep permissionRole,IStudentDetailsRep studentDetailsRep,IMapper mapper)
+        public AuthenticationController(IConfiguration configuration,ILoginMethodRep loginRep, IUserRep userRep,IAddressRep addressRep,ILogRep logRep,ITokenRep tokenRep,IPermissionRep permissionRep,IPermissionRoleRep permissionRole,IStudentDetailsRep studentDetailsRep,IParentRep parentRep,IMapper mapper)
         {
             _configuration = configuration;
             _loginRep = loginRep;
@@ -48,6 +49,7 @@ namespace AITechWebAPI.Controllers
             _permissionRep = permissionRep;
             _permissionRoleRep = permissionRole;
             _studentDetailsRep = studentDetailsRep;
+            _parentRep = parentRep;
             _mapper = mapper;  
         }
 
@@ -66,27 +68,87 @@ namespace AITechWebAPI.Controllers
                         authenticateResult = await _userRep.AuthenticateAsync(authenticationRequestBody.UserName, authenticationRequestBody.Password, authenticationRequestBody.LoginType);
                         break;
                     case 2:
-                        var validPhoneNumber = await _userRep.ExistUserAsync(authenticationRequestBody.UserName, "username");
-                        if (!validPhoneNumber.Status && string.IsNullOrEmpty(validPhoneNumber.ErrorMessage))
                         {
-                            result.Status = validPhoneNumber.Status;
-                            result.ErrorMessage = "نام کاربری (شماره تماس) نامعتبر است";
-                            return BadRequest(result);
-                        }
-                        var storedVerifyCode = HttpContext.Session.GetString("VerifyCode") ?? "";
-                        var checkCodeResult = await CheckSMSCodeInternal(authenticationRequestBody.UserName,true,authenticationRequestBody.Password);
-                        bool validCode = checkCodeResult.Status;
-                        if (validCode)
-                        {
-                            authenticateResult = await _userRep.AuthenticateAsync(authenticationRequestBody.UserName, authenticationRequestBody.Password, authenticationRequestBody.LoginType);
-                        }
-                        else
-                        {
-                            result.Status = validCode;
-                            result.ErrorMessage = "کد تایید نامعتبر است";
-                            return BadRequest(result);
+                            var validPhoneNumber = await _userRep.ExistUserAsync(authenticationRequestBody.UserName, "username");
+                            if (!validPhoneNumber.Status && string.IsNullOrEmpty(validPhoneNumber.ErrorMessage))
+                            {
+                                result.Status = validPhoneNumber.Status;
+                                result.ErrorMessage = "نام کاربری (شماره تماس) نامعتبر است";
+                                return BadRequest(result);
+                            }
+                            var storedVerifyCode = HttpContext.Session.GetString("VerifyCode") ?? "";
+                            var checkCodeResult = await CheckSMSCodeInternal(authenticationRequestBody.UserName, true, authenticationRequestBody.Password);
+                            bool validCode = checkCodeResult.Status;
+                            if (validCode)
+                            {
+                                authenticateResult = await _userRep.AuthenticateAsync(authenticationRequestBody.UserName, authenticationRequestBody.Password, authenticationRequestBody.LoginType);
+                            }
+                            else
+                            {
+                                result.Status = validCode;
+                                result.ErrorMessage = "کد تایید نامعتبر است";
+                                return BadRequest(result);
+                            }
                         }
                         break;
+                    case 3:
+                        {
+                            var validPhoneNumber = await _parentRep.ExistParentAsync(authenticationRequestBody.UserName, "phonenumber");
+                            if (!validPhoneNumber.Status && string.IsNullOrEmpty(validPhoneNumber.ErrorMessage))
+                            {
+                                result.Status = validPhoneNumber.Status;
+                                result.ErrorMessage = "نام کاربری (شماره تماس) نامعتبر است";
+                                return BadRequest(result);
+                            }
+                            var storedVerifyCode = HttpContext.Session.GetString("VerifyCode") ?? "";
+                            var checkCodeResult = await CheckSMSCodeInternal(authenticationRequestBody.UserName, true, authenticationRequestBody.Password);
+                            bool validCode = checkCodeResult.Status;
+                            if (validCode)
+                            {
+                                if (authenticationRequestBody.StudentDetailsId.HasValue && authenticationRequestBody.StudentDetailsId > 0)
+                                {
+                                    var existStd = await _studentDetailsRep.ExistStudentDetailsAsync(authenticationRequestBody.StudentDetailsId.Value);
+                                    if (existStd.Status)
+                                    {
+                                        var parents = await _parentRep.GetAllParentsAsync(authenticationRequestBody.StudentDetailsId.Value, 1, 0, authenticationRequestBody.UserName);
+                                        var parent = parents.Results.FirstOrDefault();
+                                        if (parent != null)
+                                        {
+                                            authenticateResult = await _userRep.AuthenticateAsync(authenticationRequestBody.StudentDetailsId.Value.ToString(), authenticationRequestBody.Password, authenticationRequestBody.LoginType);
+
+                                            authenticateResult.Result.LastName = $"({authenticateResult.Result.FirstName} {authenticateResult.Result.LastName})";
+                                            authenticateResult.Result.FirstName = $"{parent.Name}";
+
+                                        }
+                                        else
+                                        {
+                                            result.Status = false;
+                                            result.ErrorMessage = "کد دانشجو نامعتبر است";
+                                            return BadRequest(result);
+                                        }
+                                    }
+                                    else
+                                    {
+                                        result.Status = false;
+                                        result.ErrorMessage = "کد دانشجو نامعتبر است";
+                                        return BadRequest(result);
+                                    }
+                                }
+                                else
+                                {
+                                    result.Status = false;
+                                    result.ErrorMessage = "کد دانشجو نامعتبر است";
+                                    return BadRequest(result);
+                                }
+                            }
+                            else
+                            {
+                                result.Status = validCode;
+                                result.ErrorMessage = "کد تایید نامعتبر است";
+                                return BadRequest(result);
+                            }
+                            break;
+                        }
                 }
 
                 result.Status = authenticateResult.Status;
@@ -391,11 +453,12 @@ namespace AITechWebAPI.Controllers
             BitResultObject result = new BitResultObject();
 
             var validPhoneNumber = await _userRep.ExistUserAsync(sendCodeRequestBody.PhoneNumber, "username");
+            var validParent = await _userRep.ExistUserAsync(sendCodeRequestBody.PhoneNumber, "phonenumber");
             if (sendCodeRequestBody.Exists)
             {
-                if (!validPhoneNumber.Status && string.IsNullOrEmpty(validPhoneNumber.ErrorMessage))
+                if ((!validPhoneNumber.Status && string.IsNullOrEmpty(validPhoneNumber.ErrorMessage)) && (!validParent.Status && string.IsNullOrEmpty(validParent.ErrorMessage)))
                 {
-                    result.Status = validPhoneNumber.Status;
+                    result.Status = false;
                     result.ErrorMessage = "نام کاربری (شماره موبایل) نامعتبر است";
                     return BadRequest(result);
                 }
@@ -819,11 +882,13 @@ namespace AITechWebAPI.Controllers
             BitResultObject result = new BitResultObject();
 
             var validPhoneNumber = await _userRep.ExistUserAsync(reqMobileNumber, "username");
+            var validParent = await _parentRep.ExistParentAsync(reqMobileNumber, "phonenumber");
+
             if (reqExists)
             {
-                if (!validPhoneNumber.Status && string.IsNullOrEmpty(validPhoneNumber.ErrorMessage))
+                if (!validPhoneNumber.Status && string.IsNullOrEmpty(validPhoneNumber.ErrorMessage) && (!validParent.Status && string.IsNullOrEmpty(validParent.ErrorMessage)))
                 {
-                    result.Status = validPhoneNumber.Status;
+                    result.Status = false;
                     result.ErrorMessage = "نام کاربری (شماره موبایل) نامعتبر است";
                     return result;
                 }

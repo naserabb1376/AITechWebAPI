@@ -63,15 +63,31 @@ namespace AITechDATA.DataLayer.Services
             return result;
         }
 
-        public async Task<BitResultObject> ExistParentAsync(long parentId)
+        public async Task<BitResultObject> ExistParentAsync(string fieldValue, string fieldName)
         {
             BitResultObject result = new BitResultObject();
+            long ParentId = 0;
             try
             {
-                result.Status = await _context.Parents
-                    .AsNoTracking()
-                    .AnyAsync(x => x.ID == parentId);
-                result.ID = parentId;
+                switch (fieldName.ToLower().Trim())
+                {
+                    case "id":
+                    default:
+                        {
+                            var theParent = await _context.Parents.AsNoTracking().FirstOrDefaultAsync(x => x.ID == long.Parse(fieldValue)) ?? new Parent();
+                            ParentId = theParent.ID;
+                            break;
+                        }
+                    case "phonenumber":
+                        {
+                            var theParent = await _context.Parents.AsNoTracking().FirstOrDefaultAsync(x => x.ContactNumber == fieldValue) ?? new Parent();
+                            ParentId = theParent.ID;
+                            break;
+                        }
+                
+                }
+                result.ID = ParentId;
+                result.Status = ParentId > 0;
             }
             catch (Exception ex)
             {

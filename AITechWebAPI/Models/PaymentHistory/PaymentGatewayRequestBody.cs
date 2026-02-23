@@ -13,11 +13,6 @@ namespace AITechWebAPI.Models.PaymentHistory
         [Required(ErrorMessage = "لطفا {0} را وارد کنید")]
         public string EntityType { get; set; }
 
-        [Display(Name = "کد کاربر")]
-        [Required(ErrorMessage = "لطفا {0} را وارد کنید")]
-        [Range(1, long.MaxValue, ErrorMessage = "مقدار {0} باید بزرگتر از 0 باشد")]
-        public long UserId { get; set; }
-
         [Display(Name = "شناسه تخفیف")]
         public long? DiscountId { get; set; }
 
@@ -33,11 +28,6 @@ namespace AITechWebAPI.Models.PaymentHistory
         [Display(Name = "نام جدول")]
         [Required(ErrorMessage = "لطفا {0} را وارد کنید")]
         public string EntityType { get; set; }
-
-        [Display(Name = "کد کاربر")]
-        [Required(ErrorMessage = "لطفا {0} را وارد کنید")]
-        [Range(1, long.MaxValue, ErrorMessage = "مقدار {0} باید بزرگتر از 0 باشد")]
-        public long UserId { get; set; }
 
         [Display(Name = "کد پرداخت")]
         [Required(ErrorMessage = "لطفا {0} را وارد کنید")]

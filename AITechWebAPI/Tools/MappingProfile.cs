@@ -145,7 +145,7 @@ namespace AITechWebAPI.Tools
 ;
 
             CreateMap<StudentDetails, StudentDetailsVM>()
-.ForMember(dest => dest.UserName, opt => opt.MapFrom(src => $"{src.User.FirstName} {src.User.LastName}"));
+.ForMember(dest => dest.FullName, opt => opt.MapFrom(src => $"{src.User.FirstName} {src.User.LastName}"));
 
             CreateMap<TeacherResume, TeacherResumeVM>()
 .ForMember(dest => dest.UserName, opt => opt.MapFrom(src => $"{src.User.FirstName} {src.User.LastName}"));

@@ -21,6 +21,8 @@ namespace AITechDATA.Domain
         public decimal Fee { get; set; } // هزینه گروه
         public GroupStatus Status { get; set; } // وضعیت گروه (پیش‌ثبت‌نام، در حال اجرا، پایان یافته)
         public string GroupType { get; set; } // نوع برگزاری گروه (حضوری، غیر حضوری)
+        public int GroupCapacity { get; set; } // ظرفیت ثبت نام گروه
+        public int RegisterCount { get; set; } // تعداد ثبت نام گروه
         public string? Note { get; set; }
         public ICollection<Session> Sessions { get; set; } // جلسات مرتبط با گروه
     //    public ICollection<PreRegistration> PreRegistrations { get; set; } // پیش‌ثبت‌نام‌های مرتبط با گروه
@@ -44,6 +46,8 @@ namespace AITechDATA.Domain
         public decimal Fee { get; set; } // هزینه گروه
         public GroupStatus Status { get; set; } // وضعیت گروه (پیش‌ثبت‌نام، در حال اجرا، پایان یافته)
         public string GroupType { get; set; } // نوع برگزاری گروه (حضوری، غیر حضوری)
+        public int GroupCapacity { get; set; } // ظرفیت ثبت نام گروه
+        public int RegisterCount { get; set; } // تعداد ثبت نام گروه
         public string? Note { get; set; }
         public int DiscountPercent { get; set; }
         public decimal DiscountedFee { get; set; }

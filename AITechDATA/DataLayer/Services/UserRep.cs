@@ -168,6 +168,34 @@ namespace AITechDATA.DataLayer.Services
                             }
                         }
                         break;
+                    case 3:
+                        {
+                            result.Status = await _context.Users.Include(x=> x.StudentDetails)
+               .AsNoTracking()
+               .AnyAsync(x => x.StudentDetails.ID == long.Parse(userName));
+                            if (result.Status)
+                            {
+                                var loginRow = await _context.Users.Include(x => x.Role).Include(x => x.StudentDetails)
+               .AsNoTracking()
+               .SingleOrDefaultAsync(x => x.StudentDetails.ID == long.Parse(userName));
+                                if (loginRow != null)
+                                {
+                                    result.Result = loginRow;
+                                    result.ErrorMessage = $"احراز هویت موفق بود";
+                                }
+                                else
+                                {
+                                    result.Status = false;
+                                    result.ErrorMessage = $"احراز هویت ناموفق بود";
+                                }
+
+                            }
+                            else
+                            {
+                                result.ErrorMessage = $"احراز هویت ناموفق بود";
+                            }
+                        }
+                        break;
                 }
 
             }

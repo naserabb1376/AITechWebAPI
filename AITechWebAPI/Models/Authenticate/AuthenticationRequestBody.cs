@@ -17,5 +17,8 @@ namespace AITechWebAPI.Models.Authenticate
         [Required(ErrorMessage = "لطفا {0} را وارد کنید")]
         public string Password { get; set; }
         public int LoginType { get; set; } = 1;
-    }
+
+        public long? StudentDetailsId { get; set; }
+    
+}
 }
