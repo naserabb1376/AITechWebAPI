@@ -209,6 +209,11 @@ namespace AITechDATA.DataLayer.Services
 
         public async Task<bool> CanAccessGroupChatAsync(long groupId, long userId, long roleId)
         {
+            var existGroup = await _context.Groups
+               .AsNoTracking()
+               .AnyAsync(g => g.ID == groupId);
+            if (!existGroup) return false;
+
             // ادمین
             var isAdmin = roleId == 3 || roleId == 4 || roleId == 7;
 

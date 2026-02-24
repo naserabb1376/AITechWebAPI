@@ -9,7 +9,7 @@ namespace AITechWebAPI.Models.GroupChatReadState
         public long GroupId { get; set; } = 0;
 
         [Display(Name = "کد کاربر")]
-        public long UserId { get; set; } = 0;
+        public long? UserId { get; set; }
 
         [Display(Name = "کد آخرین پیام خوانده شده")]
         public long LastReadMessageId { get; set; } = 0;
