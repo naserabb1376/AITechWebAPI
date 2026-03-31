@@ -6,8 +6,8 @@ namespace AITechWebAPI.Models.FileCenter
     public class UploadFileRequestBody
     {
         [Display(Name = "کد رکورد مرتبط با فایل")]
-        [Required(ErrorMessage = "لطفا {0} را وارد کنید")]
-        public long RowId { get; set; }
+        //[Required(ErrorMessage = "لطفا {0} را وارد کنید")]
+        public long RowId { get; set; } = 0;
 
         [Display(Name = "نام شی")]
         [Required(ErrorMessage = "لطفا {0} را وارد کنید")]
