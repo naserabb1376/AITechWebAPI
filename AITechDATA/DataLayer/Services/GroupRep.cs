@@ -24,6 +24,7 @@ namespace AITechDATA.DataLayer.Services
             BitResultObject result = new BitResultObject();
             try
             {
+                group.RegisterCount = 0;
                 await _context.Groups.AddAsync(group);
                 await _context.SaveChangesAsync();
                 result.ID = group.ID;
@@ -42,12 +43,19 @@ namespace AITechDATA.DataLayer.Services
             BitResultObject result = new BitResultObject();
             try
             {
-                _context.Groups.Update(group);
+                var groupusers = await _context.UserGroups.Where(x => x.GroupId == group.ID).ToListAsync();
+                var groupprs = await _context.PreRegistrations.Where(x => x.EntityType.ToLower() == "group" && x.ForeignKeyId == group.ID).ToListAsync();
+
+                group.RegisterCount = groupusers.Count + groupprs.Count;
+
+                if (group.GroupCapacity < group.RegisterCount)
+                {
+                    throw new Exception($"تعداد ثبت نام انجام شده در این گروه بیش از {group.GroupCapacity} است");
+                }
+
                 if (group.Status == GroupStatus.Active)
                 {
                     var newUserGroups = new List<UserGroup>();
-                    var groupprs = await _context.PreRegistrations.Where(x => x.EntityType.ToLower() == "group" && x.ForeignKeyId == group.ID).ToListAsync();
-                    var groupusers = await _context.UserGroups.Where(x => x.GroupId == group.ID).ToListAsync();
 
                     foreach ( var pr in groupprs )
                     {
@@ -71,7 +79,10 @@ namespace AITechDATA.DataLayer.Services
                     }
 
                     await _context.UserGroups.AddRangeAsync(newUserGroups);
+
+                    group.GroupCapacity -= newUserGroups.Count;
                 }
+                _context.Groups.Update(group);
                 await _context.SaveChangesAsync();
                 result.ID = group.ID;
                 _context.Entry(group).State = EntityState.Detached;
@@ -197,6 +208,8 @@ namespace AITechDATA.DataLayer.Services
                     EndDate = x.EndDate,
                     EndTime = x.EndTime,
                     GroupType = x.GroupType,
+                    GroupCapacity = x.GroupCapacity,
+                    RegisterCount = x.RegisterCount,
                     StartDate = x.StartDate,
                     StartTime = x.StartTime,
                     Fee = x.Fee,
@@ -259,6 +272,8 @@ namespace AITechDATA.DataLayer.Services
                         StartTime = x.StartTime,
                         Fee = x.Fee,
                         Name = x.Name,
+                        GroupCapacity = x.GroupCapacity,
+                        RegisterCount = x.RegisterCount,
 
                         DiscountPercent = _context.GetDiscount(x.Fee, "group", x.ID, ClientUserId, ClientRoleId).DiscountPercent,
                         DiscountedFee = _context.GetDiscount(x.Fee, "group", x.ID, ClientUserId, ClientRoleId).DiscountedFee

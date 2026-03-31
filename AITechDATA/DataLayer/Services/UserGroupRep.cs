@@ -25,7 +25,15 @@ namespace AITechDATA.DataLayer.Services
             BitResultObject result = new BitResultObject();
             try
             {
+                var group = await _context.Groups.FirstOrDefaultAsync(g=> g.ID == UserGroups.FirstOrDefault().GroupId) ?? new Group();
+
+                if (group.GroupCapacity < UserGroups.Count + group.RegisterCount)
+                {
+                    throw new Exception($"تعداد ثبت نام انجام شده در این گروه بیش از {group.GroupCapacity} است");
+                }
+
                 await _context.UserGroups.AddRangeAsync(UserGroups);
+                group.RegisterCount += UserGroups.Count;
                 await _context.SaveChangesAsync();
                 result.ID = UserGroups.FirstOrDefault().ID;
                 foreach (var UserGroup in UserGroups)
@@ -201,7 +209,9 @@ namespace AITechDATA.DataLayer.Services
             BitResultObject result = new BitResultObject();
             try
             {
+                var group = await _context.Groups.FirstOrDefaultAsync(g => g.ID == UserGroups.FirstOrDefault().GroupId) ?? new Group();
                 _context.UserGroups.RemoveRange(UserGroups);
+                group.RegisterCount -= UserGroups.Count;
                 await _context.SaveChangesAsync();
                 result.ID = UserGroups.FirstOrDefault().ID;
                 foreach (var UserGroup in UserGroups)

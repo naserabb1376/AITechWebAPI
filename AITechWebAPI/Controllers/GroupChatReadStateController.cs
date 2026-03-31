@@ -48,7 +48,11 @@ namespace AITechWebAPI.Controllers
             {
                 return BadRequest(requestBody);
             }
-            var result = await _GroupChatReadStateRep.GetAllGroupChatReadStatesAsync(requestBody.GroupId,requestBody.UserId,requestBody.LastReadMessageId,requestBody.PageIndex,requestBody.PageSize,requestBody.SearchText,requestBody.SortQuery);
+            var userId = requestBody.UserId ?? User.GetCurrentUserId();
+            var roleId = User.GetCurrentRoleId();
+
+
+            var result = await _GroupChatReadStateRep.GetAllGroupChatReadStatesAsync(requestBody.GroupId,userId,roleId,requestBody.LastReadMessageId,requestBody.PageIndex,requestBody.PageSize,requestBody.SearchText,requestBody.SortQuery);
             if (result.Status)
             {
                 var resultVM = _mapper.Map<ListResultObject<GroupChatReadStateVM>>(result);
@@ -216,8 +220,9 @@ namespace AITechWebAPI.Controllers
         public async Task<ActionResult<GroupChatReadStateDto>> GetMyReadState(GetReadStateRequestBody requestBody)
         {
             var userId = User.GetCurrentUserId();
+            var roleId = User.GetCurrentRoleId();
 
-            var result = await _GroupChatReadStateRep.GetReadStateAsync(requestBody.GroupId, userId);
+            var result = await _GroupChatReadStateRep.GetReadStateAsync(requestBody.GroupId, userId, roleId);
             return Ok(result);
         }
 
@@ -227,8 +232,9 @@ namespace AITechWebAPI.Controllers
         public async Task<ActionResult<List<GroupMemberReadStateDto>>> GetMembersReadStates(GetReadStateRequestBody requestBody)
         {
             var userId = User.GetCurrentUserId();
+            var roleId = User.GetCurrentRoleId();
 
-            var result = await _GroupChatReadStateRep.GetGroupReadStatesAsync(requestBody.GroupId, userId);
+            var result = await _GroupChatReadStateRep.GetGroupReadStatesAsync(requestBody.GroupId, userId,roleId);
             return Ok(result);
         }
 
@@ -241,8 +247,9 @@ namespace AITechWebAPI.Controllers
                 throw new ArgumentException("آخرین شناسه پیام معتبر نیست");
 
             var userId = User.GetCurrentUserId();
+            var roleId = User.GetCurrentRoleId();
 
-            await _GroupChatReadStateRep.MarkAsSeenAsync(requestBody.GroupId, userId, requestBody.LastReadMessageId);
+            await _GroupChatReadStateRep.MarkAsSeenAsync(requestBody.GroupId, userId,roleId, requestBody.LastReadMessageId);
 
 
             #region AddLog

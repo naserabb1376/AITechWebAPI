@@ -348,11 +348,9 @@ namespace AITechWebAPI.Controllers
         }
 
         [HttpPost("send-with-attachment")]
-        public async Task<ActionResult<SendWithAttachmentResponse>> SendWithAttachment(
-      [FromForm] IFormFile file,
-      [FromForm] UploadChatAttachmentRequestBody request)
+        public async Task<ActionResult<SendWithAttachmentResponse>> SendWithAttachment([FromForm] UploadChatAttachmentRequestBody request)
         {
-            if (file == null || file.Length == 0)
+            if (request.File == null || request.File.Length == 0)
                 throw new ArgumentException("فایلی انتخاب نشده است.");
 
             var userId = User.GetCurrentUserId();
@@ -367,7 +365,7 @@ namespace AITechWebAPI.Controllers
 
             // 2) ذخیره فایل با EntityName=GroupChatMessage و RowId=MessageId
             var uploadResult = await SaveFileForChatMessageAsync(
-                file: file,
+                file: request.File,
                 entityName: "GroupChatMessage",
                 rowId: created.Id,
                 fileType: request.FileType,

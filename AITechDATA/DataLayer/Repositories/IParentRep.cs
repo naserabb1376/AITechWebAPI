@@ -22,6 +22,6 @@ namespace AITechDATA.DataLayer.Repositories
 
         Task<BitResultObject> RemoveParentAsync(long parentId);
 
-        Task<BitResultObject> ExistParentAsync(long parentId);
+        Task<BitResultObject> ExistParentAsync(string fieldValue, string fieldName);
     }
 }

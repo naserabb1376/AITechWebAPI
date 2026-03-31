@@ -3,11 +3,13 @@ using AITechDATA.Domain;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
+using MTPermissionCenter.AspNetCore;
 
 
 namespace AITechWebAPI.Tools
 {
     [Authorize]
+    [SkipMTPermissionCenter]
     public class GroupChatHub : Hub
     {
         private readonly IGroupChatMessageRep _chatService;
@@ -88,11 +90,12 @@ namespace AITechWebAPI.Tools
         public async Task Seen(long groupId, long lastReadMessageId)
         {
             var userId = Context.User!.GetCurrentUserId();
+            var roleId = Context.User!.GetCurrentRoleId();
 
-            await _seenService.MarkAsSeenAsync(groupId, userId, lastReadMessageId);
+            await _seenService.MarkAsSeenAsync(groupId, userId,roleId,lastReadMessageId);
 
             await Clients.Group($"group:{groupId}")
-                .SendAsync("SeenUpdated", new { groupId, userId, lastReadMessageId });
+                .SendAsync("SeenUpdated", new { groupId, userId,roleId, lastReadMessageId });
         }
 
         public async Task Typing(long groupId, bool isTyping)

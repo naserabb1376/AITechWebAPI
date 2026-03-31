@@ -52,6 +52,12 @@ namespace AITechWebAPI.Models.Group
         [Range(1, long.MaxValue, ErrorMessage = "مقدار {0} باید بزرگتر از 0 باشد")]
         public long CourseId { get; set; }
 
+        [Display(Name = "ظرفیت ثبت نام گروه")]
+        public int GroupCapacity { get; set; } = 0; // ظرفیت ثبت نام گروه
+
+        //[Display(Name = "تعداد ثبت نام گروه")]
+        //public int RegisterCount { get; set; } // تعداد ثبت نام گروه
+
         [Display(Name = "توضیحات")]
         public string? Note { get; set; }
 

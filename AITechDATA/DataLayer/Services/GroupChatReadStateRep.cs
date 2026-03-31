@@ -80,14 +80,14 @@ namespace AITechDATA.DataLayer.Services
 
         }
 
-        public async Task<ListResultObject<GroupChatReadState>> GetAllGroupChatReadStatesAsync(long GroupId = 0, long UserId = 0, long LastReadMessageId = 0, int pageIndex = 1, int pageSize = 20, string searchText = "", string sortQuery = "")
+        public async Task<ListResultObject<GroupChatReadState>> GetAllGroupChatReadStatesAsync(long GroupId = 0, long UserId = 0,long RoleId=0, long LastReadMessageId = 0, int pageIndex = 1, int pageSize = 20, string searchText = "", string sortQuery = "")
         {
             ListResultObject<GroupChatReadState> results = new ListResultObject<GroupChatReadState>();
             try
             {
                 if (GroupId > 0 && UserId > 0)
                 {
-                    var canAccess = await CanAccessGroupChatAsync(GroupId, UserId);
+                    var canAccess = await CanAccessGroupChatAsync(GroupId, UserId,RoleId);
                     if (!canAccess)
                     {
                         results.ErrorMessage = "شما به این گروه چت دسترسی ندارید";
@@ -197,8 +197,18 @@ namespace AITechDATA.DataLayer.Services
 
         // Messenger
 
-        public async Task<bool> CanAccessGroupChatAsync(long groupId, long userId)
+        public async Task<bool> CanAccessGroupChatAsync(long groupId, long userId, long roleId)
         {
+            var existGroup = await _context.Groups
+               .AsNoTracking()
+               .AnyAsync(g => g.ID == groupId);
+            if (!existGroup) return false;
+
+            // ادمین
+            var isAdmin = roleId == 3 || roleId == 4 || roleId == 7;
+
+            if (isAdmin) return true;
+
             // استاد گروه
             var isTeacher = await _context.Groups
                 .AsNoTracking()
@@ -214,11 +224,11 @@ namespace AITechDATA.DataLayer.Services
             return isStudent;
         }
 
-       
 
-        public async Task MarkAsSeenAsync(long groupId, long userId, long lastReadMessageId)
+
+        public async Task MarkAsSeenAsync(long groupId, long userId,long roleId, long lastReadMessageId)
         {
-            var canAccess = await CanAccessGroupChatAsync(groupId, userId);
+            var canAccess = await CanAccessGroupChatAsync(groupId, userId,roleId);
             if (!canAccess)
                 throw new UnauthorizedAccessException("شما به این گروه دسترسی ندارید");
 
@@ -257,9 +267,9 @@ namespace AITechDATA.DataLayer.Services
         }
 
 
-        public async Task<GroupChatReadStateDto> GetReadStateAsync(long groupId, long userId)
+        public async Task<GroupChatReadStateDto> GetReadStateAsync(long groupId, long userId,long roleId)
         {
-            var canAccess = await CanAccessGroupChatAsync(groupId, userId);
+            var canAccess = await CanAccessGroupChatAsync(groupId, userId,roleId);
             if (!canAccess)
                 throw new UnauthorizedAccessException("شما به این گروه دسترسی ندارید");
 
@@ -287,9 +297,9 @@ namespace AITechDATA.DataLayer.Services
             };
         }
 
-        public async Task<List<GroupMemberReadStateDto>> GetGroupReadStatesAsync(long groupId, long userId)
+        public async Task<List<GroupMemberReadStateDto>> GetGroupReadStatesAsync(long groupId, long userId,long roleId)
         {
-            var canAccess = await CanAccessGroupChatAsync(groupId, userId);
+            var canAccess = await CanAccessGroupChatAsync(groupId, userId, roleId);
             if (!canAccess)
                 throw new UnauthorizedAccessException("شما به این گروه دسترسی ندارید");
 

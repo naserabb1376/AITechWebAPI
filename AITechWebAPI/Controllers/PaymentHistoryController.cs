@@ -244,6 +244,8 @@ namespace AITechWebAPI.Controllers
                 return BadRequest(requestBody);
             }
 
+            var UserId = User.GetCurrentUserId();
+
             switch (requestBody.EntityType.ToLower())
             {
                 default:
@@ -304,7 +306,7 @@ namespace AITechWebAPI.Controllers
                     ForeignKeyId = requestBody.ForeignKeyId,
                     EntityType = requestBody.EntityType,
                     Amount = rowAmount,
-                    UserId = requestBody.UserId,
+                    UserId = UserId,
                     PaymentDate = DateTime.Now.ToShamsi(),
                     PaymentStatus = false,
 
@@ -332,7 +334,7 @@ namespace AITechWebAPI.Controllers
 
                     var zarInvoice = new ZarinPalInvoice(description: $"{Addresult.ID} - {PaymentHistory.PaymentDate}");
                     // var callbackUrl = Url.Action("VerifyPayment", "PaymentHistory", new { payId = Addresult.ID }, Request.Scheme);
-                    var callbackUrl = $"https://aitechac.com/payment/verify?PayId={Addresult.ID}&UserId={requestBody.UserId}&EntityType={requestBody.EntityType}&ForeignKeyId={requestBody.ForeignKeyId}";
+                    var callbackUrl = $"https://aitechac.com/payment/verify?PayId={Addresult.ID}&UserId={UserId}&EntityType={requestBody.EntityType}&ForeignKeyId={requestBody.ForeignKeyId}";
 
                     var invoice = await _onlinePayment.RequestAsync(invoice =>
                     {
@@ -369,7 +371,7 @@ namespace AITechWebAPI.Controllers
 
             else
             {
-                var userRow = await _UserRep.GetUserByIdAsync(requestBody.UserId);
+                var userRow = await _UserRep.GetUserByIdAsync(UserId);
 
 
                 PreRegistration PreRegistration = new PreRegistration()
@@ -423,12 +425,15 @@ namespace AITechWebAPI.Controllers
         }
 
         [HttpGet("VerifyPayment")]
-        public async Task<ActionResult<BitResultObject>> VerifyPayment(long PayId = 0,long UserId = 0,string? EntityType = "" , long? ForeignKeyId = 0,string? paymentToken = "",string? Authority ="", string? Status = "")
+        public async Task<ActionResult<BitResultObject>> VerifyPayment(long PayId = 0,string? EntityType = "" , long? ForeignKeyId = 0,string? paymentToken = "",string? Authority ="", string? Status = "")
         {
             BitResultObject result = new BitResultObject();
             try
             {
                 var paymentHistory = await _PaymentHistoryRep.GetPaymentHistoryByIdAsync(PayId);
+
+                var UserId = User.GetCurrentUserId();
+
                 var userRow = await _UserRep.GetUserByIdAsync(UserId);
 
                 var invoice = await _onlinePayment.FetchAsync();

@@ -7,8 +7,9 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
-using Microsoft.OpenApi.Models;
+using Microsoft.OpenApi;
 using MTPermissionCenter.Abstractions;
 using MTPermissionCenter.AspNetCore;
 using MTPermissionCenter.EFCore;
@@ -122,6 +123,7 @@ namespace AITechWebAPI
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
             builder.Services.AddEndpointsApiExplorer();
 
+
             builder.Services.AddSwaggerGen(c =>
             {
                 c.SwaggerDoc("v1", new OpenApiInfo
@@ -129,6 +131,7 @@ namespace AITechWebAPI
                     Title = apiTitle,
                     Version = apiVersion
                 });
+
                 // Configure Swagger to use JWT authentication
                 var securityScheme = new OpenApiSecurityScheme
                 {
@@ -139,19 +142,21 @@ namespace AITechWebAPI
                     In = ParameterLocation.Header,
                     Description = "Please enter your JWT with Bearer into the field",
 
-                    Reference = new OpenApiReference
-                    {
-                        Id = JwtBearerDefaults.AuthenticationScheme,
-                        Type = ReferenceType.SecurityScheme
-                    }
+                    //Reference = new OpenApiReference
+                    //{
+                    //    Id = JwtBearerDefaults.AuthenticationScheme,
+                    //    Type = ReferenceType.SecurityScheme
+                    //}
                 };
 
-                c.AddSecurityDefinition(securityScheme.Reference.Id, securityScheme);
+                c.AddSecurityDefinition(JwtBearerDefaults.AuthenticationScheme, securityScheme);
 
-                c.AddSecurityRequirement(new OpenApiSecurityRequirement
-    {
-        { securityScheme, new string[] { } }
-    });
+
+                c.AddSecurityRequirement(document => new OpenApiSecurityRequirement
+                {
+                    [new OpenApiSecuritySchemeReference(JwtBearerDefaults.AuthenticationScheme, document)] = new List<string>()
+                });
+
             });
 
             var configHelper = new ConfigurationHelper();
@@ -283,7 +288,7 @@ namespace AITechWebAPI
             }); ;
 
 
-            builder.Services.AddAutoMapper(typeof(Program));
+            builder.Services.AddAutoMapper(cfg => { }, AppDomain.CurrentDomain.GetAssemblies());
 
             var app = builder.Build();
 

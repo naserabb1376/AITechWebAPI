@@ -26,7 +26,19 @@ namespace AITechDATA.DataLayer.Services
             BitResultObject result = new BitResultObject();
             try
             {
+                if (preRegistration.EntityType.ToLower() == "group")
+                {
+                    var group = await _context.Groups.FirstOrDefaultAsync(g => g.ID == preRegistration.ForeignKeyId) ?? new Group();
+
+                    if (group.GroupCapacity < group.RegisterCount + 1)
+                    {
+                        throw new Exception($"تعداد ثبت نام انجام شده در این گروه بیش از {group.GroupCapacity} است");
+                    }
+                    group.RegisterCount++;
+                }
+
                 await _context.PreRegistrations.AddAsync(preRegistration);
+                
                 await _context.SaveChangesAsync();
                 result.ID = preRegistration.ID;
                 _context.Entry(preRegistration).State = EntityState.Detached;
@@ -168,6 +180,8 @@ namespace AITechDATA.DataLayer.Services
             try
             {
                 _context.PreRegistrations.Remove(preRegistration);
+                var group = await _context.Groups.FirstOrDefaultAsync(g => g.ID == preRegistration.ForeignKeyId) ?? new Group();
+                group.RegisterCount--;
                 await _context.SaveChangesAsync();
                 result.ID = preRegistration.ID;
                 _context.Entry(preRegistration).State = EntityState.Detached;

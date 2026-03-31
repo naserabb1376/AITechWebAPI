@@ -102,6 +102,8 @@ namespace AITechWebAPI.Models.GroupChatMessage
 
     public class UploadChatAttachmentRequestBody
     {
+        public IFormFile File { get; set; } = default!;
+
         [Display(Name = "کد گروه درسی")]
         [Required(ErrorMessage = "لطفا {0} را وارد کنید")]
         [Range(1, long.MaxValue, ErrorMessage = "مقدار {0} باید بزرگتر از 0 باشد")]
@@ -116,6 +118,8 @@ namespace AITechWebAPI.Models.GroupChatMessage
         [Display(Name = "متن پیام")]
        // [Required(ErrorMessage = "لطفا {0} را وارد کنید")]
         public string? MessageText { get; set; }
+
+
     }
 
     public class SendWithAttachmentResponse
