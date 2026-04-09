@@ -45,6 +45,7 @@ namespace AITechDATA.DataLayer
         public DbSet<Meeting> Meetings { get; set; }
         public DbSet<Minutes> Minutes { get; set; }
         public DbSet<Notification> Notifications { get; set; }
+        public DbSet<Duty> Duties { get; set; }
         public DbSet<Parent> Parents { get; set; }
         public DbSet<PaymentHistory> PaymentHistories { get; set; }
         public DbSet<PreRegistration> PreRegistrations { get; set; }

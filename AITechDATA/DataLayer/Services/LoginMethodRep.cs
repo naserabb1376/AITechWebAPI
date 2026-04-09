@@ -107,6 +107,25 @@ namespace AITechDATA.DataLayer.Services
             return results;
         }
 
+        public async Task<RowResultObject<LoginMethod>> GetLastOtp(string mobileNumber)
+        {
+            RowResultObject<LoginMethod> result = new RowResultObject<LoginMethod>();
+            try
+            {
+                result.Result = await _context.LoginMethods
+                    .AsNoTracking()
+                    .Include(x => x.User)
+                    .Where(x => x.MobileNumber == mobileNumber && x.Method == "Send VerifyCode" && DateTime.Now <= x.ExpirationDate)
+                    .OrderByDescending(x=> x.CreateDate).FirstOrDefaultAsync() ?? new LoginMethod();
+            }
+            catch (Exception ex)
+            {
+                result.Status = false;
+                result.ErrorMessage = $"{ex.Message} - {ex.InnerException?.Message}";
+            }
+            return result;
+        }
+
         public async Task<RowResultObject<LoginMethod>> GetLoginMethodByIdAsync(long loginMethodId)
         {
             RowResultObject<LoginMethod> result = new RowResultObject<LoginMethod>();

@@ -73,6 +73,8 @@
     <Folder Include="FileCenter\Event\Images\Public\" />
     <Folder Include="FileCenter\FileUpload\Files\Public\" />
     <Folder Include="FileCenter\FileUpload\Images\Public\" />
+    <Folder Include="FileCenter\groupchatmessage\files\Public\" />
+    <Folder Include="FileCenter\groupchatmessage\images\Public\" />
     <Folder Include="FileCenter\Group\Files\Public\" />
     <Folder Include="FileCenter\Group\Images\Public\" />
     <Folder Include="FileCenter\Image\Files\Public\" />
@@ -85,6 +87,7 @@
     <Folder Include="FileCenter\News\Images\Public\" />
     <Folder Include="FileCenter\Notification\Files\Public\" />
     <Folder Include="FileCenter\Notification\Images\Public\" />
+    <Folder Include="FileCenter\other\files\Public\" />
     <Folder Include="FileCenter\Parent\Files\Public\" />
     <Folder Include="FileCenter\Parent\Images\Public\" />
     <Folder Include="FileCenter\PaymentHistory\Files\Public\" />
@@ -121,13 +124,13 @@
 
   <ItemGroup>
     <Reference Include="MTPermissionCenter.Abstractions">
-      <HintPath>..\..\MTPermissionCenter\MTPermissionCenter.AspNetCore\bin\Release\net8.0\MTPermissionCenter.Abstractions.dll</HintPath>
+      <HintPath>..\..\..\Closed Projects\MTPermissionCenter\MTPermissionCenter.EFCore\bin\Release\net8.0\MTPermissionCenter.Abstractions.dll</HintPath>
     </Reference>
     <Reference Include="MTPermissionCenter.AspNetCore">
-      <HintPath>..\..\MTPermissionCenter\MTPermissionCenter.AspNetCore\bin\Release\net8.0\MTPermissionCenter.AspNetCore.dll</HintPath>
+      <HintPath>..\..\..\Closed Projects\MTPermissionCenter\MTPermissionCenter.AspNetCore\bin\Release\net8.0\MTPermissionCenter.AspNetCore.dll</HintPath>
     </Reference>
     <Reference Include="MTPermissionCenter.EFCore">
-      <HintPath>..\..\MTPermissionCenter\MTPermissionCenter.EFCore\bin\Release\net8.0\MTPermissionCenter.EFCore.dll</HintPath>
+      <HintPath>..\..\..\Closed Projects\MTPermissionCenter\MTPermissionCenter.EFCore\bin\Release\net8.0\MTPermissionCenter.EFCore.dll</HintPath>
     </Reference>
   </ItemGroup>
 

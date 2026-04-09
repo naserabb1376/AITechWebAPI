@@ -126,8 +126,7 @@ namespace AITechAPI.Controllers
                 }
             }
 
-            bool sentstatus = await ToolBox.SendSMSMessage(requestBody.PhoneNumber,requestBody.Message);
-
+            var sentstatus = await ToolBox.SendSMSMessage(requestBody.PhoneNumber,requestBody.Message);
           
 
             SMSMessage SMSMessage = new SMSMessage()

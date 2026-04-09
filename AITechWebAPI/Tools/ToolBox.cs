@@ -4,11 +4,13 @@ using AITechWebAPI.Models.Authenticate;
 using AITechWebAPI.ViewModels;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.IdentityModel.Tokens;
+using Newtonsoft.Json;
 using System.IdentityModel.Tokens.Jwt;
 using System.Net;
 using System.Net.Mail;
 using System.Security.Claims;
 using System.Security.Cryptography;
+using System.ServiceModel.Channels;
 using System.Text;
 using System.Text.Json;
 using VerifyCodeSMSService;
@@ -20,7 +22,7 @@ namespace AITechWebAPI.Tools
     {
         private static IConfigurationRoot Configuration { get; }
 
-        public enum BaseRole: int
+        public enum BaseRole : int
         {
             Student = 1,
             Teacher = 2,
@@ -40,90 +42,78 @@ namespace AITechWebAPI.Tools
         public async static Task<VerifyCodeResult> SendCode(string mobileNumber)
         {
             var result = new VerifyCodeResult();
-            string theCode = "";
-            string AppName = Configuration["Jwt:Issuer"];
-            bool GenerateVerifyCode = bool.Parse(Configuration["SmsSender:GenerateVerifyCode"]);
-            bool send = false;
             try
             {
-                if (GenerateVerifyCode)
-                {
-                    theCode = GenerateVerifyCodeManualy();
-                    string smsMessage = $@" کد تایید شما:
-{theCode}
-آیتک
-";
-                    send = await SendSMSMessage(mobileNumber, smsMessage);
+                var PanelProvider = Configuration["SmsSender:PanelProvider"].ToLower();
 
+                if (PanelProvider.Contains("faraz"))
+                {
+                    var smsSender = new FarazSMSSender();
+
+                    result = await smsSender.SendCode(mobileNumber);
                 }
                 else
                 {
-                    string mtPanelUserName = "mimtavoosi", mtPanelPassword = "569022mt";
-                    AutoSendCodeResponse x = null;
-                    using (FastSendSoapClient client = new FastSendSoapClient(FastSendSoapClient.EndpointConfiguration.FastSendSoap))
-                    {
-                        x = await client.AutoSendCodeAsync(mtPanelUserName, mtPanelPassword, mobileNumber, AppName);
-                        send = true;
-                    }
+                    var smsSender = new RayganSMSSender();
+
+                    result = await smsSender.SendCode(mobileNumber);
                 }
+
             }
             catch (Exception ex)
             {
-                send = false;
+                result.SendStatus = false;
             }
-            result.SendStatus = send;
-            result.Code = theCode ?? "";
             return result;
         }
 
-        public async static Task<bool> CheckCode(string mobileNumber, string code,string savedCode, LoginMethod loginMethod)
+        public async static Task<bool> CheckCode(string mobileNumber, string code, LoginMethod loginMethod)
         {
-            bool GenerateVerifyCode = bool.Parse(Configuration["SmsSender:GenerateVerifyCode"]);
-
-            bool currect = false;
+            bool correct = false;
             try
             {
-                if (GenerateVerifyCode)
-                {
-                    currect = string.IsNullOrEmpty(loginMethod.Token) && loginMethod.ExpirationDate >= DateTime.Now.ToShamsi() && code == savedCode;
-                }
+                var PanelProvider = Configuration["SmsSender:PanelProvider"].ToLower();
 
+                if (PanelProvider.Contains("faraz"))
+                {
+                    var smsSender = new FarazSMSSender();
+
+                    correct = await smsSender.CheckCode(mobileNumber,code,loginMethod);
+                }
                 else
                 {
-                    string mtPanelUserName = "mimtavoosi", mtPanelPassword = "569022mt";
+                    var smsSender = new RayganSMSSender();
 
-                    using (FastSendSoapClient client = new FastSendSoapClient(FastSendSoapClient.EndpointConfiguration.FastSendSoap))
-                    {
-                        CheckSendCodeResponse response = await client.CheckSendCodeAsync(mtPanelUserName, mtPanelPassword, mobileNumber, code);
-                        currect = response.Body.CheckSendCodeResult;
-                    }
+                    correct = await smsSender.CheckCode(mobileNumber, code, loginMethod);
                 }
+
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                currect = false;
+                correct = false;
             }
-            return currect;
+            return correct;
         }
 
         public async static Task<bool> SendSMSMessage(string mobileNumber, string message)
         {
-            string AppName = Configuration["Jwt:Issuer"];
-            string UserName = Configuration["SmsSender:PanelUserName"];
-            string Password = Configuration["SmsSender:PanelPassword"];
-            string lineNumber = Configuration["SmsSender:PanelLineNumber"];
-            string apiUrl = Configuration["SmsSender:PanelApiUrl"];
-            var formBody = $"username={UserName}&password={Password}&to={mobileNumber}&from={lineNumber}&text={message}&isflash=false";
-            List<ReqHeader> reqHeaders = new List<ReqHeader>();
-
             bool send = false;
             try
             {
-                ApiCaller apiCaller = new ApiCaller();
+                var PanelProvider = Configuration["SmsSender:PanelProvider"].ToLower();
 
-                var SendSmsMessageResponse = await apiCaller.Call<object>(apiUrl, "POST", formBody, reqHeaders, Encoding.UTF8, "application/x-www-form-urlencoded");
-                if (SendSmsMessageResponse.ToString().ToLower().Contains("\"ok\"")) send = true;
-                else send = false;
+                if (PanelProvider.Contains("faraz"))
+                {
+                    var smsSender = new FarazSMSSender();
+
+                    send = await smsSender.SendMessage(mobileNumber,message);
+                }
+                else
+                {
+                    var smsSender = new RayganSMSSender();
+
+                    send = await smsSender.SendMessage(mobileNumber, message);
+                }
 
             }
             catch (Exception ex)
@@ -196,15 +186,15 @@ namespace AITechWebAPI.Tools
         public static string GenerateToken(long loginId = 0)
         {
             string token = "";
-           if(loginId > 0)
+            if (loginId > 0)
             {
                 token = GenerateResetPasswordToken(loginId);
             }
-           else
+            else
             {
                 token = GenerateRefreshToken();
             }
-           return token;
+            return token;
         }
 
         public static long GetCurrentUserId(this ClaimsPrincipal user)
@@ -287,15 +277,7 @@ namespace AITechWebAPI.Tools
             var logFilePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "log.txt");
             File.AppendAllText(Path.Combine(logFilePath), sb.ToString());
         }
-        private static string GenerateVerifyCodeManualy()
-        {
-            string VerifyCode = "";
-            Random random = new Random();
-            int minCode = 111111;
-            int maxCode = 999999;
-            VerifyCode = random.Next(minCode, maxCode).ToString();
-            return VerifyCode;
-        }
+
 
         private static string ApiVersion { get; set; }
         public static string CalculateAppVersionNo()
@@ -378,7 +360,10 @@ namespace AITechWebAPI.Tools
             return sb.ToString();
         }
 
-       
+
+
+
     }
+
 
 }

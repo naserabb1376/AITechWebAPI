@@ -120,7 +120,14 @@ namespace AITechWebAPI.Tools
 
 
             CreateMap<Notification, NotificationVM>()
-.ForMember(dest => dest.UserName, opt => opt.MapFrom(src => $"{src.User.FirstName} {src.User.LastName}"));
+.ForMember(dest => dest.UserName, opt => opt.MapFrom(src => $"{src.User.FirstName} {src.User.LastName}"))
+.ForMember(dest => dest.SenderUserName, opt => opt.MapFrom(src => $"{src.SenderUser.FirstName} {src.SenderUser.LastName}"))
+;
+
+            CreateMap<Duty, DutyVM>()
+.ForMember(dest => dest.UserName, opt => opt.MapFrom(src => $"{src.User.FirstName} {src.User.LastName}"))
+.ForMember(dest => dest.SenderUserName, opt => opt.MapFrom(src => $"{src.SenderUser.FirstName} {src.SenderUser.LastName}"))
+;
 
             CreateMap<Parent, ParentVM>()
 .ForMember(dest => dest.StudentName, opt => opt.MapFrom(src => $"{src.StudentDetails.User.FirstName} {src.StudentDetails.User.LastName}"));

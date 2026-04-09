@@ -79,7 +79,7 @@ namespace AITechDATA.DataLayer.Services
             ListResultObject<Notification> results = new ListResultObject<Notification>();
             try
             {
-                var query = _context.Notifications.AsNoTracking();
+                var query = _context.Notifications.Include(x => x.User).Include(x => x.SenderUser).AsNoTracking();
 
                 if (userId > 0)
                 {

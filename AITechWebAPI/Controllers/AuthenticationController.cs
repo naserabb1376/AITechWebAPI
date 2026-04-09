@@ -488,9 +488,9 @@ namespace AITechWebAPI.Controllers
                     CreateDate = DateTime.Now.ToShamsi(),
                     UpdateDate = DateTime.Now.ToShamsi(),
                     UserId = null,
-                    ExpirationDate = DateTime.Now.ToShamsi().AddMinutes(5),
+                    ExpirationDate = DateTime.Now.AddMinutes(5),
                     Method = "Send VerifyCode",
-                    Token = "",
+                    Token = sendCodeResult.Code,
                     MobileNumber = sendCodeRequestBody.PhoneNumber,
                 };
 
@@ -580,11 +580,29 @@ namespace AITechWebAPI.Controllers
                 result.Status = sendCodeResult.SendStatus;
                 HttpContext.Session.SetString("VerifyCode", sendCodeResult.Code);
 
-                if (result.Status)
+               if (result.Status)
                 {
-                    result.ErrorMessage = $"کد تایید ارسال شد";
-                    return Ok(result);
+                    LoginMethod loginMethod = new LoginMethod()
+                    {
+                        CreateDate = DateTime.Now.ToShamsi(),
+                        UpdateDate = DateTime.Now.ToShamsi(),
+                        UserId = null,
+                        ExpirationDate = DateTime.Now.AddMinutes(5),
+                        Method = "Send VerifyCode",
+                        Token = sendCodeResult.Code,
+                        MobileNumber = requestBody.PhoneNumber,
+                    };
+
+                    var saveLogin = await _loginRep.AddLoginMethodAsync(loginMethod);
+
+                    if (saveLogin.Status)
+                    {
+                        result.ErrorMessage = $"کد تایید ارسال شد";
+                        return Ok(result);
+                    }
                 }
+
+               
             }
             else if (!string.IsNullOrEmpty(requestBody.Email))
             {
@@ -903,17 +921,16 @@ namespace AITechWebAPI.Controllers
                 }
             }
 
-            var storedVerifyCode = HttpContext.Session.GetString("VerifyCode") ?? "";
-            var loginMethod = await _loginRep.GetAllLoginMethodsAsync(0, 1, 1, reqMobileNumber);
-            var loginRecood = loginMethod.Results.FirstOrDefault() ?? new LoginMethod();
-            result.Status = await ToolBox.CheckCode(reqMobileNumber, reqVerifyCode, storedVerifyCode, loginRecood);
+            //var storedVerifyCode = HttpContext.Session.GetString("VerifyCode") ?? "";
+            var loginMethod = await _loginRep.GetLastOtp(reqMobileNumber);
+            result.Status = await ToolBox.CheckCode(reqMobileNumber, reqVerifyCode, loginMethod.Result);
 
             if (result.Status)
             {
                 result.ErrorMessage = $"کد تایید صحیح است";
-                var removeLoginresult = await _loginRep.RemoveLoginMethodAsync(loginRecood.ID);
-                if (removeLoginresult.Status)
-                {
+                //var removeLoginresult = await _loginRep.RemoveLoginMethodAsync(loginMethod.Result.ID);
+                //if (removeLoginresult.Status)
+                //{
                     Log log = new Log()
                     {
                         CreateDate = DateTime.Now.ToShamsi(),
@@ -922,7 +939,7 @@ namespace AITechWebAPI.Controllers
                         ActionName = this.ControllerContext.RouteData.Values["action"].ToString(),
                     };
                     await _logRep.AddLogAsync(log);
-                }
+                //}
             }
             else
             {

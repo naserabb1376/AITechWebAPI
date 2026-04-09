@@ -13,7 +13,7 @@ namespace AITechDATA.DataLayer.Repositories
         Task<ListResultObject<LoginMethod>> GetAllLoginMethodsAsync(long userId=0,int pageIndex = 1, int pageSize = 20, string searchText = "",string sortQuery ="");
 
         Task<RowResultObject<LoginMethod>> GetLoginMethodByIdAsync(long loginMethodId);
-
+        Task<RowResultObject<LoginMethod>> GetLastOtp(string mobileNumber);
         Task<BitResultObject> AddLoginMethodAsync(LoginMethod loginMethod);
 
         Task<BitResultObject> EditLoginMethodAsync(LoginMethod loginMethod);

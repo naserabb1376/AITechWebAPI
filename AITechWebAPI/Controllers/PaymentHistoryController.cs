@@ -7,6 +7,7 @@ using AITechDATA.Tools;
 using AITechWebAPI.Models;
 using AITechWebAPI.Models.PaymentHistory;
 using AITechWebAPI.Models.Public;
+using AITechWebAPI.Tools;
 using AITechWebAPI.Validations;
 using AITechWebAPI.ViewModels;
 using AutoMapper;
@@ -42,11 +43,12 @@ namespace AITechWebAPI.Controllers
         IUserRep _UserRep;
         IPreRegistrationRep _PreRegistrationRep;
         IDiscountRep _discountRep;
+        ISettingRep _settingRep;
         ILogRep _logRep;
         private readonly IMapper _mapper;
 
 
-        public PaymentHistoryController(IPaymentHistoryRep PaymentHistoryRep,IGroupRep groupRep,IEventRep eventRep,IUserRep userRep,IPreRegistrationRep preRegistrationRep,IDiscountRep discountRep,ILogRep logRep,IMapper mapper, IOnlinePayment onlinePayment)
+        public PaymentHistoryController(IPaymentHistoryRep PaymentHistoryRep,IGroupRep groupRep,IEventRep eventRep,IUserRep userRep,IPreRegistrationRep preRegistrationRep,IDiscountRep discountRep,ISettingRep settingRep,ILogRep logRep,IMapper mapper, IOnlinePayment onlinePayment)
         {
             _onlinePayment = onlinePayment;
             _PaymentHistoryRep = PaymentHistoryRep;
@@ -55,6 +57,7 @@ namespace AITechWebAPI.Controllers
             _UserRep = userRep;
             _PreRegistrationRep = preRegistrationRep;
             _discountRep = discountRep;
+            _settingRep = settingRep;
            _logRep = logRep;
             _mapper = mapper;
         }
@@ -399,6 +402,23 @@ namespace AITechWebAPI.Controllers
 
                 if (addPreRegistrationResult.Status)
                 {
+                    var academyPhoneNum = await _settingRep.GetSettingRowAsync(0, "Contact_Phone_Value_EN");
+                    var targetType = PreRegistration.EntityType.ToLower().Contains("event") ? "رویداد" : "گروه درسی";
+                    dynamic targetObj = PreRegistration.EntityType.ToLower().Contains("event") ? await _EventRep.GetEventByIdAsync(PreRegistration.ForeignKeyId) :
+                        await _GroupRep.GetGroupByIdAsync(PreRegistration.ForeignKeyId);
+                    var targetName = PreRegistration.EntityType.ToLower().Contains("event") ? targetObj.Result.Title : targetObj.Result.Name;
+                    var targetFee = PreRegistration.EntityType.ToLower().Contains("event") ? targetObj.Result.Fee.Value : targetObj.Result.Fee;
+                    var registerDate = DateTime.Now.ToShamsiString().Split(' ')[0];
+                    var registerTime = DateTime.Now.ToShamsiString().Split(' ')[1];
+
+                    var infoMessage =
+                        $@"دانشجو {userRow.Result.FirstName} {userRow.Result.LastName}
+در تاریخ {registerDate}
+ساعت {registerTime}
+با پرداخت {targetFee} ریال در {targetType}
+{targetName} ثبت نام شد";
+
+                    bool sent = await ToolBox.SendSMSMessage(academyPhoneNum.Result.Value, infoMessage);
 
                     #region AddLog
 
@@ -480,6 +500,23 @@ namespace AITechWebAPI.Controllers
 
                     if (addPreRegistrationResult.Status)
                     {
+                        var academyPhoneNum = await _settingRep.GetSettingRowAsync(0, "Contact_Phone_Value_EN");
+                        var targetType = PreRegistration.EntityType.ToLower().Contains("event") ? "رویداد" : "گروه درسی";
+                        dynamic targetObj = PreRegistration.EntityType.ToLower().Contains("event") ? await _EventRep.GetEventByIdAsync(PreRegistration.ForeignKeyId) :
+                            await _GroupRep.GetGroupByIdAsync(PreRegistration.ForeignKeyId);
+                        var targetName = PreRegistration.EntityType.ToLower().Contains("event") ? targetObj.Result.Title : targetObj.Result.Name;
+                        var targetFee = PreRegistration.EntityType.ToLower().Contains("event") ? targetObj.Result.Fee.Value : targetObj.Result.Fee;
+                        var registerDate = DateTime.Now.ToShamsiString().Split(' ')[0];
+                        var registerTime = DateTime.Now.ToShamsiString().Split(' ')[1];
+
+                        var infoMessage = 
+                            $@"دانشجو {userRow.Result.FirstName} {userRow.Result.LastName}
+در تاریخ {registerDate}
+ساعت {registerTime}
+با پرداخت {targetFee} در {targetType}
+{targetName} ثبت نام شد";
+
+                        bool sent = await ToolBox.SendSMSMessage(academyPhoneNum.Result.Value,infoMessage);
 
                         #region AddLog
 

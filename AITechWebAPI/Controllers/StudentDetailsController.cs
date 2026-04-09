@@ -120,17 +120,16 @@ namespace AITechWebAPI.Controllers
                 }
             }
 
-            var storedVerifyCode = HttpContext.Session.GetString("VerifyCode") ?? "";
-            var loginMethod = await _loginRep.GetAllLoginMethodsAsync(0, 1, 1, reqMobileNumber);
-            var loginRecood = loginMethod.Results.FirstOrDefault() ?? new LoginMethod();
-            result.Status = await ToolBox.CheckCode(reqMobileNumber, reqVerifyCode, storedVerifyCode, loginRecood);
+            //var storedVerifyCode = HttpContext.Session.GetString("VerifyCode") ?? "";
+            var loginMethod = await _loginRep.GetLastOtp(reqMobileNumber);
+            result.Status = await ToolBox.CheckCode(reqMobileNumber, reqVerifyCode, loginMethod.Result);
 
             if (result.Status)
             {
                 result.ErrorMessage = $"کد تایید صحیح است";
-                var removeLoginresult = await _loginRep.RemoveLoginMethodAsync(loginRecood.ID);
-                if (removeLoginresult.Status)
-                {
+                //var removeLoginresult = await _loginRep.RemoveLoginMethodAsync(loginMethod.Result.ID);
+                //if (removeLoginresult.Status)
+                //{
                     Log log = new Log()
                     {
                         CreateDate = DateTime.Now.ToShamsi(),
@@ -139,7 +138,7 @@ namespace AITechWebAPI.Controllers
                         ActionName = this.ControllerContext.RouteData.Values["action"].ToString(),
                     };
                     await _logRep.AddLogAsync(log);
-                }
+                //}
             }
             else
             {

@@ -30,7 +30,7 @@ namespace AITechWebAPI.Tools
                 // ✅ اضافه کردن Headerها
                 foreach (ReqHeader header in apiHeaders)
                 {
-                    request.Headers.Add(header.Key, header.Value);
+                    request.Headers.TryAddWithoutValidation(header.Key, header.Value);
                 }
 
                 // ✅ تنظیم Body بر اساس contentType

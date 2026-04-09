@@ -31,6 +31,8 @@ public class FileCenterController : ControllerBase
     }
 
     [HttpPost("uploadfile")]
+    [RequestSizeLimit(2_000_000_000)]           // 2 GB
+[RequestFormLimits(MultipartBodyLengthLimit = 2_000_000_000)]
     [AllowAnonymous]
     public async Task<IActionResult> UploadFile(IFormFile file, [FromQuery] UploadFileRequestBody requestBody)
     {
@@ -150,18 +152,28 @@ public class FileCenterController : ControllerBase
 
     [HttpGet("downloadfile")]
     [AllowAnonymous]
-    public async Task<IActionResult> DownloadFile([FromQuery] string fileType, [FromQuery] long rowId = 0, [FromQuery] long foreignkeyId = 0, [FromQuery] string entityName = "")
+    public async Task<IActionResult> DownloadFile(
+      [FromQuery] string fileType,
+      [FromQuery] long rowId = 0,
+      [FromQuery] long foreignkeyId = 0,
+      [FromQuery] string entityName = "")
     {
         try
         {
+            if (string.IsNullOrWhiteSpace(fileType))
+                return BadRequest("نوع فایل مشخص نشده است.");
+
+            fileType = fileType.Trim().ToLower();
+            entityName = entityName?.Trim().ToLower() ?? string.Empty;
+
             string filePath = string.Empty;
             long userId = 0;
             long roleId = 0;
 
-            if (User.Identity != null && User.Identity.IsAuthenticated)
+            if (User.Identity?.IsAuthenticated == true)
             {
-                userId = long.Parse(User.FindFirst("userId")?.Value ?? "0");
-                roleId = long.Parse(User.FindFirst("Role")?.Value ?? "0");
+                long.TryParse(User.FindFirst("userId")?.Value, out userId);
+                long.TryParse(User.FindFirst("Role")?.Value, out roleId);
             }
 
             if (fileType.ToLower() == "images")
@@ -174,9 +186,13 @@ public class FileCenterController : ControllerBase
                 var theFile = await _fileUploadRep.GetFileForDownloadAsync(rowId, foreignkeyId, entityName, userId, roleId);
                 if (theFile != null) filePath = theFile.Result.FilePath;
             }
-            else return BadRequest("Invalid File Category!");
+            else
+            {
+                return BadRequest("نوع فایل نامعتبر است.");
+            }
 
-            if (!System.IO.File.Exists(filePath)) return NotFound();
+            var contentType = filePath.GetContentType();
+            var fileName = Path.GetFileName(filePath);
 
             Log log = new()
             {
@@ -187,10 +203,15 @@ public class FileCenterController : ControllerBase
             };
             await _logRep.AddLogAsync(log);
 
-            var contentType = filePath.GetContentType();
-            var fileName = Path.GetFileName(filePath);
-            var bytes = await System.IO.File.ReadAllBytesAsync(filePath);
-            return File(bytes, contentType, fileName);
+            var stream = new FileStream(
+                filePath,
+                FileMode.Open,
+                FileAccess.Read,
+                FileShare.Read,
+                bufferSize: 64 * 1024,
+                useAsync: true);
+
+            return File(stream, contentType, fileName, enableRangeProcessing: true);
         }
         catch (Exception ex)
         {
