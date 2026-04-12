@@ -41,6 +41,7 @@ namespace AITechWebAPI.Controllers
         IGroupRep _GroupRep;
         IEventRep _EventRep;
         IUserRep _UserRep;
+        IUserGroupRep _UserGroupRep;
         IPreRegistrationRep _PreRegistrationRep;
         IDiscountRep _discountRep;
         ISettingRep _settingRep;
@@ -48,13 +49,14 @@ namespace AITechWebAPI.Controllers
         private readonly IMapper _mapper;
 
 
-        public PaymentHistoryController(IPaymentHistoryRep PaymentHistoryRep,IGroupRep groupRep,IEventRep eventRep,IUserRep userRep,IPreRegistrationRep preRegistrationRep,IDiscountRep discountRep,ISettingRep settingRep,ILogRep logRep,IMapper mapper, IOnlinePayment onlinePayment)
+        public PaymentHistoryController(IPaymentHistoryRep PaymentHistoryRep,IGroupRep groupRep,IEventRep eventRep,IUserRep userRep,IUserGroupRep userGroupRep,IPreRegistrationRep preRegistrationRep,IDiscountRep discountRep,ISettingRep settingRep,ILogRep logRep,IMapper mapper, IOnlinePayment onlinePayment)
         {
             _onlinePayment = onlinePayment;
             _PaymentHistoryRep = PaymentHistoryRep;
             _GroupRep = groupRep;
             _EventRep = eventRep;
             _UserRep = userRep;
+            _UserGroupRep = userGroupRep;
             _PreRegistrationRep = preRegistrationRep;
             _discountRep = discountRep;
             _settingRep = settingRep;
@@ -241,8 +243,8 @@ namespace AITechWebAPI.Controllers
             RowResultObject<RequestPaymentResultBody> result = new RowResultObject<RequestPaymentResultBody>();
             result.Result = new RequestPaymentResultBody();
             decimal rowAmount = 0,discountedrowAmount = 0;
-            string targetObjName="";
-
+            string targetObjName="",groupType="";
+            BitResultObject addResult;
             if (!ModelState.IsValid)
             {
                 return BadRequest(requestBody);
@@ -255,7 +257,7 @@ namespace AITechWebAPI.Controllers
                 default:
                 case "group":
                     {
-                        var theRow = await _GroupRep.GetGroupByIdAsync(requestBody.ForeignKeyId);
+                         var theRow = await _GroupRep.GetGroupByIdAsync(requestBody.ForeignKeyId);
 
                         if (theRow.Result == null)
                         {
@@ -267,13 +269,14 @@ namespace AITechWebAPI.Controllers
 
                         rowAmount = theRow.Result.Fee;
                         targetObjName = theRow.Result.Name;
+                        groupType = theRow.Result.GroupType.ToLower();
                         discountedrowAmount = theRow.Result.DiscountedFee;
 
                     }
                     break;
                 case "event":
                     {
-                        var theRow = await _EventRep.GetEventByIdAsync(requestBody.ForeignKeyId);
+                         var theRow = await _EventRep.GetEventByIdAsync(requestBody.ForeignKeyId);
 
                         if (theRow.Result == null)
                         {
@@ -378,40 +381,56 @@ namespace AITechWebAPI.Controllers
             else
             {
                 var userRow = await _UserRep.GetUserByIdAsync(UserId);
-
-
-                PreRegistration PreRegistration = new PreRegistration()
+                if (groupType == "online")
                 {
-                    CreateDate = DateTime.Now.ToShamsi(),
-                    UpdateDate = DateTime.Now.ToShamsi(),
-                    Email = userRow.Result.Email,
-                    FirstName = userRow.Result.FirstName,
-                    LastName = userRow.Result.LastName,
-                    PhoneNumber = userRow.Result.Username,
+                    UserGroup userGroup = new UserGroup()
+                    {
+                        CreateDate = DateTime.Now.ToShamsi(),
+                        UpdateDate = DateTime.Now.ToShamsi(),
+                        IsActive = true,
+                        OtherLangs="",
 
-                    EducationalClass = null,
-                    SchoolName = null,
-                    FavoriteField = null,
-                    RecognitionLevel = null,
-                    ProgrammingSkillLevel = null,
+                        GroupId = requestBody.ForeignKeyId,
+                        UserId = UserId,
+                    };
+                    addResult = await _UserGroupRep.AddUserGroupsAsync(new List<UserGroup>() { userGroup});
+                }
 
-                    ForeignKeyId = requestBody.ForeignKeyId,
-                    EntityType = requestBody.EntityType ?? "",
-                    TargetObjName = targetObjName,
-                    RegistrationDate = DateTime.Now.ToShamsi(),
-                    OtherLangs = null,
-                    // Description = requestBody.Description,
-                };
-                var addPreRegistrationResult = await _PreRegistrationRep.AddPreRegistrationAsync(PreRegistration);
+                else
+                {
+                    PreRegistration PreRegistration = new PreRegistration()
+                    {
+                        CreateDate = DateTime.Now.ToShamsi(),
+                        UpdateDate = DateTime.Now.ToShamsi(),
+                        Email = userRow.Result.Email,
+                        FirstName = userRow.Result.FirstName,
+                        LastName = userRow.Result.LastName,
+                        PhoneNumber = userRow.Result.Username,
 
-                if (addPreRegistrationResult.Status)
+                        EducationalClass = null,
+                        SchoolName = null,
+                        FavoriteField = null,
+                        RecognitionLevel = null,
+                        ProgrammingSkillLevel = null,
+
+                        ForeignKeyId = requestBody.ForeignKeyId,
+                        EntityType = requestBody.EntityType ?? "",
+                        TargetObjName = targetObjName,
+                        RegistrationDate = DateTime.Now.ToShamsi(),
+                        OtherLangs = null,
+                        // Description = requestBody.Description,
+                    };
+                    addResult = await _PreRegistrationRep.AddPreRegistrationAsync(PreRegistration);
+                }
+
+                if (addResult.Status)
                 {
                     var academyPhoneNum = await _settingRep.GetSettingRowAsync(0, "Contact_Phone_Value_EN");
-                    var targetType = PreRegistration.EntityType.ToLower().Contains("event") ? "رویداد" : "گروه درسی";
-                    dynamic targetObj = PreRegistration.EntityType.ToLower().Contains("event") ? await _EventRep.GetEventByIdAsync(PreRegistration.ForeignKeyId) :
-                        await _GroupRep.GetGroupByIdAsync(PreRegistration.ForeignKeyId);
-                    var targetName = PreRegistration.EntityType.ToLower().Contains("event") ? targetObj.Result.Title : targetObj.Result.Name;
-                    var targetFee = PreRegistration.EntityType.ToLower().Contains("event") ? targetObj.Result.Fee.Value : targetObj.Result.Fee;
+                    var targetType = requestBody.EntityType.ToLower().Contains("event") ? "رویداد" : "گروه درسی";
+                    dynamic targetObj = requestBody.EntityType.ToLower().Contains("event") ? await _EventRep.GetEventByIdAsync(requestBody.ForeignKeyId) :
+                        await _GroupRep.GetGroupByIdAsync(requestBody.ForeignKeyId);
+                    var targetName = requestBody.EntityType.ToLower().Contains("event") ? targetObj.Result.Title : targetObj.Result.Name;
+                    var targetFee = requestBody.EntityType.ToLower().Contains("event") ? targetObj.Result.Fee.Value : targetObj.Result.Fee;
                     var registerDate = DateTime.Now.ToShamsiString().Split(' ')[0];
                     var registerTime = DateTime.Now.ToShamsiString().Split(' ')[1];
 
@@ -441,7 +460,7 @@ namespace AITechWebAPI.Controllers
                 }
                 else
                 {
-                    return BadRequest(addPreRegistrationResult);
+                    return BadRequest(addResult);
                 }
             }
 
@@ -454,7 +473,9 @@ namespace AITechWebAPI.Controllers
             BitResultObject result = new BitResultObject();
             try
             {
-                string targetObjName = "";
+                string targetObjName = "",groupType="";
+                BitResultObject addResult;
+
                 var paymentHistory = await _PaymentHistoryRep.GetPaymentHistoryByIdAsync(PayId);
 
                 var UserId = User.GetCurrentUserId();
@@ -478,6 +499,7 @@ namespace AITechWebAPI.Controllers
                             }
 
                             targetObjName = theRow.Result.Name;
+                            groupType = theRow.Result.GroupType;
 
                         }
                         break;
@@ -515,41 +537,58 @@ namespace AITechWebAPI.Controllers
                 if (verifyResult.Status == PaymentVerifyResultStatus.Succeed)
                 {
                     paymentHistory.Result.PaymentStatus = true;
-
-                    PreRegistration PreRegistration = new PreRegistration()
+                    if (groupType == "online")
                     {
-                        CreateDate = DateTime.Now.ToShamsi(),
-                        UpdateDate = DateTime.Now.ToShamsi(),
-                        Email = userRow.Result.Email,
-                        FirstName = userRow.Result.FirstName,
-                        LastName = userRow.Result.LastName,
-                        PhoneNumber = userRow.Result.Username,
+                        UserGroup userGroup = new UserGroup()
+                        {
+                            CreateDate = DateTime.Now.ToShamsi(),
+                            UpdateDate = DateTime.Now.ToShamsi(),
+                            IsActive = true,
+                            OtherLangs = "",
 
-                        EducationalClass = null,
-                        SchoolName = null,
-                        FavoriteField = null,
-                        RecognitionLevel = null,
-                        ProgrammingSkillLevel = null,
-                        SocialAddress = null,
+                            GroupId = ForeignKeyId.Value,
+                            UserId = UserId,
+                        };
+                        addResult = await _UserGroupRep.AddUserGroupsAsync(new List<UserGroup>() { userGroup });
+                    }
+                    else
+                    {
+                        PreRegistration PreRegistration = new PreRegistration()
+                        {
+                            CreateDate = DateTime.Now.ToShamsi(),
+                            UpdateDate = DateTime.Now.ToShamsi(),
+                            Email = userRow.Result.Email,
+                            FirstName = userRow.Result.FirstName,
+                            LastName = userRow.Result.LastName,
+                            PhoneNumber = userRow.Result.Username,
 
-                        ForeignKeyId = ForeignKeyId ?? 0,
-                        EntityType = EntityType ?? "",
-                        TargetObjName = targetObjName,
-                        IsActive = true,
-                        RegistrationDate = DateTime.Now.ToShamsi(),
-                        OtherLangs = null,
-                        // Description = requestBody.Description,
-                    };
-                    var addPreRegistrationResult = await _PreRegistrationRep.AddPreRegistrationAsync(PreRegistration);
+                            EducationalClass = null,
+                            SchoolName = null,
+                            FavoriteField = null,
+                            RecognitionLevel = null,
+                            ProgrammingSkillLevel = null,
+                            SocialAddress = null,
 
-                    if (addPreRegistrationResult.Status)
+                            ForeignKeyId = ForeignKeyId ?? 0,
+                            EntityType = EntityType ?? "",
+                            TargetObjName = targetObjName,
+                            IsActive = true,
+                            RegistrationDate = DateTime.Now.ToShamsi(),
+                            OtherLangs = null,
+                            // Description = requestBody.Description,
+                        };
+                       addResult = await _PreRegistrationRep.AddPreRegistrationAsync(PreRegistration);
+                    }
+                      
+
+                    if (addResult.Status)
                     {
                         var academyPhoneNum = await _settingRep.GetSettingRowAsync(0, "Contact_Phone_Value_EN");
-                        var targetType = PreRegistration.EntityType.ToLower().Contains("event") ? "رویداد" : "گروه درسی";
-                        dynamic targetObj = PreRegistration.EntityType.ToLower().Contains("event") ? await _EventRep.GetEventByIdAsync(PreRegistration.ForeignKeyId) :
-                            await _GroupRep.GetGroupByIdAsync(PreRegistration.ForeignKeyId);
-                        var targetName = PreRegistration.EntityType.ToLower().Contains("event") ? targetObj.Result.Title : targetObj.Result.Name;
-                        var targetFee = PreRegistration.EntityType.ToLower().Contains("event") ? targetObj.Result.Fee.Value : targetObj.Result.Fee;
+                        var targetType = EntityType.ToLower().Contains("event") ? "رویداد" : "گروه درسی";
+                        dynamic targetObj = EntityType.ToLower().Contains("event") ? await _EventRep.GetEventByIdAsync(ForeignKeyId.Value) :
+                            await _GroupRep.GetGroupByIdAsync(ForeignKeyId.Value);
+                        var targetName = EntityType.ToLower().Contains("event") ? targetObj.Result.Title : targetObj.Result.Name;
+                        var targetFee = EntityType.ToLower().Contains("event") ? targetObj.Result.Fee.Value : targetObj.Result.Fee;
                         var registerDate = DateTime.Now.ToShamsiString().Split(' ')[0];
                         var registerTime = DateTime.Now.ToShamsiString().Split(' ')[1];
 

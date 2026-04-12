@@ -913,6 +913,55 @@ namespace AITechDATA.Migrations
                     b.ToTable("FormFields");
                 });
 
+            modelBuilder.Entity("AITechDATA.Domain.GadgetAccess", b =>
+                {
+                    b.Property<long>("ID")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("ID"));
+
+                    b.Property<DateTime>("AccessEndDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("AccessPassword")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("AccessStartDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("AccessUsername")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("CreateDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("GadgetDescription")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("GadgetKey")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("GadgetUrl")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("OtherLangs")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("UpdateDate")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("ID");
+
+                    b.ToTable("GadgetAccesses");
+                });
+
             modelBuilder.Entity("AITechDATA.Domain.Group", b =>
                 {
                     b.Property<long>("ID")
@@ -1692,6 +1741,9 @@ namespace AITechDATA.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("SocialAddress")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("TargetObjName")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime?>("UpdateDate")

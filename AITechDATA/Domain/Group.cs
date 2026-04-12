@@ -24,10 +24,10 @@ namespace AITechDATA.Domain
         public int GroupCapacity { get; set; } // ظرفیت ثبت نام گروه
         public int RegisterCount { get; set; } // تعداد ثبت نام گروه
         public string? Note { get; set; }
-        public ICollection<Session> Sessions { get; set; } // جلسات مرتبط با گروه
     //    public ICollection<PreRegistration> PreRegistrations { get; set; } // پیش‌ثبت‌نام‌های مرتبط با گروه
         public long TeacherId { get; set; } // کلید خارجی به استاد
         public User Teacher { get; set; } // ارتباط با استاد
+        public ICollection<Session> Sessions { get; set; } // جلسات مرتبط با گروه
         public ICollection<UserGroup> Students { get; set; } // دانش‌آموزان ثبت‌نام‌شده در گروه
         public ICollection<PaymentHistory> PaymentHistories { get; set; } // وضعیت پرداخت ها در گروه
         public ICollection<GroupChatMessage> ChatMessages { get; set; }

@@ -36,13 +36,14 @@ namespace AITechDATA.DataLayer.Services
                 {
                     GadgetAccess.AccessPassword = GadgetAccess.AccessUsername;
                 }
+
+                result.Result = GadgetAccess;
+
                 GadgetAccess.AccessPassword = GadgetAccess.AccessPassword.ToHash();
 
                 await _context.GadgetAccesses.AddAsync(GadgetAccess);
                 await _context.SaveChangesAsync();
                 _context.Entry(GadgetAccess).State = EntityState.Detached;
-
-                result.Result = GadgetAccess;
             }
             catch (Exception ex)
             {
@@ -73,13 +74,14 @@ namespace AITechDATA.DataLayer.Services
                 {
                     GadgetAccess.AccessPassword = GadgetAccess.AccessUsername;
                 }
+                result.Result = GadgetAccess;
+
                 GadgetAccess.AccessPassword = GadgetAccess.AccessPassword.ToHash();
 
                 _context.GadgetAccesses.Update(GadgetAccess);
                 await _context.SaveChangesAsync();
                 _context.Entry(GadgetAccess).State = EntityState.Detached;
 
-                result.Result= GadgetAccess;
             }
             catch (Exception ex)
             {
@@ -169,8 +171,8 @@ namespace AITechDATA.DataLayer.Services
 
                 if (!userExist)
                     query = query.Where(x => x.AccessUsername.ToLower() == accessUsername.ToLower() && x.AccessPassword == accessPassword.ToHash()
-                   && (x.AccessStartDate == null || x.AccessStartDate >= DateTime.Now)
-                   && (x.AccessEndDate <= DateTime.Now)
+                   && (x.AccessStartDate == null || x.AccessStartDate <= DateTime.Now)
+                   && (x.AccessEndDate >= DateTime.Now)
                     );
 
                 if (!string.IsNullOrEmpty(gadgetKey))
