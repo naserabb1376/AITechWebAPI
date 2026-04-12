@@ -11,6 +11,8 @@ namespace AITechDATA.Domain
     {
         public long ForeignKeyId { get; set; } // کلید خارجی به رکورد اصلی
         public string EntityType { get; set; } // نوع جدول مرتبط (مثلاً "User", "Course", "Event")
+        public string? TargetObjName { get; set; }
+
 
         public string FirstName { get; set; }
         public string LastName { get; set; }

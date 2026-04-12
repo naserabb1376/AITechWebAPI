@@ -19,8 +19,14 @@ namespace AITechWebAPI.Models.AdminReport
         [Range(1, long.MaxValue, ErrorMessage = "مقدار {0} باید بزرگتر از 0 باشد")]
         public long AdminId { get; set; } // کلید خارجی به User (ادمینی که گزارش را ارسال کرده است)
 
+        [Display(Name = "امتیاز گزارش")]
+        public float? ReportScore { get; set; } = 0.0f;
+
         [Display(Name = "تاریخ گزارش")]
         public string? ReportDate { get; set; } // تاریخ گزارش
+
+        [Display(Name = "وضعیت فعال")]
+        public bool IsActive { get; set; }
 
         [Display(Name = "زبان های دیگر")]
         public string? OtherLangs { get; set; } = "";

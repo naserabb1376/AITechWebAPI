@@ -41,6 +41,17 @@ namespace AITechWebAPI.Models.Duty
         [Display(Name = "امتیاز وظیفه")]
         public float? DutyScore { get; set; } = 0.0f;
 
+        [Display(Name = "تاریخ شروع فرصت انجام")]
+        [Required(ErrorMessage = "لطفا {0} را وارد کنید")]
+        public string DutyStartDate { get; set; }
+
+        [Display(Name = "تاریخ پایان فرصت انجام")]
+        [Required(ErrorMessage = "لطفا {0} را وارد کنید")]
+        public string DutyEndDate { get; set; }
+
+        [Display(Name = "تاریخ انجام")]
+        public string? DutyDoneDate { get; set; }
+
         [Display(Name = "وضعیت فعال")]
         public bool IsActive { get; set; } = true;
 

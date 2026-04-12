@@ -69,6 +69,7 @@ namespace AITechDATA.DataLayer
         public DbSet<ClassGrade> ClassGrades { get; set; }
         public DbSet<GroupChatMessage> GroupChatMessages { get; set; }
         public DbSet<GroupChatReadState> GroupChatReadStates { get; set; }
+        public DbSet<GadgetAccess> GadgetAccesses { get; set; }
         public DbSet<SubmitForm> SubmitForms { get; set; }
         public DbSet<FormField> FormFields { get; set; }
         public DbSet<FieldInForm> FieldInForms { get; set; }

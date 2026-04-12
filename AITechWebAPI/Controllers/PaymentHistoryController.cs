@@ -241,6 +241,7 @@ namespace AITechWebAPI.Controllers
             RowResultObject<RequestPaymentResultBody> result = new RowResultObject<RequestPaymentResultBody>();
             result.Result = new RequestPaymentResultBody();
             decimal rowAmount = 0,discountedrowAmount = 0;
+            string targetObjName="";
 
             if (!ModelState.IsValid)
             {
@@ -265,6 +266,7 @@ namespace AITechWebAPI.Controllers
                         }
 
                         rowAmount = theRow.Result.Fee;
+                        targetObjName = theRow.Result.Name;
                         discountedrowAmount = theRow.Result.DiscountedFee;
 
                     }
@@ -282,6 +284,7 @@ namespace AITechWebAPI.Controllers
                         }
 
                         rowAmount = theRow.Result.Fee ?? 0;
+                        targetObjName = theRow.Result.Title;
                         discountedrowAmount = theRow.Result.DiscountedFee ?? 0;
 
 
@@ -394,6 +397,7 @@ namespace AITechWebAPI.Controllers
 
                     ForeignKeyId = requestBody.ForeignKeyId,
                     EntityType = requestBody.EntityType ?? "",
+                    TargetObjName = targetObjName,
                     RegistrationDate = DateTime.Now.ToShamsi(),
                     OtherLangs = null,
                     // Description = requestBody.Description,
@@ -450,6 +454,7 @@ namespace AITechWebAPI.Controllers
             BitResultObject result = new BitResultObject();
             try
             {
+                string targetObjName = "";
                 var paymentHistory = await _PaymentHistoryRep.GetPaymentHistoryByIdAsync(PayId);
 
                 var UserId = User.GetCurrentUserId();
@@ -458,8 +463,44 @@ namespace AITechWebAPI.Controllers
 
                 var invoice = await _onlinePayment.FetchAsync();
 
-                // Check if the invoice is new or it's already processed before.
-                if (invoice.Status != PaymentFetchResultStatus.ReadyForVerifying)
+                switch (EntityType.ToLower())
+                {
+                    default:
+                    case "group":
+                        {
+                            var theRow = await _GroupRep.GetGroupByIdAsync(ForeignKeyId.Value);
+
+                            if (theRow.Result == null)
+                            {
+                                result.Status = false;
+                                result.ErrorMessage = "درخواست نامعتبر است";
+                                return BadRequest(result);
+                            }
+
+                            targetObjName = theRow.Result.Name;
+
+                        }
+                        break;
+                    case "event":
+                        {
+                            var theRow = await _EventRep.GetEventByIdAsync(ForeignKeyId.Value);
+
+                            if (theRow.Result == null)
+                            {
+                                result.Status = false;
+                                result.ErrorMessage = "درخواست نامعتبر است";
+                                return BadRequest(result);
+                            }
+
+                            targetObjName = theRow.Result.Title;
+
+
+                        }
+                        break;
+                }
+
+                        // Check if the invoice is new or it's already processed before.
+                        if (invoice.Status != PaymentFetchResultStatus.ReadyForVerifying)
                 {
                     // You can also see if the invoice is already verified before.
                     paymentHistory.Result.PaymentStatus = false;
@@ -489,9 +530,12 @@ namespace AITechWebAPI.Controllers
                         FavoriteField = null,
                         RecognitionLevel = null,
                         ProgrammingSkillLevel = null,
+                        SocialAddress = null,
 
                         ForeignKeyId = ForeignKeyId ?? 0,
                         EntityType = EntityType ?? "",
+                        TargetObjName = targetObjName,
+                        IsActive = true,
                         RegistrationDate = DateTime.Now.ToShamsi(),
                         OtherLangs = null,
                         // Description = requestBody.Description,

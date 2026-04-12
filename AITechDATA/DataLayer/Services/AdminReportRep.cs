@@ -79,7 +79,7 @@ namespace AITechDATA.DataLayer.Services
             ListResultObject<AdminReport> results = new ListResultObject<AdminReport>();
             try
             {
-                var query = _context.AdminReports.AsNoTracking();
+                var query = _context.AdminReports.Include(x=> x.Admin).AsNoTracking();
                 if(userId > 0)
                 {
                     query = query.Where(x => x.AdminId == userId);
@@ -108,7 +108,7 @@ namespace AITechDATA.DataLayer.Services
             RowResultObject<AdminReport> result = new RowResultObject<AdminReport>();
             try
             {
-                result.Result = await _context.AdminReports
+                result.Result = await _context.AdminReports.Include(x => x.Admin)
                     .AsNoTracking()
                     .SingleOrDefaultAsync(x => x.ID == adminReportId);
             }

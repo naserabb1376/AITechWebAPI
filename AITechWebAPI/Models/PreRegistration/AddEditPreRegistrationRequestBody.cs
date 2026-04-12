@@ -37,11 +37,14 @@ namespace AITechWebAPI.Models.PreRegistration
         [Required(ErrorMessage = "لطفا {0} را وارد کنید")]
         public string EntityType { get; set; }
 
+        [Display(Name = "نام موجودیت")]
+        public string? TargetObjName { get; set; }
+
         [Display(Name = "پایه تحصیلی")]
         public string? EducationalClass { get; set; } // پایه تحصیلی
 
         [Display(Name = "نام مدرسه")]
-        public string? SchoolName { get; set; } // نام مدرسه
+        public string? SchoolName { get; set; }
 
         [Display(Name = "حوزه علاقمندی")]
         public string? FavoriteField { get; set; } // حوزه علاقمندی

@@ -76,7 +76,7 @@ public class FileCenterController : ControllerBase
                     Tag = requestBody.Tag,
                     CreatorId = long.Parse(userId),
                 };
-                var removeoldResult = await _imageRep.RemoveOldImagesAsync(requestBody.RowId,entityName);
+                var removeoldResult = await _imageRep.RemoveOldImagesAsync(theImage.ForeignKeyId,entityName);
                 if (!removeoldResult.Status) return BadRequest(removeoldResult);
 
                 var saveResult = await _imageRep.AddImagesAsync(new List<Image> { theImage });
@@ -109,7 +109,7 @@ public class FileCenterController : ControllerBase
                     Tag = requestBody.Tag,
                     CreatorId = long.Parse(userId),
                 };
-                var removeoldResult = await _fileUploadRep.RemoveOldFilesAsync(requestBody.RowId, entityName);
+                var removeoldResult = await _fileUploadRep.RemoveOldFilesAsync(theFile.ForeignKeyId, entityName);
                 if (!removeoldResult.Status) return BadRequest(removeoldResult);
 
                 var saveResult = await _fileUploadRep.AddFileUploadAsync(theFile);
@@ -255,12 +255,12 @@ public class FileCenterController : ControllerBase
         if (requestBody.fileType == "images")
         {
             result.Results = ((List<Image>)resultrecords.Results)
-  .Select(x => x.FilePath).ToList();
+  .Select(x => $"{Request.Scheme}://{Request.Host}{x.GetUrl}").ToList();
         }
         if (requestBody.fileType == "files")
         {
             result.Results = ((List<FileUpload>)resultrecords.Results)
-  .Select(x => x.FilePath).ToList();
+  .Select(x => $"{Request.Scheme}://{Request.Host}{x.GetUrl}").ToList();
         }
 
         if (result.Status)

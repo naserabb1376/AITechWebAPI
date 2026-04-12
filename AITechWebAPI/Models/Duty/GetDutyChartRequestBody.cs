@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace AITechWebAPI.Models.Duty
 {
-    public class GetDutyChartRequestBody : GetListRequestBody
+    public class GetDutyChartRequestBody
     {
         [Display(Name = "نوع نمودار")]
         public int ChartType { get; set; } = 1;

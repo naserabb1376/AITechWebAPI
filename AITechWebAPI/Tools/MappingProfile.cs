@@ -56,6 +56,7 @@ namespace AITechWebAPI.Tools
 
             CreateMap<Category, CategoryVM>();
             CreateMap<City, CityVM>();
+            CreateMap<GadgetAccess, GadgetAccessVM>();
             CreateMap<MTPermissionCenter_Permission, PermissionVM>();
             CreateMap<Role, RoleVM>();
             CreateMap<SessionAssignment, SessionAssignmentVM>();

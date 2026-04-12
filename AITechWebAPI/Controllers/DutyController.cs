@@ -6,6 +6,7 @@ using AITechDATA.Tools;
 using AITechWebAPI.Models;
 using AITechWebAPI.Models.Duty;
 using AITechWebAPI.Models.Public;
+using AITechWebAPI.Tools;
 using AITechWebAPI.Validations;
 using AITechWebAPI.ViewModels;
 using AutoMapper;
@@ -31,13 +32,15 @@ namespace AITechWebAPI.Controllers
     public class DutyController : ControllerBase
     {
         IDutyRep _DutyRep;
+        IUserRep _UserRep;
         ILogRep _logRep;
         private readonly IMapper _mapper;
 
 
-        public DutyController(IDutyRep DutyRep, ILogRep logRep, IMapper mapper)
+        public DutyController(IDutyRep DutyRep,IUserRep userRep, ILogRep logRep, IMapper mapper)
         {
             _DutyRep = DutyRep;
+            _UserRep = userRep;
             _logRep = logRep;
             _mapper = mapper;
         }
@@ -109,12 +112,30 @@ namespace AITechWebAPI.Controllers
                 SenderUserId = requestBody.SenderUserID ?? User.GetCurrentUserId(),
                 DutyReport = requestBody.DutyReport ?? "",
                 DutyScore = requestBody.DutyScore.Value,
+                DutyStartDate = requestBody.DutyStartDate.StringToDate().Value,
+                DutyEndDate = requestBody.DutyEndDate.StringToDate().Value,
+                DutyDoneDate = requestBody.DutyDoneDate.StringToDate(),
                 IsActive = requestBody.IsActive,
                 OtherLangs = requestBody.OtherLangs ?? "",
             };
             var result = await _DutyRep.AddDutyAsync(Duty);
             if (result.Status)
             {
+                var theUser = await _UserRep.GetUserByIdAsync(Duty.UserId);
+
+                var infoMessage = $@"
+کاربر {theUser.Result.FirstName} {theUser.Result.LastName}
+وظیفه {Duty.DutyTitle} برای شما تعریف شد
+این وظیفه برای شما
+از تاریخ {Duty.DutyStartDate.ToShamsiString().Split(' ')[0]}
+ساعت {Duty.DutyStartDate.ToShamsiString().Split(' ')[1]}
+تا تاریخ {Duty.DutyEndDate.ToShamsiString().Split(' ')[0]}
+ساعت {Duty.DutyEndDate.ToShamsiString().Split(' ')[1]}
+قابل انجام است.
+مرکز آموزش هوش مصنوعی آیتک
+";
+                bool sent = await ToolBox.SendSMSMessage(theUser.Result.Username, infoMessage);
+
                 #region AddLog
 
                 Log log = new Log()
@@ -164,6 +185,9 @@ namespace AITechWebAPI.Controllers
                 SenderUserId = requestBody.SenderUserID ?? User.GetCurrentUserId(),
                 DutyReport = requestBody.DutyReport ?? "",
                 DutyScore = requestBody.DutyScore.Value,
+                DutyStartDate = requestBody.DutyStartDate.StringToDate().Value,
+                DutyEndDate = requestBody.DutyEndDate.StringToDate().Value,
+                DutyDoneDate = requestBody.DutyDoneDate.StringToDate(),
                 IsActive = requestBody.IsActive,
                 OtherLangs = requestBody.OtherLangs ?? "",
             };

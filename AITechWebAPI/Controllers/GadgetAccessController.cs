@@ -4,9 +4,8 @@ using AITechDATA.Domain;
 using AITechDATA.ResultObjects;
 using AITechDATA.Tools;
 using AITechWebAPI.Models;
-using AITechWebAPI.Models.AdminReport;
+using AITechWebAPI.Models.GadgetAccess;
 using AITechWebAPI.Models.Public;
-using AITechWebAPI.Validations;
 using AITechWebAPI.ViewModels;
 using AutoMapper;
 using Microsoft.AspNetCore.Authentication;
@@ -17,71 +16,82 @@ using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
-using static AITechWebAPI.Tools.ToolBox;
 
 namespace AITechWebAPI.Controllers
 {
-    [Route("AdminReport")]
+    [Route("GadgetAccess")]
     [ApiController]
     [Authorize]
     [Produces("application/json")]
-    // [CheckRoleBase(new[] { (int)BaseRole.MiddleAdmin, (int)BaseRole.GeneralAdmin })]
-
-
-    public class AdminReportController : ControllerBase
+    public class GadgetAccessController : ControllerBase
     {
-        IAdminReportRep _AdminReportRep;
-        ILogRep _logRep;
+        private IGadgetAccessRep _GadgetAccessRep;
+        private ILogRep _logRep;
         private readonly IMapper _mapper;
 
-
-        public AdminReportController(IAdminReportRep AdminReportRep,ILogRep logRep,IMapper mapper)
+        public GadgetAccessController(IGadgetAccessRep GadgetAccessRep, ILogRep logRep,IMapper mapper)
         {
-           _AdminReportRep = AdminReportRep;
-           _logRep = logRep;
-           _mapper = mapper;
+            _GadgetAccessRep = GadgetAccessRep;
+            _logRep = logRep;
+            _mapper = mapper;
         }
 
-        [HttpPost("GetAllAdminReports_Base")]
-        public async Task<ActionResult<ListResultObject<AdminReportVM>>> GetAllAdminReports_Base(GetAdminReportListRequestBody requestBody)
+        [HttpPost("GetAllGadgetAccesss_Base")]
+        public async Task<ActionResult<ListResultObject<GadgetAccessVM>>> GetAllGadgetAccesss_Base(GetGadgetAccessListRequestBody requestBody)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(requestBody);
             }
-            var result = await _AdminReportRep.GetAllAdminReportsAsync(requestBody.AdminId,requestBody.PageIndex,requestBody.PageSize,requestBody.SearchText,requestBody.SortQuery);
+            var result = await _GadgetAccessRep.GetAllGadgetAccessesAsync(requestBody.AccessUserName, requestBody.GadgetKey,requestBody.PageIndex, requestBody.PageSize, requestBody.SearchText, requestBody.SortQuery);
             if (result.Status)
             {
-                var resultVM = _mapper.Map<ListResultObject<AdminReportVM>>(result);
+                var resultVM = _mapper.Map<ListResultObject<GadgetAccessVM>>(result);
                 return Ok(resultVM);
             }
             return BadRequest(result);
         }
 
-        [HttpPost("GetAdminReportById_Base")]
-        public async Task<ActionResult<RowResultObject<AdminReportVM>>> GetAdminReportById_Base(GetRowRequestBody requestBody)
+        [HttpPost("GetAccessableGadgets_Base")]
+        [AllowAnonymous]
+        public async Task<ActionResult<ListResultObject<AccessableGadgetsDto>>> GetAccessableGadgets_Base(GetAccessableGadgetsRequestBody requestBody)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(requestBody);
             }
-            var result = await _AdminReportRep.GetAdminReportByIdAsync(requestBody.ID);
+            var result = await _GadgetAccessRep.GetAcessableGadgetsAsync(requestBody.AccessUserName, requestBody.AccessPassword,requestBody.GadgetKey);
             if (result.Status)
             {
-                var resultVM = _mapper.Map<RowResultObject<AdminReportVM>>(result);
+                return Ok(result);
+            }
+            return BadRequest(result);
+        }
+
+        [HttpPost("GetGadgetAccessById_Base")]
+        public async Task<ActionResult<RowResultObject<GadgetAccessVM>>> GetGadgetAccessById_Base(GetRowRequestBody requestBody)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(requestBody);
+            }
+            var result = await _GadgetAccessRep.GetGadgetAccessByIdAsync(requestBody.ID);
+            if (result.Status)
+            {
+                var resultVM = _mapper.Map<RowResultObject<GadgetAccessVM>>(result);
                 return Ok(resultVM);
             }
             return BadRequest(result);
         }
 
-        [HttpPost("ExistAdminReport_Base")]
-        public async Task<ActionResult<BitResultObject>> ExistAdminReport_Base(GetRowRequestBody requestBody)
+        [HttpPost("ExistGadgetAccess_Base")]
+        public async Task<ActionResult<BitResultObject>> ExistGadgetAccess_Base(GetRowRequestBody requestBody)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(requestBody);
             }
-            var result = await _AdminReportRep.ExistAdminReportAsync(requestBody.ID);
+            var result = await _GadgetAccessRep.ExistGadgetAccessAsync(requestBody.ID);
             if (string.IsNullOrEmpty(result.ErrorMessage))
             {
                 return Ok(result);
@@ -89,27 +99,29 @@ namespace AITechWebAPI.Controllers
             return BadRequest(result);
         }
 
-        [HttpPost("AddAdminReport_Base")]
-        public async Task<ActionResult<BitResultObject>> AddAdminReport_Base(AddEditAdminReportRequestBody requestBody)
+        [HttpPost("AddGadgetAccess_Base")]
+        public async Task<ActionResult<RowResultObject<GadgetAccess>>> AddGadgetAccess_Base(AddEditGadgetAccessRequestBody requestBody)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(requestBody);
             }
-            AdminReport AdminReport = new AdminReport()
+            GadgetAccess GadgetAccess = new GadgetAccess()
             {
                 CreateDate = DateTime.Now.ToShamsi(),
                 UpdateDate = DateTime.Now.ToShamsi(),
-                AdminId = requestBody.AdminId,
-                Title= requestBody.Title,
-                Content = requestBody.Content,
+                GadgetKey = requestBody.GadgetKey,
+                GadgetDescription = requestBody.GadgetDescription,
+                GadgetUrl = requestBody.GadgetUrl,
+                AccessUsername = requestBody.AccessUserName,
+                AccessPassword = requestBody.AccessPassword,
+                AccessStartDate = requestBody.AccessStartDate.StringToDate(),
+                AccessEndDate = requestBody.AccessEndDate.StringToDate().Value,
                 IsActive = requestBody.IsActive,
-                ReportScore = requestBody.ReportScore.Value,
-                ReportDate = requestBody.ReportDate.StringToDate().Value,
                 OtherLangs = requestBody.OtherLangs ?? "",
 
             };
-            var result = await _AdminReportRep.AddAdminReportAsync(AdminReport);
+            var result = await _GadgetAccessRep.AddGadgetAccessAsync(GadgetAccess);
             if (result.Status)
             {
                 #region AddLog
@@ -120,51 +132,50 @@ namespace AITechWebAPI.Controllers
                     UpdateDate = DateTime.Now.ToShamsi(),
                     LogTime = DateTime.Now.ToShamsi(),
                     ActionName = this.ControllerContext.RouteData.Values["action"].ToString(),
-
                 };
                 await _logRep.AddLogAsync(log);
 
-                #endregion
-
+                #endregion AddLog
 
                 return Ok(result);
             }
             return BadRequest(result);
         }
 
-        [HttpPut("EditAdminReport_Base")]
-        public async Task<ActionResult<BitResultObject>> EditAdminReport_Base(AddEditAdminReportRequestBody requestBody)
+        [HttpPut("EditGadgetAccess_Base")]
+        public async Task<ActionResult<RowResultObject<GadgetAccess>>> EditGadgetAccess_Base(AddEditGadgetAccessRequestBody requestBody)
         {
-            var result = new BitResultObject();
+            var result = new RowResultObject<GadgetAccess>();
             if (!ModelState.IsValid)
             {
                 return BadRequest(requestBody);
             }
-            var theRow = await _AdminReportRep.GetAdminReportByIdAsync(requestBody.ID);
+            var theRow = await _GadgetAccessRep.GetGadgetAccessByIdAsync(requestBody.ID);
             if (!theRow.Status)
             {
                 result.Status = theRow.Status;
                 result.ErrorMessage = theRow.ErrorMessage;
             }
 
-            AdminReport AdminReport = new AdminReport()
+            GadgetAccess GadgetAccess = new GadgetAccess()
             {
                 CreateDate = theRow.Result.CreateDate,
                 UpdateDate = DateTime.Now.ToShamsi(),
                 ID = requestBody.ID,
-                AdminId = requestBody.AdminId,
-                Title = requestBody.Title,
-                Content = requestBody.Content,
+                GadgetKey = requestBody.GadgetKey,
+                GadgetDescription = requestBody.GadgetDescription,
+                GadgetUrl = requestBody.GadgetUrl,
+                AccessUsername = requestBody.AccessUserName,
+                AccessPassword = requestBody.AccessPassword,
+                AccessStartDate = requestBody.AccessStartDate.StringToDate(),
+                AccessEndDate = requestBody.AccessEndDate.StringToDate().Value,
                 IsActive = requestBody.IsActive,
-                ReportScore = requestBody.ReportScore.Value,
-                ReportDate = requestBody.ReportDate.StringToDate().Value,
                 OtherLangs = requestBody.OtherLangs ?? "",
 
             };
-            result = await _AdminReportRep.EditAdminReportAsync(AdminReport);
+            result = await _GadgetAccessRep.EditGadgetAccessAsync(GadgetAccess);
             if (result.Status)
             {
-
                 #region AddLog
 
                 Log log = new Log()
@@ -173,28 +184,26 @@ namespace AITechWebAPI.Controllers
                     UpdateDate = DateTime.Now.ToShamsi(),
                     LogTime = DateTime.Now.ToShamsi(),
                     ActionName = this.ControllerContext.RouteData.Values["action"].ToString(),
-
                 };
                 await _logRep.AddLogAsync(log);
 
-                #endregion
+                #endregion AddLog
 
                 return Ok(result);
             }
             return BadRequest(result);
         }
 
-        [HttpDelete("DeleteAdminReport_Base")]
-        public async Task<ActionResult<BitResultObject>> DeleteAdminReport_Base(GetRowRequestBody requestBody)
+        [HttpDelete("DeleteGadgetAccess_Base")]
+        public async Task<ActionResult<BitResultObject>> DeleteGadgetAccess_Base(GetRowRequestBody requestBody)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(requestBody);
             }
-            var result = await _AdminReportRep.RemoveAdminReportAsync(requestBody.ID);
+            var result = await _GadgetAccessRep.RemoveGadgetAccessAsync(requestBody.ID);
             if (result.Status)
             {
-
                 #region AddLog
 
                 Log log = new Log()
@@ -203,11 +212,10 @@ namespace AITechWebAPI.Controllers
                     UpdateDate = DateTime.Now.ToShamsi(),
                     LogTime = DateTime.Now.ToShamsi(),
                     ActionName = this.ControllerContext.RouteData.Values["action"].ToString(),
-
                 };
                 await _logRep.AddLogAsync(log);
 
-                #endregion
+                #endregion AddLog
 
                 return Ok(result);
             }

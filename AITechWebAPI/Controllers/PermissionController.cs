@@ -253,6 +253,7 @@ namespace AITechWebAPI.Controllers
         }
 
 
+#if DEBUG
         [HttpPost("InitPermissions")]
         [AllowAnonymous]
         public async Task<ActionResult<BitResultObject>> InitPermissions([FromBody] List<ControllerActionInfo> requestBody)
@@ -360,6 +361,7 @@ namespace AITechWebAPI.Controllers
             return Ok(result);
         }
 
+#endif
 
     }
 

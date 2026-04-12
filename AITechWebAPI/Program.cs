@@ -222,6 +222,8 @@ namespace AITechWebAPI
             builder.Services.AddScoped<IFieldInFormRep, FieldInFormRep>();
             builder.Services.AddScoped<IDiscountRep, DiscountRep>();
             builder.Services.AddScoped<IDiscountTargetRep, DiscountTargetRep>();
+            builder.Services.AddScoped<IDutyRep, DutyRep>();
+            builder.Services.AddScoped<IGadgetAccessRep, GadgetAccessRep>();
 
 
             #endregion ImportDbServices

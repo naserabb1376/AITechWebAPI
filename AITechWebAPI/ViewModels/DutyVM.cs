@@ -19,5 +19,9 @@ namespace AITechWebAPI.ViewModels
         public bool IsDone { get; set; }
         public string? DutyReport { get; set; }
         public float DutyScore { get; set; }
+        public DateTime DutyStartDate { get; set; }
+        public DateTime DutyEndDate { get; set; }
+        public DateTime? DutyDoneDate { get; set; }
+
     }
 }

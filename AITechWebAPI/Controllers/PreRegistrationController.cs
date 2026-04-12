@@ -115,6 +115,7 @@ namespace AITechWebAPI.Controllers
 
                 ForeignKeyId = requestBody.ForeignKeyId,
                 EntityType = requestBody.EntityType,
+                TargetObjName = requestBody.TargetObjName,
                 RegistrationDate = requestBody.RegistrationDate.StringToDate().Value,
                 OtherLangs = requestBody.OtherLangs ?? "",
                 // Description = requestBody.Description,
@@ -174,6 +175,7 @@ namespace AITechWebAPI.Controllers
 
                 ForeignKeyId = requestBody.ForeignKeyId,
                 EntityType = requestBody.EntityType,
+                TargetObjName = requestBody.TargetObjName,
                 RegistrationDate = requestBody.RegistrationDate.StringToDate().Value,
                 ID = requestBody.ID,
                 OtherLangs = requestBody.OtherLangs ?? "",
