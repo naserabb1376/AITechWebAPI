@@ -266,6 +266,13 @@ namespace AITechWebAPI.Controllers
                             result.ErrorMessage = "درخواست نامعتبر است" ;
                             return BadRequest(result);
                         }
+                        if (theRow.Result.GroupCapacity <= 0)
+                        {
+                            result.Result = null;
+                            result.Status = false;
+                            result.ErrorMessage = "ظرفیت ثبت نام این گروه تکمیل شده است";
+                            return BadRequest(result);
+                        }
 
                         rowAmount = theRow.Result.Fee;
                         targetObjName = theRow.Result.Name;

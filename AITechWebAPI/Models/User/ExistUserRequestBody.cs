@@ -13,5 +13,9 @@ namespace AITechWebAPI.Models.User
         [Required(ErrorMessage = "لطفا {0} را وارد کنید")]
         public string FieldName { get; set; }
 
+        [Display(Name = "کد کاربر")]
+        public long UserId { get; set; } = 0;
+
+
     }
 }

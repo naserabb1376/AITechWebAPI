@@ -1,9 +1,11 @@
 ﻿using AITechDATA.CustomResponses;
 using AITechDATA.DataLayer.Repositories;
+using AITechDATA.DataLayer.Services;
 using AITechDATA.Domain;
 using AITechDATA.ResultObjects;
 using AITechDATA.Tools;
 using AITechWebAPI.Models;
+using AITechWebAPI.Models.Authenticate;
 using AITechWebAPI.Models.Public;
 using AITechWebAPI.Models.User;
 using AITechWebAPI.Validations;
@@ -124,7 +126,7 @@ namespace AITechWebAPI.Controllers
             {
                 return BadRequest(requestBody);
             }
-            var result = await _UserRep.ExistUserAsync(requestBody.FieldValue,requestBody.FieldName);
+            var result = await _UserRep.ExistUserAsync(requestBody.FieldValue,requestBody.FieldName,requestBody.UserId);
             if (string.IsNullOrEmpty(result.ErrorMessage))
             {
                 return Ok(result);
@@ -139,6 +141,36 @@ namespace AITechWebAPI.Controllers
             {
                 return BadRequest(requestBody);
             }
+            var result = new BitResultObject();
+
+            var validUserName = await _UserRep.ExistUserAsync(requestBody.UserName, "username");
+
+            if (validUserName.Status)
+            {
+                result.Status = !validUserName.Status;
+                result.ErrorMessage = "نام کاربری (شماره موبایل) تکراری است";
+                return BadRequest(result);
+            }
+
+
+            var validEmail = await _UserRep.ExistUserAsync(requestBody.Email, "email");
+
+            if (validEmail.Status)
+            {
+                result.Status = !validEmail.Status;
+                result.ErrorMessage = "پست الکترونیک تکراری است";
+                return BadRequest(result);
+            }
+
+            var validNationalCode = await _UserRep.ExistUserAsync(requestBody.NationalCode, "nationalcode");
+
+            if (validNationalCode.Status)
+            {
+                result.Status = !validNationalCode.Status;
+                result.ErrorMessage = "کد ملی تکراری است";
+                return BadRequest(result);
+            }
+
             User User = new User()
             {
                 CreateDate = DateTime.Now.ToShamsi(),
@@ -156,7 +188,7 @@ namespace AITechWebAPI.Controllers
                 PermissionsVersion = requestBody.PermissionsVersion,
 
             };
-            var result = await _UserRep.AddUserAsync(User);
+             result = await _UserRep.AddUserAsync(User);
             if (result.Status)
             {
                 #region AddLog
@@ -187,6 +219,36 @@ namespace AITechWebAPI.Controllers
             {
                 return BadRequest(requestBody);
             }
+
+
+            var validUserName = await _UserRep.ExistUserAsync(requestBody.UserName, "username",requestBody.ID);
+
+            if (validUserName.Status)
+            {
+                result.Status = !validUserName.Status;
+                result.ErrorMessage = "نام کاربری (شماره موبایل) تکراری است";
+                return BadRequest(result);
+            }
+
+
+            var validEmail = await _UserRep.ExistUserAsync(requestBody.Email, "email",requestBody.ID);
+
+            if (validEmail.Status)
+            {
+                result.Status = !validEmail.Status;
+                result.ErrorMessage = "پست الکترونیک تکراری است";
+                return BadRequest(result);
+            }
+
+            var validNationalCode = await _UserRep.ExistUserAsync(requestBody.NationalCode, "nationalcode",requestBody.ID);
+
+            if (validNationalCode.Status)
+            {
+                result.Status = !validNationalCode.Status;
+                result.ErrorMessage = "کد ملی تکراری است";
+                return BadRequest(result);
+            }
+
             var theRow = await _UserRep.GetUserByIdAsync(requestBody.ID);
             if (!theRow.Status)
             {
@@ -242,6 +304,34 @@ namespace AITechWebAPI.Controllers
             if (!ModelState.IsValid)
             {
                 return BadRequest(requestBody);
+            }
+
+            var validUserName = await _UserRep.ExistUserAsync(requestBody.UserName, "username");
+
+            if (validUserName.Status)
+            {
+                result.Status = !validUserName.Status;
+                result.ErrorMessage = "نام کاربری (شماره موبایل) تکراری است";
+                return BadRequest(result);
+            }
+
+
+            var validEmail = await _UserRep.ExistUserAsync(requestBody.Email, "email");
+
+            if (validEmail.Status)
+            {
+                result.Status = !validEmail.Status;
+                result.ErrorMessage = "پست الکترونیک تکراری است";
+                return BadRequest(result);
+            }
+
+            var validNationalCode = await _UserRep.ExistUserAsync(requestBody.NationalCode, "nationalcode");
+
+            if (validNationalCode.Status)
+            {
+                result.Status = !validNationalCode.Status;
+                result.ErrorMessage = "کد ملی تکراری است";
+                return BadRequest(result);
             }
 
             Address address = new Address();
@@ -320,6 +410,35 @@ namespace AITechWebAPI.Controllers
             {
                 return BadRequest(requestBody);
             }
+
+            var validUserName = await _UserRep.ExistUserAsync(requestBody.UserName, "username",requestBody.ID);
+
+            if (validUserName.Status)
+            {
+                result.Status = !validUserName.Status;
+                result.ErrorMessage = "نام کاربری (شماره موبایل) تکراری است";
+                return BadRequest(result);
+            }
+
+
+            var validEmail = await _UserRep.ExistUserAsync(requestBody.Email, "email",requestBody.ID);
+
+            if (validEmail.Status)
+            {
+                result.Status = !validEmail.Status;
+                result.ErrorMessage = "پست الکترونیک تکراری است";
+                return BadRequest(result);
+            }
+
+            var validNationalCode = await _UserRep.ExistUserAsync(requestBody.NationalCode, "nationalcode",requestBody.ID);
+
+            if (validNationalCode.Status)
+            {
+                result.Status = !validNationalCode.Status;
+                result.ErrorMessage = "کد ملی تکراری است";
+                return BadRequest(result);
+            }
+
             var theRow = await _UserRep.GetUserByIdAsync(requestBody.ID);
             if (theRow.Result.Address== null)
             {

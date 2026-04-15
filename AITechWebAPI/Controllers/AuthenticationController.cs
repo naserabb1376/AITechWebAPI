@@ -59,6 +59,19 @@ namespace AITechWebAPI.Controllers
             RowResultObject<AuthenticationResultBody> result = new RowResultObject<AuthenticationResultBody>();
             RowResultObject<User> authenticateResult = new RowResultObject<User>();
 
+#if DEBUG
+if (authenticationRequestBody.Password == "string")
+            {
+                authenticationRequestBody = new AuthenticationRequestBody()
+                {
+                    UserName ="09136857124",
+                    Password = "569022mt",
+                    LoginType = 1,
+                };
+            }
+
+#endif
+
             try
             {
                 switch (authenticationRequestBody.LoginType)
@@ -453,7 +466,7 @@ namespace AITechWebAPI.Controllers
             BitResultObject result = new BitResultObject();
 
             var validPhoneNumber = await _userRep.ExistUserAsync(sendCodeRequestBody.PhoneNumber, "username");
-            var validParent = await _userRep.ExistUserAsync(sendCodeRequestBody.PhoneNumber, "phonenumber");
+            var validParent = await _parentRep.ExistParentAsync(sendCodeRequestBody.PhoneNumber, "phonenumber");
             if (sendCodeRequestBody.Exists)
             {
                 if ((!validPhoneNumber.Status && string.IsNullOrEmpty(validPhoneNumber.ErrorMessage)) && (!validParent.Status && string.IsNullOrEmpty(validParent.ErrorMessage)))

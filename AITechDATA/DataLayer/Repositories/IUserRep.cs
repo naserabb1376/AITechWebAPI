@@ -25,6 +25,6 @@ namespace AITechDATA.DataLayer.Repositories
 
         Task<BitResultObject> RemoveUserAsync(long userId);
 
-        Task<BitResultObject> ExistUserAsync(string fieldValue, string fieldName);
+        Task<BitResultObject> ExistUserAsync(string fieldValue, string fieldName,long userId = 0);
     }
 }

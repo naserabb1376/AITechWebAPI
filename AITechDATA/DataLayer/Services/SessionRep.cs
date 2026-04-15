@@ -83,55 +83,46 @@ namespace AITechDATA.DataLayer.Services
      string sortQuery = "")
         {
             var results = new ListResultObject<Session>();
+
             try
             {
-                IQueryable<Session> query;
+                // Base Query (از Session شروع می‌کنیم)
+                IQueryable<Session> query = _context.Sessions
+                    .AsNoTracking()
+                    .Include(s => s.Group).ThenInclude(g => g.Teacher)
+                    .Include(s => s.Group).ThenInclude(g => g.Course)
+                    .Include(s => s.Attendances)
+                    .Include(s => s.SessionAssignments);
 
+                // Filter: فقط Session های کاربر
                 if (userId > 0)
                 {
-                    query = _context.Attendances
-                        .AsNoTracking()
-                        .Where(x => x.UserId == userId)
-                        .Include(x => x.Session)
-                            .ThenInclude(s => s.Group)
-                        .Include(x => x.Session)
-                            .ThenInclude(s => s.Attendances)
-                        .Include(x => x.Session)
-                            .ThenInclude(s => s.SessionAssignments)
-                        .Select(x => x.Session)
-                                                .Include(x => x.Group).ThenInclude(x => x.Teacher)
-                        .Include(x => x.Group).ThenInclude(x => x.Course)
-                        .Include(x => x.Attendances)
-                        .Include(x => x.SessionAssignments);
-                }
-                else
-                {
-                    query = _context.Sessions
-                        .AsNoTracking()
-                        .Include(x => x.Group).ThenInclude(x=> x.Teacher)
-                        .Include(x => x.Group).ThenInclude(x=> x.Course)
-                        .Include(x => x.Attendances)
-                        .Include(x => x.SessionAssignments);
+                    query = query.Where(s => s.Attendances.Any(a => a.UserId == userId));
                 }
 
+                // Filter: group
                 if (groupId > 0)
                 {
-                    query = query.Where(x => x.GroupId == groupId);
+                    query = query.Where(s => s.GroupId == groupId);
                 }
 
+                // Search Text
                 if (!string.IsNullOrWhiteSpace(searchText))
                 {
-                    query = query.Where(x =>
-                        (x.Group != null && x.Group.Name.Contains(searchText)) ||
-                        (!string.IsNullOrEmpty(x.Description) && x.Description.Contains(searchText)) ||
-                        x.SessionDate.ToString().Contains(searchText));
+                    query = query.Where(s =>
+                        (s.Group != null && s.Group.Name.Contains(searchText)) ||
+                        (!string.IsNullOrEmpty(s.Description) && s.Description.Contains(searchText)) ||
+                        s.SessionDate.ToString().Contains(searchText)
+                    );
                 }
 
+                // Count
                 results.TotalCount = await query.CountAsync();
                 results.PageCount = DbTools.GetPageCount(results.TotalCount, pageSize);
 
+                // Sorting + Paging + Final Result
                 results.Results = await query
-                    .OrderByDescending(x => x.SessionDate)
+                    .OrderByDescending(s => s.SessionDate)
                     .SortBy(sortQuery)
                     .ToPaging(pageIndex, pageSize)
                     .ToListAsync();
@@ -144,6 +135,7 @@ namespace AITechDATA.DataLayer.Services
 
             return results;
         }
+
 
 
 

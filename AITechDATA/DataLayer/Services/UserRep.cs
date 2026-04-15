@@ -58,36 +58,40 @@ namespace AITechDATA.DataLayer.Services
             return result;
         }
 
-        public async Task<BitResultObject> ExistUserAsync(string fieldValue, string fieldName)
+        public async Task<BitResultObject> ExistUserAsync(string fieldValue, string fieldName, long userId = 0)
         {
             BitResultObject result = new BitResultObject();
-            long userId = 0;
             try
             {
+                var query = _context.Users.AsNoTracking();
+                if (userId > 0)
+                {
+                    query = query.Where(x=> x.ID != userId);
+                }
                 switch (fieldName.ToLower().Trim())
                 {
                     case "id":
                     default:
                         {
-                            var theUser = await _context.Users.AsNoTracking().FirstOrDefaultAsync(x => x.ID == long.Parse(fieldValue)) ?? new User();
+                            var theUser = await query.FirstOrDefaultAsync(x => x.ID == long.Parse(fieldValue)) ?? new User();
                             userId = theUser.ID;
                             break;
                         }
                     case "username":
                         {
-                            var theUser = await _context.Users.AsNoTracking().FirstOrDefaultAsync(x => x.Username == fieldValue) ?? new User();
+                            var theUser = await query.FirstOrDefaultAsync(x => x.Username == fieldValue) ?? new User();
                             userId = theUser.ID;
                             break;
                         }
                     case "email":
                         {
-                            var theUser = await _context.Users.AsNoTracking().FirstOrDefaultAsync(x => x.Email == fieldValue) ?? new User();
+                            var theUser = await query.FirstOrDefaultAsync(x => x.Email == fieldValue) ?? new User();
                             userId = theUser.ID;
                             break;
                         }
                     case "nationalcode":
                         {
-                            var theUser = await _context.Users.AsNoTracking().FirstOrDefaultAsync(x => x.NationalCode == fieldValue) ?? new User();
+                            var theUser = await query.FirstOrDefaultAsync(x => x.NationalCode == fieldValue) ?? new User();
                             userId = theUser.ID;
                             break;
                         }
