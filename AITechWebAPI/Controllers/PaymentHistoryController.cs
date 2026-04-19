@@ -74,7 +74,7 @@ namespace AITechWebAPI.Controllers
             {
                 return BadRequest(requestBody);
             }
-            var result = await _PaymentHistoryRep.GetAllPaymentHistoriesAsync(requestBody.ForeignKeyId,requestBody.EntityType,requestBody.UserId,requestBody.PageIndex,requestBody.PageSize,requestBody.SearchText,requestBody.SortQuery);
+            var result = await _PaymentHistoryRep.GetAllPaymentHistoriesAsync(requestBody.ForeignKeyId,requestBody.EntityType,requestBody.UserId,requestBody.DiscountId,requestBody.PageIndex,requestBody.PageSize,requestBody.SearchText,requestBody.SortQuery);
             if (result.Status)
             {
                 var resultVM = _mapper.Map<ListResultObject<PaymentHistoryVM>>(result);
@@ -122,16 +122,24 @@ namespace AITechWebAPI.Controllers
                 return BadRequest(requestBody);
             }
 
+            dynamic targetObj = requestBody.EntityType.ToLower().Contains("event") ? await _EventRep.GetEventByIdAsync(requestBody.ForeignKeyId) :
+await _GroupRep.GetGroupByIdAsync(requestBody.ForeignKeyId);
+
+            string targetObjName = requestBody.EntityType.ToLower().Contains("event") ? targetObj.Result.Title : targetObj.Result.Name;
+
             PaymentHistory PaymentHistory = new PaymentHistory()
             {
                 CreateDate = DateTime.Now.ToShamsi(),
                 UpdateDate = DateTime.Now.ToShamsi(),
                 ForeignKeyId = requestBody.ForeignKeyId,
                 EntityType = requestBody.EntityType,
+                TargetObjName = targetObjName,
+                IsActive = requestBody.IsActive,
                 Amount = requestBody.Amount,
                 UserId = requestBody.UserID,
                 PaymentDate =  string.IsNullOrEmpty(requestBody.PaymentDate) ? DateTime.Now.ToShamsi() : requestBody.PaymentDate.StringToDate().Value,
                 PaymentStatus = false,
+                DiscountId = requestBody.DiscountId,
               //  Description = requestBody.Description,
             };
             var result = await _PaymentHistoryRep.AddPaymentHistoryAsync(PaymentHistory);
@@ -171,6 +179,12 @@ namespace AITechWebAPI.Controllers
                 result.ErrorMessage = theRow.ErrorMessage;
             }
 
+            dynamic targetObj = requestBody.EntityType.ToLower().Contains("event") ? await _EventRep.GetEventByIdAsync(requestBody.ForeignKeyId) :
+await _GroupRep.GetGroupByIdAsync(requestBody.ForeignKeyId);
+
+            string targetObjName = requestBody.EntityType.ToLower().Contains("event") ? targetObj.Result.Title : targetObj.Result.Name;
+
+
             PaymentHistory PaymentHistory = new PaymentHistory()
             {
                 CreateDate = theRow.Result.CreateDate,
@@ -178,10 +192,13 @@ namespace AITechWebAPI.Controllers
                 ID = requestBody.ID,
                 ForeignKeyId = requestBody.ForeignKeyId,
                 EntityType = requestBody.EntityType,
+                TargetObjName = targetObjName,
+                IsActive = requestBody.IsActive,
                 Amount = requestBody.Amount,
                 UserId = requestBody.UserID,
                 PaymentDate = string.IsNullOrEmpty(requestBody.PaymentDate) ? DateTime.Now.ToShamsi() : requestBody.PaymentDate.StringToDate().Value,
                 PaymentStatus = requestBody.PaymentStatus,
+                DiscountId = requestBody.DiscountId,
                // Description = requestBody.Description,
             };
             result = await _PaymentHistoryRep.EditPaymentHistoryAsync(PaymentHistory);
@@ -321,6 +338,7 @@ namespace AITechWebAPI.Controllers
                     UpdateDate = DateTime.Now.ToShamsi(),
                     ForeignKeyId = requestBody.ForeignKeyId,
                     EntityType = requestBody.EntityType,
+                    TargetObjName = targetObjName,
                     Amount = rowAmount,
                     UserId = UserId,
                     PaymentDate = DateTime.Now.ToShamsi(),
@@ -388,7 +406,7 @@ namespace AITechWebAPI.Controllers
             else
             {
                 var userRow = await _UserRep.GetUserByIdAsync(UserId);
-                if (groupType == "online")
+                if (groupType == "online" || groupType == "video")
                 {
                     UserGroup userGroup = new UserGroup()
                     {
@@ -491,12 +509,15 @@ namespace AITechWebAPI.Controllers
 
                 var invoice = await _onlinePayment.FetchAsync();
 
+                dynamic theRow = EntityType.ToLower().Contains("event") ? await _EventRep.GetEventByIdAsync(ForeignKeyId.Value) :
+    await _GroupRep.GetGroupByIdAsync(ForeignKeyId.Value);
+
+
                 switch (EntityType.ToLower())
                 {
                     default:
                     case "group":
                         {
-                            var theRow = await _GroupRep.GetGroupByIdAsync(ForeignKeyId.Value);
 
                             if (theRow.Result == null)
                             {
@@ -512,7 +533,6 @@ namespace AITechWebAPI.Controllers
                         break;
                     case "event":
                         {
-                            var theRow = await _EventRep.GetEventByIdAsync(ForeignKeyId.Value);
 
                             if (theRow.Result == null)
                             {
@@ -544,7 +564,7 @@ namespace AITechWebAPI.Controllers
                 if (verifyResult.Status == PaymentVerifyResultStatus.Succeed)
                 {
                     paymentHistory.Result.PaymentStatus = true;
-                    if (groupType == "online")
+                    if (groupType == "online" || groupType == "video")
                     {
                         UserGroup userGroup = new UserGroup()
                         {
@@ -592,10 +612,8 @@ namespace AITechWebAPI.Controllers
                     {
                         var academyPhoneNum = await _settingRep.GetSettingRowAsync(0, "Contact_Phone_Value_EN");
                         var targetType = EntityType.ToLower().Contains("event") ? "رویداد" : "گروه درسی";
-                        dynamic targetObj = EntityType.ToLower().Contains("event") ? await _EventRep.GetEventByIdAsync(ForeignKeyId.Value) :
-                            await _GroupRep.GetGroupByIdAsync(ForeignKeyId.Value);
-                        var targetName = EntityType.ToLower().Contains("event") ? targetObj.Result.Title : targetObj.Result.Name;
-                        var targetFee = EntityType.ToLower().Contains("event") ? targetObj.Result.Fee.Value : targetObj.Result.Fee;
+                        var targetName = EntityType.ToLower().Contains("event") ? theRow.Result.Title : theRow.Result.Name;
+                        var targetFee = EntityType.ToLower().Contains("event") ? theRow.Result.Fee.Value : theRow.Result.Fee;
                         var registerDate = DateTime.Now.ToShamsiString().Split(' ')[0];
                         var registerTime = DateTime.Now.ToShamsiString().Split(' ')[1];
 

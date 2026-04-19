@@ -90,11 +90,14 @@ namespace AITechDATA.Migrations
                     b.Property<string>("OtherLangs")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<DateTime>("ReportDate")
+                    b.Property<DateTime>("ReportEndDate")
                         .HasColumnType("datetime2");
 
                     b.Property<float>("ReportScore")
                         .HasColumnType("real");
+
+                    b.Property<DateTime>("ReportStartDate")
+                        .HasColumnType("datetime2");
 
                     b.Property<string>("Title")
                         .IsRequired()
@@ -2315,6 +2318,9 @@ namespace AITechDATA.Migrations
 
                     b.Property<bool>("PaymentStatus")
                         .HasColumnType("bit");
+
+                    b.Property<string>("TargetObjName")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime?>("UpdateDate")
                         .HasColumnType("datetime2");

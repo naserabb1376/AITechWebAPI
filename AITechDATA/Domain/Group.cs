@@ -52,6 +52,9 @@ namespace AITechDATA.Domain
         public int DiscountPercent { get; set; }
         public decimal DiscountedFee { get; set; }
 
+        public string? RegisterMode { get; set; } 
+
+
         public ICollection<Session> Sessions { get; set; } // جلسات مرتبط با گروه
                                                            //    public ICollection<PreRegistration> PreRegistrations { get; set; } // پیش‌ثبت‌نام‌های مرتبط با گروه
         public long TeacherId { get; set; } // کلید خارجی به استاد

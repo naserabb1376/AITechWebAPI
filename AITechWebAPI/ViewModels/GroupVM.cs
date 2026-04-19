@@ -21,6 +21,8 @@ namespace AITechWebAPI.ViewModels
         public string CourseTitle { get; set; }
         public int DiscountPercent { get; set; }
         public decimal DiscountedFee { get; set; }
+        public string? RegisterMode { get; set; } 
+
 
     }
 }

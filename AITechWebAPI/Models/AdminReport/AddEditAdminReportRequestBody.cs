@@ -22,8 +22,11 @@ namespace AITechWebAPI.Models.AdminReport
         [Display(Name = "امتیاز گزارش")]
         public float? ReportScore { get; set; } = 0.0f;
 
-        [Display(Name = "تاریخ گزارش")]
-        public string? ReportDate { get; set; } // تاریخ گزارش
+        [Display(Name = "تاریخ شروع گزارش")]
+        public string? ReportStartDate { get; set; } // تاریخ شروع گزارش
+
+        [Display(Name = "تاریخ پایانی گزارش")]
+        public string? ReportEndDate { get; set; } // تاریخ پایانی گزارش
 
         [Display(Name = "وضعیت فعال")]
         public bool IsActive { get; set; }

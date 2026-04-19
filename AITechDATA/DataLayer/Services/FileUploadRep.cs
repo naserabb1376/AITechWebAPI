@@ -151,7 +151,7 @@ namespace AITechDATA.DataLayer.Services
                 }
 
                 var theRow = await query.FirstOrDefaultAsync();
-                var theRole= _context.Roles.AsNoTracking().FirstOrDefault(x=> x.ID== roleId);
+                var theRole= _context.Roles.AsNoTracking().FirstOrDefault(x=> x.ID== roleId) ?? new Role();
                 if (theRow.Description.ToLower() != "public" && ((!theRole.Name.Contains("مدیر") && !theRole.Name.Contains("استاد")) && theRow.CreatorId != userId))
                 {
                     result.Status = false;

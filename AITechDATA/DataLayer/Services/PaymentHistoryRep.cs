@@ -81,7 +81,7 @@ namespace AITechDATA.DataLayer.Services
             return result;
         }
 
-        public async Task<ListResultObject<PaymentHistory>> GetAllPaymentHistoriesAsync(long foreignkeyId = 0, string entityType = "", long UserId = 0, int pageIndex = 1, int pageSize = 20, string searchText = "", string sortQuery = "")
+        public async Task<ListResultObject<PaymentHistory>> GetAllPaymentHistoriesAsync(long foreignkeyId = 0, string entityType = "", long UserId = 0, long DiscountId = 0, int pageIndex = 1, int pageSize = 20, string searchText = "", string sortQuery = "")
         {
             ListResultObject<PaymentHistory> results = new ListResultObject<PaymentHistory>();
             try
@@ -98,8 +98,14 @@ namespace AITechDATA.DataLayer.Services
                     query = query.Where(x => x.UserId == UserId);
                 }
 
+                if (DiscountId > 0)
+                {
+                    query = query.Where(x => x.DiscountId == DiscountId);
+                }
+
                 query = query.Where(x =>
                         (x.Amount.ToString().Contains(searchText)) ||
+                       (!string.IsNullOrEmpty(x.TargetObjName) && x.TargetObjName.Contains(searchText)) ||
                        (!string.IsNullOrEmpty(x.User.FirstName) && x.User.FirstName.Contains(searchText)) ||
                        (!string.IsNullOrEmpty(x.User.LastName) && x.User.LastName.Contains(searchText))
                     );

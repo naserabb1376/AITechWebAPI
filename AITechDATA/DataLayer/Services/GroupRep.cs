@@ -114,40 +114,60 @@ namespace AITechDATA.DataLayer.Services
         }
 
         public async Task<ListResultObject<GroupDto>> GetAllGroupsAsync(
-            long ClientUserId,
-            long ClientRoleId,
-            long studentId = 0,
-            long courseId = 0,
-            long teacherId = 0,
-            string groupStatus = "",
-            string groupType = "",
-            int pageIndex = 1,
-            int pageSize = 20,
-            string searchText = "",
-            string sortQuery = "")
+     long ClientUserId,
+     long ClientRoleId,
+     long studentId = 0,
+     long courseId = 0,
+     long teacherId = 0,
+     string groupStatus = "",
+     string groupType = "",
+     int pageIndex = 1,
+     int pageSize = 20,
+     string searchText = "",
+     string sortQuery = "")
         {
             var results = new ListResultObject<GroupDto>();
 
             try
             {
-                // شروع کوئری اصلی با includeهای کامل
+                // کوئری پایه
                 IQueryable<Group> query = _context.Groups
                     .AsNoTracking()
                     .Include(x => x.Course)
                     .Include(x => x.Teacher)
                     .Include(x => x.Sessions)
-                   // .Include(x => x.PreRegistrations)
-                    .Include(x => x.Students);
+                    .Include(x => x.Students)
+                    .Include(x => x.PaymentHistories)
+                    .Include(x => x.ChatMessages);
 
-                // اگر studentId داده شده، فقط گروه‌های مرتبط با آن کاربر
+                // لیست گروه‌های پیش‌ثبت‌نامی کاربر
+                List<long> preRegisteredGroupIds = new List<long>();
+                string? studentMobileNumber = null;
+
                 if (studentId > 0)
                 {
-                    query = _context.UserGroups
-                        .Where(x => x.UserId == studentId)
-                        .Include(x => x.Group).ThenInclude(g => g.Course)
-                        .Include(x => x.Group).ThenInclude(g => g.Teacher)
-                        .Select(x => x.Group)
-                        .AsQueryable();
+                    studentMobileNumber = await _context.Users
+                        .AsNoTracking()
+                        .Where(u => u.ID == studentId)
+                        .Select(u => u.Username)
+                        .FirstOrDefaultAsync();
+
+                    if (!string.IsNullOrWhiteSpace(studentMobileNumber))
+                    {
+                        preRegisteredGroupIds = await _context.PreRegistrations
+                            .AsNoTracking()
+                            .Where(x =>
+                                x.EntityType.ToLower() == "group" &&
+                                x.PhoneNumber == studentMobileNumber)
+                            .Select(x => x.ForeignKeyId)
+                            .Distinct()
+                            .ToListAsync();
+                    }
+
+                    // فقط گروه‌هایی که یا ثبت‌نام قطعی شده‌اند یا پیش‌ثبت‌نام شده‌اند
+                    query = query.Where(g =>
+                        g.Students.Any(s => s.UserId == studentId) ||
+                        preRegisteredGroupIds.Contains(g.ID));
                 }
 
                 // فیلترهای شرطی
@@ -164,6 +184,10 @@ namespace AITechDATA.DataLayer.Services
                 if (!string.IsNullOrEmpty(groupStatus) &&
                     Enum.TryParse<GroupStatus>(groupStatus, out var parsedStatus))
                 {
+                    // توجه:
+                    // این فیلتر بر اساس وضعیت واقعی گروه انجام می‌شود.
+                    // اگر بخواهی پیش‌ثبت‌نامی‌ها هم با Status=PreRegistration فیلتر شوند،
+                    // باید این بخش را کمی سفارشی‌تر کنیم.
                     query = query.Where(x => x.Status == parsedStatus);
                 }
 
@@ -178,47 +202,65 @@ namespace AITechDATA.DataLayer.Services
                         (!string.IsNullOrEmpty(x.Name) && x.Name.Contains(searchText)) ||
                         (!string.IsNullOrEmpty(x.Note) && x.Note.Contains(searchText)) ||
                         (!string.IsNullOrEmpty(x.GroupType) && x.GroupType.Contains(searchText)) ||
-                       (x.Teacher != null && (!string.IsNullOrEmpty(x.Teacher.FirstName) && x.Teacher.FirstName.Contains(searchText))) ||
-                       (x.Teacher != null && (!string.IsNullOrEmpty(x.Teacher.LastName) && x.Teacher.LastName.Contains(searchText)))
-                       );
+                        (x.Teacher != null && !string.IsNullOrEmpty(x.Teacher.FirstName) && x.Teacher.FirstName.Contains(searchText)) ||
+                        (x.Teacher != null && !string.IsNullOrEmpty(x.Teacher.LastName) && x.Teacher.LastName.Contains(searchText))
+                    );
                 }
 
                 results.TotalCount = await query.CountAsync();
                 results.PageCount = DbTools.GetPageCount(results.TotalCount, pageSize);
-                results.Results = await query.Select(x=> new GroupDto()
-                {
-                    ChatMessages = x.ChatMessages,
-                    Course = x.Course,
-                    CourseId = x.CourseId,
-                    PaymentHistories = x.PaymentHistories,
-                    Sessions = x.Sessions,
-                    Students = x.Students,
-                    Teacher = x.Teacher,
 
-                    CreateDate = x.CreateDate,
-                    UpdateDate = x.UpdateDate,
-                    OtherLangs = x.OtherLangs,
-                    IsActive = x.IsActive,
-                    ID = x.ID,
+                results.Results = await query
+                    .Select(x => new GroupDto
+                    {
+                        ChatMessages = x.ChatMessages,
+                        Course = x.Course,
+                        CourseId = x.CourseId,
+                        PaymentHistories = x.PaymentHistories,
+                        Sessions = x.Sessions,
+                        Students = x.Students,
+                        Teacher = x.Teacher,
 
-                    TeacherId = x.TeacherId,
-                    Status = x.Status,
-                    Note = x.Note,
-                    DayOfWeek = x.DayOfWeek,
-                    EndDate = x.EndDate,
-                    EndTime = x.EndTime,
-                    GroupType = x.GroupType,
-                    GroupCapacity = x.GroupCapacity,
-                    RegisterCount = x.RegisterCount,
-                    StartDate = x.StartDate,
-                    StartTime = x.StartTime,
-                    Fee = x.Fee,
-                    Name = x.Name,
+                        CreateDate = x.CreateDate,
+                        UpdateDate = x.UpdateDate,
+                        OtherLangs = x.OtherLangs,
+                        IsActive = x.IsActive,
+                        ID = x.ID,
 
-                    DiscountPercent = _context.GetDiscount(x.Fee, "group", x.ID, ClientUserId, ClientRoleId).DiscountPercent,
-                    DiscountedFee = _context.GetDiscount(x.Fee, "group", x.ID, ClientUserId, ClientRoleId).DiscountedFee
+                        TeacherId = x.TeacherId,
+                        Note = x.Note,
+                        DayOfWeek = x.DayOfWeek,
+                        EndDate = x.EndDate,
+                        EndTime = x.EndTime,
+                        GroupType = x.GroupType,
+                        GroupCapacity = x.GroupCapacity,
+                        RegisterCount = x.RegisterCount,
+                        StartDate = x.StartDate,
+                        StartTime = x.StartTime,
+                        Fee = x.Fee,
+                        Name = x.Name,
 
-                })
+                        // اگر کاربر عضو قطعی گروه باشد => Registered
+                        // وگرنه اگر در PreRegistration باشد => PreRegistration
+                        // وگرنه None
+                        RegisterMode =
+                            studentId > 0 && x.Students.Any(s => s.UserId == studentId)
+                                ? "Registered"
+                                : (studentId > 0 && preRegisteredGroupIds.Contains(x.ID)
+                                    ? "PreRegistration"
+                                    : ""),
+
+                        // اگر از مسیر پیش‌ثبت‌نام آمده و عضو قطعی نیست، وضعیت خروجی را PreRegistration کن
+                        Status =
+                            studentId > 0 &&
+                            !x.Students.Any(s => s.UserId == studentId) &&
+                            preRegisteredGroupIds.Contains(x.ID)
+                                ? GroupStatus.PreRegistration
+                                : x.Status,
+
+                        DiscountPercent = _context.GetDiscount(x.Fee, "group", x.ID, ClientUserId, ClientRoleId).DiscountPercent,
+                        DiscountedFee = _context.GetDiscount(x.Fee, "group", x.ID, ClientUserId, ClientRoleId).DiscountedFee
+                    })
                     .OrderByDescending(x => x.CreateDate)
                     .SortBy(sortQuery)
                     .ToPaging(pageIndex, pageSize)

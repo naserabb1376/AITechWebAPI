@@ -105,7 +105,8 @@ namespace AITechWebAPI.Controllers
                 Content = requestBody.Content,
                 IsActive = requestBody.IsActive,
                 ReportScore = requestBody.ReportScore.Value,
-                ReportDate = requestBody.ReportDate.StringToDate().Value,
+                ReportStartDate = requestBody.ReportStartDate.StringToDate().Value,
+                ReportEndDate = requestBody.ReportEndDate.StringToDate().Value,
                 OtherLangs = requestBody.OtherLangs ?? "",
 
             };
@@ -157,7 +158,8 @@ namespace AITechWebAPI.Controllers
                 Content = requestBody.Content,
                 IsActive = requestBody.IsActive,
                 ReportScore = requestBody.ReportScore.Value,
-                ReportDate = requestBody.ReportDate.StringToDate().Value,
+                ReportStartDate = requestBody.ReportStartDate.StringToDate().Value,
+                ReportEndDate = requestBody.ReportEndDate.StringToDate().Value,
                 OtherLangs = requestBody.OtherLangs ?? "",
 
             };

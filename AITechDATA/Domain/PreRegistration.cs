@@ -13,7 +13,6 @@ namespace AITechDATA.Domain
         public string EntityType { get; set; } // نوع جدول مرتبط (مثلاً "User", "Course", "Event")
         public string? TargetObjName { get; set; }
 
-
         public string FirstName { get; set; }
         public string LastName { get; set; }
         public string Email { get; set; } // ایمیل

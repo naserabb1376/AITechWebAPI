@@ -10,6 +10,7 @@ namespace AITechWebAPI.ViewModels
         public long AdminId { get; set; } // کلید خارجی به User (ادمینی که گزارش را ارسال کرده است)
         public string AdminUserName { get; set; } // ارتباط با User
         public float ReportScore { get; set; }
-        public DateTime ReportDate { get; set; } // تاریخ گزارش
+        public DateTime ReportStartDate { get; set; } // تاریخ شروع گزارش
+        public DateTime ReportEndDate { get; set; } // تاریخ پایانی گزارش
     }
 }

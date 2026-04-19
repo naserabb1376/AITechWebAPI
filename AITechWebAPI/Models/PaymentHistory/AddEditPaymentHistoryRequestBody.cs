@@ -25,12 +25,18 @@ namespace AITechWebAPI.Models.PaymentHistory
         [Required(ErrorMessage = "لطفا {0} را وارد کنید")]
         public decimal Amount { get; set; }
 
+        [Display(Name = "شناسه تخفیف")]
+        public long? DiscountId { get; set; }
+
         [Display(Name = "تاریخ پرداخت")]
         //[Required(ErrorMessage = "لطفا {0} را وارد کنید")]
         public string? PaymentDate { get; set; }
 
         [Display(Name = "وضعیت پرداخت")]
         public bool PaymentStatus { get; set; } // وضعیت پرداخت
+
+        [Display(Name = "وضعیت فعال")]
+        public bool IsActive { get; set; } = true;
 
     }
 }

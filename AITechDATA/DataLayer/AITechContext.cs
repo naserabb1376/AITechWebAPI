@@ -15,15 +15,15 @@ namespace AITechDATA.DataLayer
 {
     public class AITechContext : DbContext
     {
-        //public AITechContext()
-        //{
-
-        //}
-
-        public AITechContext(DbContextOptions<AITechContext> options)
-      : base(options)
+        public AITechContext()
         {
+
         }
+
+      //  public AITechContext(DbContextOptions<AITechContext> options)
+      //: base(options)
+      //  {
+      //  }
 
         public DbSet<Address> Addresses { get; set; }
         public DbSet<AdminReport> AdminReports { get; set; }
@@ -60,6 +60,7 @@ namespace AITechDATA.DataLayer
         public DbSet<User> Users { get; set; }
         public DbSet<Token> Tokens { get; set; }
         public DbSet<LinkedEntity> LinkedEntities { get; set; }
+        public DbSet<EntityScore> EntityScores { get; set; }
         public DbSet<Article> Articles { get; set; }
         public DbSet<JobRequest> JobRequests { get; set; }
         public DbSet<Award> Awards { get; set; }
@@ -91,12 +92,12 @@ namespace AITechDATA.DataLayer
 
 
 
-        //protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-        //{
-        //    ConfigurationHelper configurationHelper = new ConfigurationHelper();
-        //    optionsBuilder.UseSqlServer(configurationHelper.GetConnectionString("publicdb"));
-        //    //  base.OnConfiguring(optionsBuilder);
-        //}
+        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+        {
+            ConfigurationHelper configurationHelper = new ConfigurationHelper();
+            optionsBuilder.UseSqlServer(configurationHelper.GetConnectionString("publicdb"));
+            //  base.OnConfiguring(optionsBuilder);
+        }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

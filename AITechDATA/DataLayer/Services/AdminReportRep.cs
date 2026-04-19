@@ -91,7 +91,7 @@ namespace AITechDATA.DataLayer.Services
 
                 results.TotalCount = query.Count();
                 results.PageCount = DbTools.GetPageCount(results.TotalCount, pageSize);
-                results.Results = await query.OrderByDescending(x => x.ReportDate)
+                results.Results = await query.OrderByDescending(x => x.CreateDate)
                      .SortBy(sortQuery).ToPaging(pageIndex, pageSize)
                     .ToListAsync();
             }
