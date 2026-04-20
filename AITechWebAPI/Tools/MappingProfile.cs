@@ -72,6 +72,10 @@ namespace AITechWebAPI.Tools
             CreateMap<Course, CourseVM>()
              .ForMember(dest => dest.CategoryName, opt => opt.MapFrom(src => src.Category.CategoryName));
 
+            CreateMap<EntityScore, EntityScoreVM>()
+         .ForMember(dest => dest.RecordLevel, opt => opt.MapFrom(src => src.RecordLevel.ToString().Replace("0","Parent").Replace("1", "Child").Replace("2", "Data")))
+         ;
+
             CreateMap<Minutes, MinutesVM>()
             .ForMember(dest => dest.MeetingTitle, opt => opt.MapFrom(src => src.Meeting.MeetingTitle))
             .ForMember(dest => dest.MeetingOrganizer, opt => opt.MapFrom(src => src.Meeting.MeetingOrganizer))
@@ -88,11 +92,13 @@ namespace AITechWebAPI.Tools
           .ForMember(dest => dest.LastName, opt => opt.MapFrom(src => src.SenderUser.LastName))
           .ForMember(dest => dest.Email, opt => opt.MapFrom(src => src.SenderUser.Email))
           .ForMember(dest => dest.NationalCode, opt => opt.MapFrom(src => src.SenderUser.NationalCode))
-
           ;
 
             CreateMap<Article, ArticleVM>()
             .ForMember(dest => dest.CategoryName, opt => opt.MapFrom(src => src.Category.CategoryName));
+
+            CreateMap<Book, BookVM>()
+.ForMember(dest => dest.CategoryName, opt => opt.MapFrom(src => src.Category.CategoryName));
 
             CreateMap<EventDto, EventVM>()
   .ForMember(dest => dest.UserName, opt => opt.MapFrom(src => $"{src.User.FirstName} {src.User.LastName}"));
@@ -173,6 +179,11 @@ namespace AITechWebAPI.Tools
 .ForMember(dest => dest.GroupName, opt => opt.MapFrom(src => src.Group.Name))
 .ForMember(dest => dest.UserName, opt => opt.MapFrom(src => src.User.Username))
 ;
+            CreateMap<Comment, CommentVM>()
+.ForMember(dest => dest.FullName, opt => opt.MapFrom(src => $"{src.User.FirstName} {src.User.LastName}"))
+.ForMember(dest => dest.Username, opt => opt.MapFrom(src => src.User.Username))
+;
+
 
             CreateMap<UserCourse, UserCourseVM>()
 .ForMember(dest => dest.UserName, opt => opt.MapFrom(src => $"{src.User.FirstName} {src.User.LastName}"))

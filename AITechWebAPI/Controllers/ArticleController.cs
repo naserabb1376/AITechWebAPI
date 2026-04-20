@@ -108,7 +108,10 @@ namespace AITechWebAPI.Controllers
                 Note = requestBody.Note ?? "",
                 CategoryId = requestBody.CategoryId,
                 Title = requestBody.Title,
+                AuthorName = requestBody.AuthorName ?? "",
+                IsActive = requestBody.IsActive,
                 OtherLangs = requestBody.OtherLangs ?? "",
+                
 
             };
             var result = await _ArticleRep.AddArticleAsync(Article);
@@ -158,6 +161,8 @@ namespace AITechWebAPI.Controllers
                 Note = requestBody.Note ?? "",
                 CategoryId = requestBody.CategoryId,
                 Title = requestBody.Title,
+                AuthorName = requestBody.AuthorName ?? "",
+                IsActive = requestBody.IsActive,
                 OtherLangs = requestBody.OtherLangs ?? "",
 
             };

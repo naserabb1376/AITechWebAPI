@@ -7,8 +7,12 @@ namespace AITechWebAPI.Models.Comment
         public long ID { get; set; } = 0;
 
         [Display(Name = "عنوان")]
-        [Required(ErrorMessage = "لطفا {0} را وارد کنید")]
-        public string Title { get; set; }
+        public string? Title { get; set; }
+
+        [Display(Name = "کد کاربر")]
+        //[Required(ErrorMessage = "لطفا {0} را وارد کنید")]
+        [Range(1, long.MaxValue, ErrorMessage = "مقدار {0} باید بزرگتر از 0 باشد")]
+        public long? UserID { get; set; }
 
         [Display(Name = "کلید خارجی")]
         [Required(ErrorMessage = "لطفا {0} را وارد کنید")]
@@ -26,8 +30,8 @@ namespace AITechWebAPI.Models.Comment
         [Display(Name = "کد نظر والد")]
         public long? ParentId { get; set; }
 
-        [Display(Name = "کاربر ایجاد کننده")]
-        public long? CreatorId { get; set; }
+        [Display(Name = "وضعیت فعال")]
+        public bool IsActive { get; set; } = true;
 
         [Display(Name = "زبان های دیگر")]
         public string? OtherLangs { get; set; } = "";

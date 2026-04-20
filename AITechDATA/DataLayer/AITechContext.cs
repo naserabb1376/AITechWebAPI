@@ -15,15 +15,15 @@ namespace AITechDATA.DataLayer
 {
     public class AITechContext : DbContext
     {
-        public AITechContext()
+        //public AITechContext()
+        //{
+
+        //}
+
+        public AITechContext(DbContextOptions<AITechContext> options)
+      : base(options)
         {
-
         }
-
-      //  public AITechContext(DbContextOptions<AITechContext> options)
-      //: base(options)
-      //  {
-      //  }
 
         public DbSet<Address> Addresses { get; set; }
         public DbSet<AdminReport> AdminReports { get; set; }
@@ -62,6 +62,7 @@ namespace AITechDATA.DataLayer
         public DbSet<LinkedEntity> LinkedEntities { get; set; }
         public DbSet<EntityScore> EntityScores { get; set; }
         public DbSet<Article> Articles { get; set; }
+        public DbSet<Book> Books { get; set; }
         public DbSet<JobRequest> JobRequests { get; set; }
         public DbSet<Award> Awards { get; set; }
         public DbSet<InterviewTime> InterviewTimes { get; set; }
@@ -92,12 +93,12 @@ namespace AITechDATA.DataLayer
 
 
 
-        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-        {
-            ConfigurationHelper configurationHelper = new ConfigurationHelper();
-            optionsBuilder.UseSqlServer(configurationHelper.GetConnectionString("publicdb"));
-            //  base.OnConfiguring(optionsBuilder);
-        }
+        //protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+        //{
+        //    ConfigurationHelper configurationHelper = new ConfigurationHelper();
+        //    optionsBuilder.UseSqlServer(configurationHelper.GetConnectionString("publicdb"));
+        //    //  base.OnConfiguring(optionsBuilder);
+        //}
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -156,6 +157,18 @@ namespace AITechDATA.DataLayer
              .HasForeignKey(x => x.CategoryId)
              .OnDelete(DeleteBehavior.Cascade);
 
+            modelBuilder.Entity<Article>()
+            .HasOne(x => x.Category)
+            .WithMany(x => x.Articles)
+            .HasForeignKey(x => x.CategoryId)
+            .OnDelete(DeleteBehavior.NoAction);
+
+            modelBuilder.Entity<Book>()
+           .HasOne(x => x.Category)
+           .WithMany(x => x.Books)
+           .HasForeignKey(x => x.CategoryId)
+           .OnDelete(DeleteBehavior.NoAction);
+
             modelBuilder.Entity<Address>()
              .HasOne(x => x.City)
              .WithMany(x => x.Addresses)
@@ -173,6 +186,12 @@ namespace AITechDATA.DataLayer
            .WithMany(x => x.UserCourses)
            .HasForeignKey(x => x.CourseId)
            .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<Comment>()
+           .HasOne(x => x.User)
+           .WithMany(x => x.Comments)
+           .HasForeignKey(x => x.UserId)
+           .OnDelete(DeleteBehavior.NoAction);
 
             modelBuilder.Entity<UserGroup>()
          .HasOne(x => x.User)

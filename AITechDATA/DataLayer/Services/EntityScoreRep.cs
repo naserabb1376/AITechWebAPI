@@ -36,14 +36,15 @@ namespace AITechDATA.DataLayer.Services
                 }
                 else
                 {
+                    EntityScore.ScoreItemWeightedScore = (EntityScore.ScoreItemRawScore / 100) * EntityScore.ScoreItemWeightPercent;
                     var existRow = await _context.EntityScores.AnyAsync(x => x.EntityType.ToLower() == EntityScore.EntityType.ToLower() && x.ScoreItemKey.ToLower() == EntityScore.ScoreItemKey.ToLower() && x.ForeignKeyId == EntityScore.ForeignKeyId && x.RecordLevel == 2);
                     if (existRow)
                     {
                         throw new Exception($"این شاخص برای این داده ثبت شده است");
                     }
                 }
-
                 await _context.EntityScores.AddAsync(EntityScore);
+                await RefreshEntityScoreAsync(EntityScore);
                 await _context.SaveChangesAsync();
                 result.ID = EntityScore.ID;
                 _context.Entry(EntityScore).State = EntityState.Detached;
@@ -71,6 +72,8 @@ namespace AITechDATA.DataLayer.Services
                 }
                 else
                 {
+                    EntityScore.ScoreItemWeightedScore = (EntityScore.ScoreItemRawScore / 100) * EntityScore.ScoreItemWeightPercent;
+
                     var existRow = await _context.EntityScores.AnyAsync(x => x.EntityType.ToLower() == EntityScore.EntityType.ToLower() && x.ScoreItemKey.ToLower() == EntityScore.ScoreItemKey.ToLower() && x.ForeignKeyId == EntityScore.ForeignKeyId && x.RecordLevel == 2 && x.ID != EntityScore.ID);
                     if (existRow)
                     {
@@ -78,6 +81,7 @@ namespace AITechDATA.DataLayer.Services
                     }
                 }
                 _context.EntityScores.Update(EntityScore);
+                await RefreshEntityScoreAsync(EntityScore);
                 await _context.SaveChangesAsync();
                 result.ID = EntityScore.ID;
                 _context.Entry(EntityScore).State = EntityState.Detached;
@@ -162,7 +166,7 @@ namespace AITechDATA.DataLayer.Services
             RowResultObject<EntityScore> result = new RowResultObject<EntityScore>();
             try
             {
-                result.Result = await _context.EntityScores
+                result.Result = await _context.EntityScores.Include(x => x.User)
                     .AsNoTracking()
                     .SingleOrDefaultAsync(x => x.ID == EntityScoreId);
             }
@@ -181,6 +185,8 @@ namespace AITechDATA.DataLayer.Services
             try
             {
                 _context.EntityScores.Remove(EntityScore);
+                EntityScore.ScoreItemTotalScore = 0.0f;
+                await RefreshEntityScoreAsync(EntityScore);
                 await _context.SaveChangesAsync();
                 result.ID = EntityScore.ID;
                 _context.Entry(EntityScore).State = EntityState.Detached;
@@ -200,6 +206,38 @@ namespace AITechDATA.DataLayer.Services
             {
                 var EntityScore = await GetEntityScoreByIdAsync(EntityScoreId);
                 result = await RemoveEntityScoreAsync(EntityScore.Result);
+            }
+            catch (Exception ex)
+            {
+                result.Status = false;
+                result.ErrorMessage = $"{ex.Message} - {ex.InnerException?.Message}";
+            }
+            return result;
+        }
+
+        private async Task<BitResultObject> RefreshEntityScoreAsync(EntityScore EntityScore)
+        {
+            BitResultObject result = new BitResultObject();
+            try
+            {
+                if (EntityScore.RecordLevel != 2) return result;
+
+                var includeRows = await _context.EntityScores.Where(x => x.EntityType.ToLower() == EntityScore.EntityType.ToLower() && x.ForeignKeyId == EntityScore.ForeignKeyId && x.RecordLevel == 2).ToListAsync();
+
+                float totalScore = includeRows.Sum(x => x.ScoreItemWeightedScore);
+
+                includeRows.ForEach(x => x.ScoreItemTotalScore = totalScore);
+
+                dynamic targetRow = EntityScore.EntityType.ToLower() == "duty" ? await _context.Duties.FirstOrDefaultAsync(x => x.ID == EntityScore.ForeignKeyId)
+                    : await _context.AdminReports.FirstOrDefaultAsync(x => x.ID == EntityScore.ForeignKeyId);
+
+                targetRow.TotalScore = totalScore;
+
+                _context.UpdateRange(includeRows);
+                _context.Update(targetRow);
+                //await _context.SaveChangesAsync();
+                result.ID = EntityScore.ID;
+                _context.Entry(EntityScore).State = EntityState.Detached;
             }
             catch (Exception ex)
             {

@@ -121,6 +121,9 @@ namespace AITechDATA.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("ID"));
 
+                    b.Property<string>("AuthorName")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<long>("CategoryId")
                         .HasColumnType("bigint");
 
@@ -284,6 +287,50 @@ namespace AITechDATA.Migrations
                     b.HasKey("ID");
 
                     b.ToTable("Awards");
+                });
+
+            modelBuilder.Entity("AITechDATA.Domain.Book", b =>
+                {
+                    b.Property<long>("ID")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("ID"));
+
+                    b.Property<string>("AuthorName")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<long?>("CategoryId")
+                        .HasColumnType("bigint");
+
+                    b.Property<DateTime?>("CreateDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Note")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("OtherLangs")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("UpdateDate")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("ID");
+
+                    b.HasIndex("CategoryId");
+
+                    b.ToTable("Books");
                 });
 
             modelBuilder.Entity("AITechDATA.Domain.Category", b =>
@@ -460,9 +507,6 @@ namespace AITechDATA.Migrations
                     b.Property<DateTime?>("CreateDate")
                         .HasColumnType("datetime2");
 
-                    b.Property<long>("CreatorId")
-                        .HasColumnType("bigint");
-
                     b.Property<string>("Description")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -484,13 +528,17 @@ namespace AITechDATA.Migrations
                         .HasColumnType("bigint");
 
                     b.Property<string>("Title")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime?>("UpdateDate")
                         .HasColumnType("datetime2");
 
+                    b.Property<long>("UserId")
+                        .HasColumnType("bigint");
+
                     b.HasKey("ID");
+
+                    b.HasIndex("UserId");
 
                     b.ToTable("Comments");
                 });
@@ -731,6 +779,77 @@ namespace AITechDATA.Migrations
                         .IsUnique();
 
                     b.ToTable("EducationalBackgrounds");
+                });
+
+            modelBuilder.Entity("AITechDATA.Domain.EntityScore", b =>
+                {
+                    b.Property<long>("ID")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("ID"));
+
+                    b.Property<DateTime?>("CreateDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<long>("CreatorId")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("Description")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("EntityType")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<long>("ForeignKeyId")
+                        .HasColumnType("bigint");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("OtherLangs")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("RecordLevel")
+                        .HasColumnType("int");
+
+                    b.Property<string>("ScoreItemKey")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<long?>("ScoreItemParentId")
+                        .HasColumnType("bigint");
+
+                    b.Property<float>("ScoreItemRawScore")
+                        .HasColumnType("real");
+
+                    b.Property<string>("ScoreItemTitle")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<float>("ScoreItemTotalScore")
+                        .HasColumnType("real");
+
+                    b.Property<float>("ScoreItemWeightPercent")
+                        .HasColumnType("real");
+
+                    b.Property<float>("ScoreItemWeightedScore")
+                        .HasColumnType("real");
+
+                    b.Property<string>("TargetObjName")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("UpdateDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<long>("UserId")
+                        .HasColumnType("bigint");
+
+                    b.HasKey("ID");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("EntityScores");
                 });
 
             modelBuilder.Entity("AITechDATA.Domain.Event", b =>
@@ -2297,6 +2416,9 @@ namespace AITechDATA.Migrations
                     b.Property<DateTime?>("CreateDate")
                         .HasColumnType("datetime2");
 
+                    b.Property<long?>("DiscountId")
+                        .HasColumnType("bigint");
+
                     b.Property<string>("EntityType")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -2329,6 +2451,8 @@ namespace AITechDATA.Migrations
                         .HasColumnType("bigint");
 
                     b.HasKey("ID");
+
+                    b.HasIndex("DiscountId");
 
                     b.HasIndex("GroupID");
 
@@ -2535,9 +2659,9 @@ namespace AITechDATA.Migrations
             modelBuilder.Entity("AITechDATA.Domain.Article", b =>
                 {
                     b.HasOne("AITechDATA.Domain.Category", "Category")
-                        .WithMany()
+                        .WithMany("Articles")
                         .HasForeignKey("CategoryId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.Navigation("Category");
@@ -2577,6 +2701,27 @@ namespace AITechDATA.Migrations
                         .IsRequired();
 
                     b.Navigation("Session");
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("AITechDATA.Domain.Book", b =>
+                {
+                    b.HasOne("AITechDATA.Domain.Category", "Category")
+                        .WithMany("Books")
+                        .HasForeignKey("CategoryId")
+                        .OnDelete(DeleteBehavior.NoAction);
+
+                    b.Navigation("Category");
+                });
+
+            modelBuilder.Entity("AITechDATA.Domain.Comment", b =>
+                {
+                    b.HasOne("AITechDATA.Domain.User", "User")
+                        .WithMany("Comments")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
 
                     b.Navigation("User");
                 });
@@ -2625,6 +2770,17 @@ namespace AITechDATA.Migrations
                     b.HasOne("AITechDATA.Domain.User", "User")
                         .WithOne("EducationalBackground")
                         .HasForeignKey("AITechDATA.Domain.EducationalBackground", "UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("AITechDATA.Domain.EntityScore", b =>
+                {
+                    b.HasOne("AITechDATA.Domain.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -2942,6 +3098,10 @@ namespace AITechDATA.Migrations
 
             modelBuilder.Entity("AiTech.Domains.PaymentHistory", b =>
                 {
+                    b.HasOne("AITechDATA.Domain.Discount", "Discount")
+                        .WithMany()
+                        .HasForeignKey("DiscountId");
+
                     b.HasOne("AITechDATA.Domain.Group", null)
                         .WithMany("PaymentHistories")
                         .HasForeignKey("GroupID");
@@ -2951,6 +3111,8 @@ namespace AITechDATA.Migrations
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("Discount");
 
                     b.Navigation("User");
                 });
@@ -2994,6 +3156,10 @@ namespace AITechDATA.Migrations
 
             modelBuilder.Entity("AITechDATA.Domain.Category", b =>
                 {
+                    b.Navigation("Articles");
+
+                    b.Navigation("Books");
+
                     b.Navigation("Courses");
                 });
 
@@ -3079,6 +3245,8 @@ namespace AITechDATA.Migrations
                     b.Navigation("Assignments");
 
                     b.Navigation("Attendances");
+
+                    b.Navigation("Comments");
 
                     b.Navigation("EducationalBackground");
 

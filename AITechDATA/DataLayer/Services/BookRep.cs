@@ -12,24 +12,24 @@ using AITechDATA.CustomResponses;
 
 namespace AITechDATA.DataLayer.Services
 {
-    public class ArticleRep : IArticleRep
+    public class BookRep : IBookRep
     {
         private AITechContext _context;
 
-        public ArticleRep(AITechContext context)
+        public BookRep(AITechContext context)
         {
             _context = context;
         }
 
-        public async Task<BitResultObject> AddArticleAsync(Article Article)
+        public async Task<BitResultObject> AddBookAsync(Book Book)
         {
             BitResultObject result = new BitResultObject();
             try
             {
-                await _context.Articles.AddAsync(Article);
+                await _context.Books.AddAsync(Book);
                 await _context.SaveChangesAsync();
-                result.ID = Article.ID;
-                _context.Entry(Article).State = EntityState.Detached;
+                result.ID = Book.ID;
+                _context.Entry(Book).State = EntityState.Detached;
             }
             catch (Exception ex)
             {
@@ -39,15 +39,15 @@ namespace AITechDATA.DataLayer.Services
             return result;
         }
 
-        public async Task<BitResultObject> EditArticleAsync(Article Article)
+        public async Task<BitResultObject> EditBookAsync(Book Book)
         {
             BitResultObject result = new BitResultObject();
             try
             {
-                _context.Articles.Update(Article);
+                _context.Books.Update(Book);
                 await _context.SaveChangesAsync();
-                result.ID = Article.ID;
-                _context.Entry(Article).State = EntityState.Detached;
+                result.ID = Book.ID;
+                _context.Entry(Book).State = EntityState.Detached;
             }
             catch (Exception ex)
             {
@@ -57,15 +57,15 @@ namespace AITechDATA.DataLayer.Services
             return result;
         }
 
-        public async Task<BitResultObject> ExistArticleAsync(long ArticleId)
+        public async Task<BitResultObject> ExistBookAsync(long BookId)
         {
             BitResultObject result = new BitResultObject();
             try
             {
-                result.Status = await _context.Articles
+                result.Status = await _context.Books
                     .AsNoTracking()
-                    .AnyAsync(x => x.ID == ArticleId);
-                result.ID = ArticleId;
+                    .AnyAsync(x => x.ID == BookId);
+                result.ID = BookId;
             }
             catch (Exception ex)
             {
@@ -75,14 +75,14 @@ namespace AITechDATA.DataLayer.Services
             return result;
         }
 
-        public async Task<ArticleListCustomResponse<Article>> GetAllArticlesAsync(long categoryId = 0, int pageIndex = 1, int pageSize = 20, string searchText = "",string sortQuery ="")
+        public async Task<BookListCustomResponse<Book>> GetAllBooksAsync(long categoryId = 0, int pageIndex = 1, int pageSize = 20, string searchText = "",string sortQuery ="")
         {
-            ArticleListCustomResponse<Article> results = new ArticleListCustomResponse<Article>();
+            BookListCustomResponse<Book> results = new BookListCustomResponse<Book>();
             try
             {
-                var query = _context.Articles.AsNoTracking().Include(x => x.Category)
+                var query = _context.Books.AsNoTracking().Include(x => x.Category)
 
-                     .Select(a => new Article()
+                     .Select(a => new Book()
                      {
                        ID =  a.ID,
                        Title = a.Title,
@@ -111,12 +111,12 @@ namespace AITechDATA.DataLayer.Services
                      .SortBy(sortQuery).ToPaging(pageIndex, pageSize)
                     .ToListAsync();
 
-                // Map images for each Article
+                // Map images for each Book
                 results.ResultImages = results.Results
                     .ToDictionary(
                         user => user,
                         user => _context.Images
-                            .Where(img => img.ForeignKeyId == user.ID && img.EntityType == "Article")
+                            .Where(img => img.ForeignKeyId == user.ID && img.EntityType == "Book")
                             .ToList()
                     );
             }
@@ -128,22 +128,22 @@ namespace AITechDATA.DataLayer.Services
             return results;
         }
 
-        public async Task<ArticleRowCustomResponse<Article>> GetArticleByIdAsync(long ArticleId)
+        public async Task<BookRowCustomResponse<Book>> GetBookByIdAsync(long BookId)
         {
-            ArticleRowCustomResponse<Article> result = new ArticleRowCustomResponse<Article>();
+            BookRowCustomResponse<Book> result = new BookRowCustomResponse<Book>();
             try
             {
-                result.Result = await _context.Articles
+                result.Result = await _context.Books
                     .AsNoTracking()
                     .Include(x => x.Category)
-                    .SingleOrDefaultAsync(x => x.ID == ArticleId);
+                    .SingleOrDefaultAsync(x => x.ID == BookId);
 
                 if (result.Result != null)
                 {
-                    result.ResultImages = new Dictionary<Article, List<Image>?>
+                    result.ResultImages = new Dictionary<Book, List<Image>?>
             {
                 { result.Result, await _context.Images
-                    .Where(img => img.ForeignKeyId == ArticleId && img.EntityType == "Article")
+                    .Where(img => img.ForeignKeyId == BookId && img.EntityType == "Book")
                     .ToListAsync() }
             };
                 }
@@ -156,18 +156,18 @@ namespace AITechDATA.DataLayer.Services
             return result;
         }
 
-        public async Task<BitResultObject> RemoveArticleAsync(Article Article)
+        public async Task<BitResultObject> RemoveBookAsync(Book Book)
         {
             BitResultObject result = new BitResultObject();
             try
             {
-                var Images = _context.Images.Where(img => img.ForeignKeyId == Article.ID && img.EntityType == "Article");
+                var Images = _context.Images.Where(img => img.ForeignKeyId == Book.ID && img.EntityType == "Book");
                 _context.Images.RemoveRange(Images);
 
-                _context.Articles.Remove(Article);
+                _context.Books.Remove(Book);
                 await _context.SaveChangesAsync();
-                result.ID = Article.ID;
-                _context.Entry(Article).State = EntityState.Detached;
+                result.ID = Book.ID;
+                _context.Entry(Book).State = EntityState.Detached;
             }
             catch (Exception ex)
             {
@@ -177,13 +177,13 @@ namespace AITechDATA.DataLayer.Services
             return result;
         }
 
-        public async Task<BitResultObject> RemoveArticleAsync(long ArticleId)
+        public async Task<BitResultObject> RemoveBookAsync(long BookId)
         {
             BitResultObject result = new BitResultObject();
             try
             {
-                var Article = await GetArticleByIdAsync(ArticleId);
-                result = await RemoveArticleAsync(Article.Result);
+                var Book = await GetBookByIdAsync(BookId);
+                result = await RemoveBookAsync(Book.Result);
             }
             catch (Exception ex)
             {

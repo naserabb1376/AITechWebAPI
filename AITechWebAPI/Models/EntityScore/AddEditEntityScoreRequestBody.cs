@@ -14,8 +14,14 @@ namespace AITechWebAPI.Models.EntityScore
         [Required(ErrorMessage = "لطفا {0} را وارد کنید")]
         public string ScoreItemKey { get; set; }
 
-        [Display(Name = "ضریب شاخص")]
-        public float? ScoreItemWeight { get; set; } = 0.0f;
+        [Display(Name = "امتیاز خام شاخص")]
+        public float? ScoreItemRawScore { get; set; } = 0.0f;
+
+        [Display(Name = "درصد ضریب شاخص")]
+        public float? ScoreItemWeightPercent { get; set; } = 0.0f;
+
+        //[Display(Name = "امتیاز با ضریب شاخص")]
+        //public float? ScoreItemWeightedScore { get; set; } = 0.0f;
 
         //[Display(Name = "امتیاز کل")]
         //public float? ScoreItemTotalScore { get; set; } = 0.0f;
@@ -29,18 +35,18 @@ namespace AITechWebAPI.Models.EntityScore
         public int RecordLevel { get; set; }
 
         [Display(Name = "کد رکورد")]
-        [Required(ErrorMessage = "لطفا {0} را وارد کنید")]
+        //[Required(ErrorMessage = "لطفا {0} را وارد کنید")]
         [Range(1, long.MaxValue, ErrorMessage = "مقدار {0} باید بزرگتر از 0 باشد")]
-        public long ForeignKeyId { get; set; }
+        public long? ForeignKeyId { get; set; }
 
         [Display(Name = "نام جدول")]
-        [Required(ErrorMessage = "لطفا {0} را وارد کنید")]
-        public string EntityType { get; set; }
+       // [Required(ErrorMessage = "لطفا {0} را وارد کنید")]
+        public string? EntityType { get; set; }
 
         [Display(Name = "کد کاربر")]
-        [Required(ErrorMessage = "لطفا {0} را وارد کنید")]
-        [Range(1, long.MaxValue, ErrorMessage = "مقدار {0} باید بزرگتر از 0 باشد")]
-        public long UserID { get; set; }
+        //[Required(ErrorMessage = "لطفا {0} را وارد کنید")]
+        //[Range(1, long.MaxValue, ErrorMessage = "مقدار {0} باید بزرگتر از 0 باشد")]
+        public long? UserID { get; set; }
 
         [Display(Name = "نام موجودیت")]
         public string? TargetObjName { get; set; }
@@ -53,6 +59,9 @@ namespace AITechWebAPI.Models.EntityScore
 
         [Display(Name = "وضعیت فعال")]
         public bool IsActive { get; set; } = true;
+
+        [Display(Name = "زبان های دیگر")]
+        public string? OtherLangs { get; set; } = "";
 
     }
 }

@@ -1,85 +1,91 @@
-﻿using AITechDATA.DataLayer.Repositories;
-using AITechDATA.DataLayer.Services;
-using AITechDATA.Domain;
-using AITechDATA.ResultObjects;
-using AITechDATA.Tools;
-using AITechWebAPI.Models;
-using AITechWebAPI.Models.Comment;
-using AITechWebAPI.Models.Public;
-using AITechWebAPI.Tools;
-using AITechWebAPI.ViewModels;
-using AutoMapper;
-using Microsoft.AspNetCore.Authentication;
+﻿using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
+using AITechWebAPI.Models;
+using AITechWebAPI.Models.Book;
+using AITechWebAPI.Models.Public;
+using AITechDATA.DataLayer.Repositories;
+using AITechDATA.DataLayer.Services;
+using AITechDATA.Domain;
+using AITechDATA.ResultObjects;
+using AITechDATA.Tools;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+using AITechWebAPI.Models.News;
+using AITechDATA.CustomResponses;
+using AITechWebAPI.Validations;
+using AutoMapper;
+using AITechWebAPI.ViewModels;
+using static AITechWebAPI.Tools.ToolBox;
 
 namespace AITechWebAPI.Controllers
 {
-    [Route("Comment")]
+    [Route("Book")]
     [ApiController]
     [Authorize]
     [Produces("application/json")]
-    public class CommentController : ControllerBase
+    // [CheckRoleBase(new[] { (int)BaseRole.MiddleAdmin, (int)BaseRole.GeneralAdmin, (int)BaseRole.ContentAdmin })]
+
+
+    public class BookController : ControllerBase
     {
-        private ICommentRep _CommentRep;
-        private ILogRep _logRep;
+        IBookRep _BookRep;
+        ILogRep _logRep;
         private readonly IMapper _mapper;
 
-        public CommentController(ICommentRep CommentRep, ILogRep logRep,IMapper mapper)
+
+        public BookController(IBookRep BookRep,ILogRep logRep,IMapper mapper)
         {
-            _CommentRep = CommentRep;
-            _logRep = logRep;
-            _mapper = mapper;
+           _BookRep = BookRep;
+           _logRep = logRep;
+           _mapper = mapper;
         }
 
-        [HttpPost("GetAllComments_Base")]
         [AllowAnonymous]
-        public async Task<ActionResult<ListResultObject<CommentVM>>> GetAllComments_Base(GetCommentListRequestBody requestBody)
+        [HttpPost("GetAllBooks_Base")]
+        public async Task<ActionResult<BookListCustomResponse<BookVM>>> GetAllBooks_Base(GetBookListRequestBody requestBody)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(requestBody);
             }
-            var result = await _CommentRep.GetAllCommentsAsync(requestBody.entityType, requestBody.ForeignKeyId,requestBody.ParentId, requestBody.UserId, requestBody.PageIndex, requestBody.PageSize, requestBody.SearchText, requestBody.SortQuery);
+            var result = await _BookRep.GetAllBooksAsync(requestBody.CategoryId,requestBody.PageIndex,requestBody.PageSize,requestBody.SearchText,requestBody.SortQuery);
             if (result.Status)
             {
-                if (result.Status)
-                {
-                    var resultVM = _mapper.Map<ListResultObject<CommentVM>>(result);
-                    return Ok(resultVM);
-                }
+                var resultVM = _mapper.Map<BookListCustomResponse<BookVM>>(result);
+                return Ok(resultVM);
             }
             return BadRequest(result);
         }
 
-        [HttpPost("GetCommentById_Base")]
-        public async Task<ActionResult<RowResultObject<CommentVM>>> GetCommentById_Base(GetRowRequestBody requestBody)
+        [HttpPost("GetBookById_Base")]
+        [AllowAnonymous]
+        public async Task<ActionResult<BookRowCustomResponse<BookVM>>> GetBookById_Base(GetRowRequestBody requestBody)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(requestBody);
             }
-            var result = await _CommentRep.GetCommentByIdAsync(requestBody.ID);
+            var result = await _BookRep.GetBookByIdAsync(requestBody.ID);
             if (result.Status)
             {
-                var resultVM = _mapper.Map<RowResultObject<CommentVM>>(result);
-                return Ok(resultVM);            }
+                var resultVM = _mapper.Map<BookRowCustomResponse<BookVM>>(result);
+                return Ok(resultVM);
+            }
             return BadRequest(result);
         }
 
-        [HttpPost("ExistComment_Base")]
-        public async Task<ActionResult<BitResultObject>> ExistComment_Base(GetRowRequestBody requestBody)
+        [HttpPost("ExistBook_Base")]
+        public async Task<ActionResult<BitResultObject>> ExistBook_Base(GetRowRequestBody requestBody)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(requestBody);
             }
-            var result = await _CommentRep.ExistCommentAsync(requestBody.ID);
+            var result = await _BookRep.ExistBookAsync(requestBody.ID);
             if (string.IsNullOrEmpty(result.ErrorMessage))
             {
                 return Ok(result);
@@ -87,28 +93,28 @@ namespace AITechWebAPI.Controllers
             return BadRequest(result);
         }
 
-        [HttpPost("AddComment_Base")]
-        public async Task<ActionResult<BitResultObject>> AddComment_Base(AddEditCommentRequestBody requestBody)
+        [HttpPost("AddBook_Base")]
+        public async Task<ActionResult<BitResultObject>> AddBook_Base(AddEditBookRequestBody requestBody)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(requestBody);
             }
-            Comment Comment = new Comment()
+            Book Book = new Book()
             {
                 CreateDate = DateTime.Now.ToShamsi(),
                 UpdateDate = DateTime.Now.ToShamsi(),
-                ForeignKeyId = requestBody.ForeignKeyId,
-                EntityType = requestBody.EntityType,
-                ParentId = requestBody.ParentId ?? 0,
-                Title = requestBody.Title,
-                UserId = requestBody.UserID ?? User.GetCurrentUserId(),
                 Description = requestBody.Description ?? "",
+                Note = requestBody.Note ?? "",
+                CategoryId = requestBody.CategoryId,
+                Title = requestBody.Title,
+                AuthorName = requestBody.AuthorName ?? "",
                 IsActive = requestBody.IsActive,
                 OtherLangs = requestBody.OtherLangs ?? "",
+                
 
             };
-            var result = await _CommentRep.AddCommentAsync(Comment);
+            var result = await _BookRep.AddBookAsync(Book);
             if (result.Status)
             {
                 #region AddLog
@@ -119,49 +125,51 @@ namespace AITechWebAPI.Controllers
                     UpdateDate = DateTime.Now.ToShamsi(),
                     LogTime = DateTime.Now.ToShamsi(),
                     ActionName = this.ControllerContext.RouteData.Values["action"].ToString(),
+
                 };
                 await _logRep.AddLogAsync(log);
 
-                #endregion AddLog
+                #endregion
+
 
                 return Ok(result);
             }
             return BadRequest(result);
         }
 
-        [HttpPut("EditComment_Base")]
-        public async Task<ActionResult<BitResultObject>> EditComment_Base(AddEditCommentRequestBody requestBody)
+        [HttpPut("EditBook_Base")]
+        public async Task<ActionResult<BitResultObject>> EditBook_Base(AddEditBookRequestBody requestBody)
         {
             var result = new BitResultObject();
             if (!ModelState.IsValid)
             {
                 return BadRequest(requestBody);
             }
-            var theRow = await _CommentRep.GetCommentByIdAsync(requestBody.ID);
+            var theRow = await _BookRep.GetBookByIdAsync(requestBody.ID);
             if (!theRow.Status)
             {
                 result.Status = theRow.Status;
                 result.ErrorMessage = theRow.ErrorMessage;
             }
 
-            Comment Comment = new Comment()
+            Book Book = new Book()
             {
                 CreateDate = theRow.Result.CreateDate,
                 UpdateDate = DateTime.Now.ToShamsi(),
                 ID = requestBody.ID,
-                ForeignKeyId = requestBody.ForeignKeyId,
-                EntityType = requestBody.EntityType,
-                ParentId = requestBody.ParentId ?? 0,
-                Title = requestBody.Title,
-                UserId = requestBody.UserID ?? User.GetCurrentUserId(),
                 Description = requestBody.Description ?? "",
+                Note = requestBody.Note ?? "",
+                CategoryId = requestBody.CategoryId,
+                Title = requestBody.Title,
+                AuthorName = requestBody.AuthorName ?? "",
                 IsActive = requestBody.IsActive,
                 OtherLangs = requestBody.OtherLangs ?? "",
 
             };
-            result = await _CommentRep.EditCommentAsync(Comment);
+            result = await _BookRep.EditBookAsync(Book);
             if (result.Status)
             {
+
                 #region AddLog
 
                 Log log = new Log()
@@ -170,26 +178,28 @@ namespace AITechWebAPI.Controllers
                     UpdateDate = DateTime.Now.ToShamsi(),
                     LogTime = DateTime.Now.ToShamsi(),
                     ActionName = this.ControllerContext.RouteData.Values["action"].ToString(),
+
                 };
                 await _logRep.AddLogAsync(log);
 
-                #endregion AddLog
+                #endregion
 
                 return Ok(result);
             }
             return BadRequest(result);
         }
 
-        [HttpDelete("DeleteComment_Base")]
-        public async Task<ActionResult<BitResultObject>> DeleteComment_Base(GetRowRequestBody requestBody)
+        [HttpDelete("DeleteBook_Base")]
+        public async Task<ActionResult<BitResultObject>> DeleteBook_Base(GetRowRequestBody requestBody)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(requestBody);
             }
-            var result = await _CommentRep.RemoveCommentAsync(requestBody.ID);
+            var result = await _BookRep.RemoveBookAsync(requestBody.ID);
             if (result.Status)
             {
+
                 #region AddLog
 
                 Log log = new Log()
@@ -198,10 +208,11 @@ namespace AITechWebAPI.Controllers
                     UpdateDate = DateTime.Now.ToShamsi(),
                     LogTime = DateTime.Now.ToShamsi(),
                     ActionName = this.ControllerContext.RouteData.Values["action"].ToString(),
+
                 };
                 await _logRep.AddLogAsync(log);
 
-                #endregion AddLog
+                #endregion
 
                 return Ok(result);
             }

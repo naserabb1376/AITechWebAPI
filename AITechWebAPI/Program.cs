@@ -179,6 +179,7 @@ namespace AITechWebAPI
             builder.Services.AddScoped<ICityRep, CityRep>();
             builder.Services.AddScoped<ICourseRep, CourseRep>();
             builder.Services.AddScoped<IEventRep, EventRep>();
+            builder.Services.AddScoped<IEntityScoreRep, EntityScoreRep>();
             builder.Services.AddScoped<IFileUploadRep, FileUploadRep>();
             builder.Services.AddScoped<IGroupRep, GroupRep>();
             builder.Services.AddScoped<IImageRep, ImageRep>();
@@ -209,10 +210,12 @@ namespace AITechWebAPI
             builder.Services.AddScoped<ILinkedEntityRep, LinkedEntityRep>();
             builder.Services.AddScoped<IJobRequestRep, JobRequestRep>();
             builder.Services.AddScoped<IArticleRep, ArticleRep>();
+            builder.Services.AddScoped<IBookRep, BookRep>();
             builder.Services.AddScoped<ISMSMessageRep, SMSMessageRep>();
             builder.Services.AddScoped<IInterviewTimeRep, InterviewTimeRep>();
             builder.Services.AddScoped<IEducationalBackgroundRep, EducationalBackgroundRep>();
             builder.Services.AddScoped<IClassGradeRep, ClassGradeRep>();
+            builder.Services.AddScoped<ICommentRep, CommentRep>();
             builder.Services.AddScoped<IGroupChatMessageRep, GroupChatMessageRep>();
             builder.Services.AddScoped<IGroupChatReadStateRep, GroupChatReadStateRep>();
             builder.Services.AddScoped<IUserRoleProvider, UserRep>();

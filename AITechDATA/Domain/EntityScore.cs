@@ -10,8 +10,10 @@ namespace AITechDATA.Domain
     public class EntityScore : BaseEntity
     {
         public string? ScoreItemTitle { get; set; }
-        public float ScoreItemWeight { get; set; }
-        public float ScoreItemTotalScore { get; set; }
+        public float ScoreItemRawScore { get; set; } = 0.0f;
+        public float ScoreItemWeightPercent { get; set; } = 0.0f;
+        public float ScoreItemWeightedScore { get; set; } = 0.0f;
+        public float ScoreItemTotalScore { get; set; } = 0.0f;
         public long? ScoreItemParentId { get; set; }
         public string ScoreItemKey { get; set; }
         public int RecordLevel { get; set; } // 0: Parent 1: Child 2: Data

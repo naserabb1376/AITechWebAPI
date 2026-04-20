@@ -15,6 +15,6 @@ namespace AITechWebAPI.Models.Comment
         public long ParentId { get; set; } = 0;
 
         [Display(Name = "کاربر ایجاد کننده")]
-        public long CreatorId { get; set; } = 0;
+        public long UserId { get; set; } = 0;
     }
 }

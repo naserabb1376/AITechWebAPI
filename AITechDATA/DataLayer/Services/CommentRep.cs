@@ -77,7 +77,7 @@ namespace AITechDATA.DataLayer.Services
         }
 
         public async Task<ListResultObject<Comment>> GetAllCommentsAsync(
-      string entityType = "", long ForeignKeyId = 0, long ParentId = 0, long creatorId = 0,
+      string entityType = "", long ForeignKeyId = 0, long ParentId = 0, long userId = 0,
       int pageIndex = 1, int pageSize = 20,
       string searchText = "", string sortQuery = "")
         {
@@ -85,14 +85,14 @@ namespace AITechDATA.DataLayer.Services
 
             try
             {
-                var query = _context.Comments.AsNoTracking().AsQueryable();
+                var query = _context.Comments.Include(x=> x.User).AsNoTracking().AsQueryable();
 
                 // شرط‌های دینامیک فقط در صورت معتبر بودن
                 if (ForeignKeyId > 0)
                     query = query.Where(x => x.ForeignKeyId == ForeignKeyId);
 
-                if (creatorId > 0)
-                    query = query.Where(x => x.CreatorId == creatorId);
+                if (userId > 0)
+                    query = query.Where(x => x.UserId == userId);
 
                 if (ParentId > 0)
                     query = query.Where(x => x.ParentId == ParentId);
@@ -104,6 +104,8 @@ namespace AITechDATA.DataLayer.Services
                 {
                     query = query.Where(x =>
                         (!string.IsNullOrEmpty(x.Title) && x.Title.Contains(searchText)) ||
+                        (!string.IsNullOrEmpty(x.User.Username) && x.User.Username.Contains(searchText)) ||
+                        (!string.IsNullOrEmpty($"{x.User.FirstName} {x.User.LastName}") && $"{x.User.FirstName} {x.User.LastName}".Contains(searchText)) ||
                         (!string.IsNullOrEmpty(x.Description) && x.Description.Contains(searchText))
                     );
                 }
@@ -135,7 +137,7 @@ namespace AITechDATA.DataLayer.Services
             RowResultObject<Comment> result = new RowResultObject<Comment>();
             try
             {
-                result.Result = await _context.Comments
+                result.Result = await _context.Comments.Include(x => x.User)
                     .AsNoTracking()
                     //.Include(x => x.Assignment)
                     .SingleOrDefaultAsync(x => x.ID == CommentId);
