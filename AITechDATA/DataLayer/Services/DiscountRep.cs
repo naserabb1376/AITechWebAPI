@@ -68,7 +68,7 @@ namespace AITechDATA.DataLayer.Services
             return result;
         }
 
-        public async Task<BitResultObject> ExistDiscountAsync(string existType, string keyValue)
+        public async Task<BitResultObject> ExistDiscountAsync(string existType, string keyValue,long userId)
         {
             BitResultObject result = new BitResultObject();
          
@@ -86,7 +86,7 @@ namespace AITechDATA.DataLayer.Services
                             }
                         case "validatecode":
                             {
-                                var theDiscount = await _context.Discounts.AsNoTracking().FirstOrDefaultAsync(x => x.DiscountCode.ToLower() == keyValue.ToLower() && x.IsActive && x.ExpireDate >= DateTime.Now.ToShamsi()) ?? new Discount();
+                                var theDiscount = await _context.Discounts.Include(x=> x.PaymentHistories).AsNoTracking().FirstOrDefaultAsync(x => x.DiscountCode.ToLower() == keyValue.ToLower() && x.IsActive && x.DiscountMaxUsage > x.PaymentHistories.Count(p=> p.UserId == userId) && x.ExpireDate >= DateTime.Now.ToShamsi()) ?? new Discount();
                                 discountId = theDiscount.ID;
                                 break;
                             }
@@ -113,7 +113,7 @@ namespace AITechDATA.DataLayer.Services
 
             try
             {
-                var query = _context.Discounts.AsNoTracking().AsQueryable();
+                var query = _context.Discounts.Include(x => x.DiscountTargets).Include(x => x.PaymentHistories).AsNoTracking().AsQueryable();
 
                 // شرط‌های دینامیک فقط در صورت معتبر بودن
 
@@ -163,7 +163,7 @@ namespace AITechDATA.DataLayer.Services
             try
             {
                 result.Result = await _context.Discounts
-                    .AsNoTracking()
+                    .Include(x=> x.DiscountTargets).Include(x=> x.PaymentHistories).AsNoTracking()
                     .SingleOrDefaultAsync(x => x.ID == DiscountId);
             }
             catch (Exception ex)

@@ -22,14 +22,7 @@ namespace AITechWebAPI.Tools
     {
         private static IConfigurationRoot Configuration { get; }
 
-        public enum BaseRole : int
-        {
-            Student = 1,
-            Teacher = 2,
-            MiddleAdmin = 3,
-            GeneralAdmin = 4,
-            ContentAdmin = 7,
-        }
+       
         static ToolBox()
         {
             var builder = new ConfigurationBuilder()
@@ -323,6 +316,20 @@ namespace AITechWebAPI.Tools
 
             var ext = Path.GetExtension(path);
             return types.TryGetValue(ext, out var contentType) ? contentType : "application/octet-stream";
+        }
+
+        public static string GenerateFileName(this string filePath)
+        {
+          string oldFileName = Path.GetFileName(filePath);
+            int fileCounter = 2;
+
+            while (File.Exists(filePath))
+            {
+                string newFileName = $"{oldFileName}({fileCounter})";
+                filePath = filePath.Replace(oldFileName, newFileName);
+                fileCounter++;
+            }
+            return filePath;
         }
 
         public static string GenerateDiscountCode(this string? inCode)

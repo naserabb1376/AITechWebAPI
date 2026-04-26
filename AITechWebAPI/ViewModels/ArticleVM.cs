@@ -9,8 +9,8 @@ namespace AITechWebAPI.ViewModels
         public string Description { get; set; }
         public string? AuthorName { get; set; }
         public string? Note { get; set; }
-        public long CategoryId { get; set; } // کلید خارجی به Category
-        public string CategoryName { get; set; } // ارتباط با Category
+        public long? CategoryId { get; set; } // کلید خارجی به Category
+        public string? CategoryName { get; set; } // ارتباط با Category
 
     }
 }

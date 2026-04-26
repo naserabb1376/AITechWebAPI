@@ -9,10 +9,8 @@ namespace AITechDATA.Domain
 {  // Category: جدول دسته‌بندی‌ها
     public class Category : BaseEntity
     {
-        [Display(Name = "نام دسته بندی")]
         public string CategoryName { get; set; }
-
-        [Display(Name = "توضیحات")]
+        public string CategoryEntityType { get; set; }
         public string? CategoryDescription { get; set; }
 
         public ICollection<Course> Courses { get; set; } // ارتباط یک به چند با Course

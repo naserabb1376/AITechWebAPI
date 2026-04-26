@@ -9,10 +9,8 @@ namespace AITechWebAPI.Models.Discount
         [Display(Name = "کد تخفیف")]
         public string? DiscountCode { get; set; }
 
-        [Display(Name = "درصد تخفیف")]
-        [Required(ErrorMessage = "لطفا {0} را وارد کنید")]
-        [Range(1, 100, ErrorMessage = "مقدار {0} باید بزرگتر از 0 و بین 1 تا 100 باشد")]
-        public int DiscountPercent { get; set; }
+        [Display(Name = "مقدار تخفیف")]
+        public string DiscountValue { get; set; } = "0";
 
         [Display(Name = "کلید خارجی")]
         [Required(ErrorMessage = "لطفا {0} را وارد کنید")]
@@ -22,6 +20,9 @@ namespace AITechWebAPI.Models.Discount
         [Display(Name = "موجودیت تخفیف دار")]
         [Required(ErrorMessage = "لطفا {0} را وارد کنید")]
         public string EntityName { get; set; }
+
+        [Display(Name = "سقف استفاده")]
+        public int DiscountMaxUsage { get; set; } = 0;
 
         [Display(Name = "توضیحات")]
         public string? Description { get; set; }

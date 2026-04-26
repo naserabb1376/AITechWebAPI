@@ -9,6 +9,7 @@ namespace AITechDATA.Domain
         public string Description { get; set; }
         public string? AuthorName { get; set; }
         public string? Note { get; set; }
+
         public long? CategoryId { get; set; } // کلید خارجی به Category
         public Category? Category { get; set; } // ارتباط با Category
 

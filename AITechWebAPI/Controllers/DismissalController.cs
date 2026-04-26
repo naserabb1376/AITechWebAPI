@@ -4,8 +4,9 @@ using AITechDATA.Domain;
 using AITechDATA.ResultObjects;
 using AITechDATA.Tools;
 using AITechWebAPI.Models;
-using AITechWebAPI.Models.Category;
+using AITechWebAPI.Models.Dismissal;
 using AITechWebAPI.Models.Public;
+using AITechWebAPI.Tools;
 using AITechWebAPI.Validations;
 using AITechWebAPI.ViewModels;
 using AutoMapper;
@@ -21,68 +22,69 @@ using static AITechWebAPI.Tools.ToolBox;
 
 namespace AITechWebAPI.Controllers
 {
-    [Route("Category")]
+    [Route("Dismissal")]
     [ApiController]
     [Authorize]
     [Produces("application/json")]
-    // [CheckRoleBase(new[] { (int)BaseRole.MiddleAdmin, (int)BaseRole.GeneralAdmin, (int)BaseRole.ContentAdmin })]
+    // [CheckRoleBase(new[] { (int)BaseRole.MiddleAdmin, (int)BaseRole.GeneralAdmin })]
 
-    public class CategoryController : ControllerBase
+
+    public class DismissalController : ControllerBase
     {
-        ICategoryRep _CategoryRep;
+        IDismissalRep _DismissalRep;
+        IUserRep _UserRep;
         ILogRep _logRep;
         private readonly IMapper _mapper;
 
 
-        public CategoryController(ICategoryRep CategoryRep,ILogRep logRep,IMapper mapper)
+        public DismissalController(IDismissalRep DismissalRep,IUserRep userRep, ILogRep logRep, IMapper mapper)
         {
-           _CategoryRep = CategoryRep;
-           _logRep = logRep;
-           _mapper = mapper;
+            _DismissalRep = DismissalRep;
+            _UserRep = userRep;
+            _logRep = logRep;
+            _mapper = mapper;
         }
 
-        [HttpPost("GetAllCategories_Base")]
-        [AllowAnonymous]
-        public async Task<ActionResult<ListResultObject<CategoryVM>>> GetAllCategories_Base(GetCategoryListRequestBody requestBody)
+        [HttpPost("GetAllDismissals_Base")]
+        public async Task<ActionResult<ListResultObject<DismissalVM>>> GetAllDismissals_Base(GetDismissalListRequestBody requestBody)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(requestBody);
             }
-            var result = await _CategoryRep.GetAllCategoriesAsync(requestBody.CategoryEntityType,requestBody.PageIndex,requestBody.PageSize,requestBody.SearchText,requestBody.SortQuery);
+            var result = await _DismissalRep.GetAllDismissalsAsync(requestBody.UserId, requestBody.CheckerUserId, requestBody.ApproveState, requestBody.PageIndex, requestBody.PageSize, requestBody.SearchText, requestBody.SortQuery);
             if (result.Status)
             {
-                var resultVM = _mapper.Map<ListResultObject<CategoryVM>>(result);
+                var resultVM = _mapper.Map<ListResultObject<DismissalVM>>(result);
                 return Ok(resultVM);
             }
             return BadRequest(result);
         }
 
-        [HttpPost("GetCategoryById_Base")]
-        [AllowAnonymous]
-        public async Task<ActionResult<RowResultObject<CategoryVM>>> GetCategoryById_Base(GetRowRequestBody requestBody)
+        [HttpPost("GetDismissalById_Base")]
+        public async Task<ActionResult<RowResultObject<DismissalVM>>> GetDismissalById_Base(GetRowRequestBody requestBody)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(requestBody);
             }
-            var result = await _CategoryRep.GetCategoryByIdAsync(requestBody.ID);
+            var result = await _DismissalRep.GetDismissalByIdAsync(requestBody.ID);
             if (result.Status)
             {
-                var resultVM = _mapper.Map<RowResultObject<CategoryVM>>(result);
+                var resultVM = _mapper.Map<RowResultObject<DismissalVM>>(result);
                 return Ok(resultVM);
             }
             return BadRequest(result);
         }
 
-        [HttpPost("ExistCategory_Base")]
-        public async Task<ActionResult<BitResultObject>> ExistCategory_Base(GetRowRequestBody requestBody)
+        [HttpPost("ExistDismissal_Base")]
+        public async Task<ActionResult<BitResultObject>> ExistDismissal_Base(GetRowRequestBody requestBody)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(requestBody);
             }
-            var result = await _CategoryRep.ExistCategoryAsync(requestBody.ID);
+            var result = await _DismissalRep.ExistDismissalAsync(requestBody.ID);
             if (string.IsNullOrEmpty(result.ErrorMessage))
             {
                 return Ok(result);
@@ -90,26 +92,34 @@ namespace AITechWebAPI.Controllers
             return BadRequest(result);
         }
 
-        [HttpPost("AddCategory_Base")]
-        public async Task<ActionResult<BitResultObject>> AddCategory_Base(AddEditCategoryRequestBody requestBody)
+        [HttpPost("AddDismissal_Base")]
+        public async Task<ActionResult<BitResultObject>> AddDismissal_Base(AddEditDismissalRequestBody requestBody)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(requestBody);
             }
-            Category Category = new Category()
+            Dismissal Dismissal = new Dismissal()
             {
                 CreateDate = DateTime.Now.ToShamsi(),
                 UpdateDate = DateTime.Now.ToShamsi(),
-                CategoryDescription = requestBody.CategoryDescription ??"",
-                CategoryName = requestBody.CategoryName,
-                CategoryEntityType = requestBody.CategoryEntityType,
+                UserId = requestBody.UserID,
+                CheckerUserId = requestBody.CheckerUserID ?? User.GetCurrentUserId(),
+                DismissalType = requestBody.DismissalType,
+                DismissalRequestDescription = requestBody.DismissalRequestDescription,
+                CheckerDescription = requestBody.DismissalCheckDescription,
+                IsApproved = requestBody.DismissalApproved,
+                DismissalRequestStartDate = requestBody.DismissalRequestStartDate.StringToDate().Value,
+                DismissalRequestEndDate = requestBody.DismissalRequestEndDate.StringToDate().Value,
+                DismissalApprovedStartDate = requestBody.DismissalApprovedStartDate.StringToDate(),
+                DismissalApprovedEndDate = requestBody.DismissalApprovedEndDate.StringToDate(),
+                IsActive = requestBody.IsActive,
                 OtherLangs = requestBody.OtherLangs ?? "",
-
             };
-            var result = await _CategoryRep.AddCategoryAsync(Category);
+            var result = await _DismissalRep.AddDismissalAsync(Dismissal);
             if (result.Status)
             {
+
                 #region AddLog
 
                 Log log = new Log()
@@ -130,33 +140,40 @@ namespace AITechWebAPI.Controllers
             return BadRequest(result);
         }
 
-        [HttpPut("EditCategory_Base")]
-        public async Task<ActionResult<BitResultObject>> EditCategory_Base(AddEditCategoryRequestBody requestBody)
+        [HttpPut("EditDismissal_Base")]
+        public async Task<ActionResult<BitResultObject>> EditDismissal_Base(AddEditDismissalRequestBody requestBody)
         {
             var result = new BitResultObject();
             if (!ModelState.IsValid)
             {
                 return BadRequest(requestBody);
             }
-            var theRow = await _CategoryRep.GetCategoryByIdAsync(requestBody.ID);
+            var theRow = await _DismissalRep.GetDismissalByIdAsync(requestBody.ID);
             if (!theRow.Status)
             {
                 result.Status = theRow.Status;
                 result.ErrorMessage = theRow.ErrorMessage;
             }
 
-            Category Category = new Category()
+            Dismissal Dismissal = new Dismissal()
             {
                 CreateDate = theRow.Result.CreateDate,
                 UpdateDate = DateTime.Now.ToShamsi(),
                 ID = requestBody.ID,
-                CategoryDescription = requestBody.CategoryDescription ?? "",
-                CategoryName = requestBody.CategoryName,
-                CategoryEntityType = requestBody.CategoryEntityType,
+                UserId = requestBody.UserID,
+                CheckerUserId = requestBody.CheckerUserID ?? User.GetCurrentUserId(),
+                DismissalType = requestBody.DismissalType,
+                DismissalRequestDescription = requestBody.DismissalRequestDescription,
+                CheckerDescription = requestBody.DismissalCheckDescription,
+                IsApproved = requestBody.DismissalApproved,
+                DismissalRequestStartDate = requestBody.DismissalRequestStartDate.StringToDate().Value,
+                DismissalRequestEndDate = requestBody.DismissalRequestEndDate.StringToDate().Value,
+                DismissalApprovedStartDate = requestBody.DismissalApprovedStartDate.StringToDate(),
+                DismissalApprovedEndDate = requestBody.DismissalApprovedEndDate.StringToDate(),
+                IsActive = requestBody.IsActive,
                 OtherLangs = requestBody.OtherLangs ?? "",
-
             };
-            result = await _CategoryRep.EditCategoryAsync(Category);
+            result = await _DismissalRep.EditDismissalAsync(Dismissal);
             if (result.Status)
             {
 
@@ -179,14 +196,14 @@ namespace AITechWebAPI.Controllers
             return BadRequest(result);
         }
 
-        [HttpDelete("DeleteCategory_Base")]
-        public async Task<ActionResult<BitResultObject>> DeleteCategory_Base(GetRowRequestBody requestBody)
+        [HttpDelete("DeleteDismissal_Base")]
+        public async Task<ActionResult<BitResultObject>> DeleteDismissal_Base(GetRowRequestBody requestBody)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(requestBody);
             }
-            var result = await _CategoryRep.RemoveCategoryAsync(requestBody.ID);
+            var result = await _DismissalRep.RemoveDismissalAsync(requestBody.ID);
             if (result.Status)
             {
 
@@ -208,5 +225,7 @@ namespace AITechWebAPI.Controllers
             }
             return BadRequest(result);
         }
+    
+
     }
 }

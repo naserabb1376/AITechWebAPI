@@ -15,4 +15,15 @@ namespace AITechDATA.Domain
        public ICollection<Group> Groups { get; set; } // گروه‌های مرتبط با دوره
 
     }
+
+    public class CourseDto : BaseEntity
+    {
+        public string Title { get; set; }
+        public string Description { get; set; }
+        public string? Note { get; set; }
+        public long CategoryId { get; set; } // کلید خارجی به Category
+        public Category Category { get; set; } // ارتباط با Category
+        public ICollection<CourseGroupDto> Groups { get; set; } // گروه‌های مرتبط با دوره
+
+    }
 }

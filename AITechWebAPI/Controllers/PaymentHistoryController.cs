@@ -261,7 +261,7 @@ await _GroupRep.GetGroupByIdAsync(requestBody.ForeignKeyId);
             result.Result = new RequestPaymentResultBody();
             decimal rowAmount = 0,discountedrowAmount = 0;
             string targetObjName="",groupType="";
-            BitResultObject addResult;
+           BitResultObject addResult;
             if (!ModelState.IsValid)
             {
                 return BadRequest(requestBody);
@@ -322,9 +322,11 @@ await _GroupRep.GetGroupByIdAsync(requestBody.ForeignKeyId);
             if (discountedrowAmount == rowAmount && requestBody.DiscountId > 0)
             {
                 var discount = await _discountRep.GetDiscountByIdAsync(requestBody.DiscountId.Value);
-                if (discount.Result.IsActive && discount.Result.EntityName.ToLower() == requestBody.EntityType.ToLower() && discount.Result.ForeignKeyId == requestBody.ForeignKeyId && DateTime.Now.ToShamsi() >= discount.Result.ExpireDate)
+                if (discount.Result.IsActive && discount.Result.EntityName.ToLower() == requestBody.EntityType.ToLower() && discount.Result.ForeignKeyId == requestBody.ForeignKeyId && discount.Result.IsActive && discount.Result.DiscountMaxUsage > discount.Result.PaymentHistories.Count(x=> x.UserId == UserId) && DateTime.Now.ToShamsi() >= discount.Result.ExpireDate)
                 {
-                    discountedrowAmount =  rowAmount - (rowAmount * discount.Result.DiscountPercent / 100m);
+                    decimal discountAAmount = rowAmount - discount.Result.DiscountAmount ;
+                    decimal discountPAmount =  rowAmount - (rowAmount * discount.Result.DiscountPercent / 100m);
+                    discountedrowAmount =  decimal.Min(discountAAmount,discountPAmount);
                 }
             }
 
@@ -346,8 +348,8 @@ await _GroupRep.GetGroupByIdAsync(requestBody.ForeignKeyId);
 
                     //  Description = requestBody.Description,
                 };
-                var Addresult = await _PaymentHistoryRep.AddPaymentHistoryAsync(PaymentHistory);
-                if (Addresult.Status)
+                addResult = await _PaymentHistoryRep.AddPaymentHistoryAsync(PaymentHistory);
+                if (addResult.Status)
                 {
                     #region AddLog
 
@@ -366,9 +368,9 @@ await _GroupRep.GetGroupByIdAsync(requestBody.ForeignKeyId);
 
                     #region PaymentGateway
 
-                    var zarInvoice = new ZarinPalInvoice(description: $"{Addresult.ID} - {PaymentHistory.PaymentDate}");
+                    var zarInvoice = new ZarinPalInvoice(description: $"{addResult.ID} - {PaymentHistory.PaymentDate}");
                     // var callbackUrl = Url.Action("VerifyPayment", "PaymentHistory", new { payId = Addresult.ID }, Request.Scheme);
-                    var callbackUrl = $"https://aitechac.com/payment/verify?PayId={Addresult.ID}&UserId={UserId}&EntityType={requestBody.EntityType}&ForeignKeyId={requestBody.ForeignKeyId}";
+                    var callbackUrl = $"https://aitechac.com/payment/verify?PayId={addResult.ID}&UserId={UserId}&EntityType={requestBody.EntityType}&ForeignKeyId={requestBody.ForeignKeyId}";
 
                     var invoice = await _onlinePayment.RequestAsync(invoice =>
                     {
@@ -376,8 +378,7 @@ await _GroupRep.GetGroupByIdAsync(requestBody.ForeignKeyId);
                                .SetAmount(rowAmount)
                                 .SetZarinPalData(zarInvoice)
                                 .UseZarinPal();
-
-                        invoice.UseAutoIncrementTrackingNumber();
+                        invoice.SetTrackingNumber(addResult.ID);
 
                     });
 
@@ -450,7 +451,6 @@ await _GroupRep.GetGroupByIdAsync(requestBody.ForeignKeyId);
 
                 if (addResult.Status)
                 {
-                    var academyPhoneNum = await _settingRep.GetSettingRowAsync(0, "Contact_Phone_Value_EN");
                     var targetType = requestBody.EntityType.ToLower().Contains("event") ? "رویداد" : "گروه درسی";
                     dynamic targetObj = requestBody.EntityType.ToLower().Contains("event") ? await _EventRep.GetEventByIdAsync(requestBody.ForeignKeyId) :
                         await _GroupRep.GetGroupByIdAsync(requestBody.ForeignKeyId);
@@ -466,7 +466,25 @@ await _GroupRep.GetGroupByIdAsync(requestBody.ForeignKeyId);
 با پرداخت {targetFee} ریال در {targetType}
 {targetName} ثبت نام شد";
 
-                    bool sent = await ToolBox.SendSMSMessage(academyPhoneNum.Result.Value, infoMessage);
+                    var academyPhoneNum = await _settingRep.GetSettingRowAsync(0, "Contact_Phone_Value_EN");
+                    var phoneNumbers = new List<string>() { academyPhoneNum.Result.Value };
+                    if (requestBody.EntityType.ToLower().Contains("group"))
+                    {
+                        phoneNumbers.Add(targetObj.Result.Teacher.Username);
+
+                        if (targetObj.Result.Course.Category.CategoryName.Contains("دانش آموزی"))
+                        {
+                            var eduAdmins = await _UserRep.GetAllUsersAsync(RoleId: (long)BaseRole.EduAdmin, pageSize: 0);
+
+                            phoneNumbers.AddRange(eduAdmins.Results.Select(x => x.Username).ToList());
+
+                        }
+                    }
+                    foreach (var item in phoneNumbers)
+                    {
+                        bool sent = await ToolBox.SendSMSMessage(item, infoMessage);
+                    }
+                   
 
                     #region AddLog
 
@@ -509,7 +527,7 @@ await _GroupRep.GetGroupByIdAsync(requestBody.ForeignKeyId);
 
                 var invoice = await _onlinePayment.FetchAsync();
 
-                dynamic theRow = EntityType.ToLower().Contains("event") ? await _EventRep.GetEventByIdAsync(ForeignKeyId.Value) :
+                dynamic targetObj = EntityType.ToLower().Contains("event") ? await _EventRep.GetEventByIdAsync(ForeignKeyId.Value) :
     await _GroupRep.GetGroupByIdAsync(ForeignKeyId.Value);
 
 
@@ -519,29 +537,29 @@ await _GroupRep.GetGroupByIdAsync(requestBody.ForeignKeyId);
                     case "group":
                         {
 
-                            if (theRow.Result == null)
+                            if (targetObj.Result == null)
                             {
                                 result.Status = false;
                                 result.ErrorMessage = "درخواست نامعتبر است";
                                 return BadRequest(result);
                             }
 
-                            targetObjName = theRow.Result.Name;
-                            groupType = theRow.Result.GroupType;
+                            targetObjName = targetObj.Result.Name;
+                            groupType = targetObj.Result.GroupType;
 
                         }
                         break;
                     case "event":
                         {
 
-                            if (theRow.Result == null)
+                            if (targetObj.Result == null)
                             {
                                 result.Status = false;
                                 result.ErrorMessage = "درخواست نامعتبر است";
                                 return BadRequest(result);
                             }
 
-                            targetObjName = theRow.Result.Title;
+                            targetObjName = targetObj.Result.Title;
 
 
                         }
@@ -610,10 +628,9 @@ await _GroupRep.GetGroupByIdAsync(requestBody.ForeignKeyId);
 
                     if (addResult.Status)
                     {
-                        var academyPhoneNum = await _settingRep.GetSettingRowAsync(0, "Contact_Phone_Value_EN");
                         var targetType = EntityType.ToLower().Contains("event") ? "رویداد" : "گروه درسی";
-                        var targetName = EntityType.ToLower().Contains("event") ? theRow.Result.Title : theRow.Result.Name;
-                        var targetFee = EntityType.ToLower().Contains("event") ? theRow.Result.Fee.Value : theRow.Result.Fee;
+                        var targetName = EntityType.ToLower().Contains("event") ? targetObj.Result.Title : targetObj.Result.Name;
+                        var targetFee = EntityType.ToLower().Contains("event") ? targetObj.Result.Fee.Value : targetObj.Result.Fee;
                         var registerDate = DateTime.Now.ToShamsiString().Split(' ')[0];
                         var registerTime = DateTime.Now.ToShamsiString().Split(' ')[1];
 
@@ -624,7 +641,24 @@ await _GroupRep.GetGroupByIdAsync(requestBody.ForeignKeyId);
 با پرداخت {targetFee} در {targetType}
 {targetName} ثبت نام شد";
 
-                        bool sent = await ToolBox.SendSMSMessage(academyPhoneNum.Result.Value,infoMessage);
+                        var academyPhoneNum = await _settingRep.GetSettingRowAsync(0, "Contact_Phone_Value_EN");
+                        var phoneNumbers = new List<string>() { academyPhoneNum.Result.Value };
+                        if (EntityType.ToLower().Contains("group"))
+                        {
+                            phoneNumbers.Add(targetObj.Result.Teacher.Username);
+
+                            if (targetObj.Result.Course.Category.CategoryName.Contains("دانش آموزی"))
+                            {
+                                var eduAdmins = await _UserRep.GetAllUsersAsync(RoleId: (long)BaseRole.EduAdmin, pageSize: 0);
+
+                                phoneNumbers.AddRange(eduAdmins.Results.Select(x => x.Username).ToList());
+
+                            }
+                        }
+                        foreach (var item in phoneNumbers)
+                        {
+                            bool sent = await ToolBox.SendSMSMessage(item, infoMessage);
+                        }
 
                         #region AddLog
 

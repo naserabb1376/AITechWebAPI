@@ -133,8 +133,8 @@ namespace AITechDATA.DataLayer.Services
                 // کوئری پایه
                 IQueryable<Group> query = _context.Groups
                     .AsNoTracking()
-                    .Include(x => x.Course)
-                    .Include(x => x.Teacher)
+                    .Include(x => x.Course).ThenInclude(x=> x.Category)
+                    .Include(x => x.Teacher).ThenInclude(x=> x.TeacherResume)
                     .Include(x => x.Sessions)
                     .Include(x => x.Students)
                     .Include(x => x.PaymentHistories)
@@ -239,6 +239,8 @@ namespace AITechDATA.DataLayer.Services
                         StartTime = x.StartTime,
                         Fee = x.Fee,
                         Name = x.Name,
+                        TeacherCVLink = _context.FileUploads.Where(f => f.EntityType.ToLower() == "TeacherResume".ToLower() && f.ForeignKeyId == x.Teacher.TeacherResume.ID)
+                            .Select(x => x.GetUrl).FirstOrDefault().CreateDownloadLink(),
 
                         // اگر کاربر عضو قطعی گروه باشد => Registered
                         // وگرنه اگر در PreRegistration باشد => PreRegistration
@@ -283,8 +285,8 @@ namespace AITechDATA.DataLayer.Services
             {
                 result.Result = await _context.Groups
                     .AsNoTracking()
-                    .Include(x => x.Course)
-                    .Include(x => x.Teacher)
+                    .Include(x => x.Course).ThenInclude(x => x.Category)
+                    .Include(x => x.Teacher).ThenInclude(x => x.TeacherResume)
                     .Include(x => x.Sessions)
                     .Include(x => x.Students)
                     .Select(x => new GroupDto()
@@ -304,6 +306,8 @@ namespace AITechDATA.DataLayer.Services
                         ID = x.ID,
 
                         TeacherId = x.TeacherId,
+                        TeacherCVLink = _context.FileUploads.Where(f => f.EntityType.ToLower() == "TeacherResume".ToLower() && f.ForeignKeyId == x.Teacher.TeacherResume.ID)
+                            .Select(x => x.GetUrl).FirstOrDefault().CreateDownloadLink(),
                         Status = x.Status,
                         Note = x.Note,
                         DayOfWeek = x.DayOfWeek,

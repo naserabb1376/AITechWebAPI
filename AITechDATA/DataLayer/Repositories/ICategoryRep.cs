@@ -10,7 +10,7 @@ namespace AITechDATA.DataLayer.Repositories
 {
     public interface ICategoryRep
     {
-        Task<ListResultObject<Category>> GetAllCategoriesAsync(int pageIndex = 1, int pageSize = 20, string searchText = "",string sortQuery ="");
+        Task<ListResultObject<Category>> GetAllCategoriesAsync(string categoryEntityType ="",int pageIndex = 1, int pageSize = 20, string searchText = "",string sortQuery ="");
 
         Task<RowResultObject<Category>> GetCategoryByIdAsync(long categoryId);
 

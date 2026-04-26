@@ -45,7 +45,8 @@ public class FileCenterController : ControllerBase
             var entityName = requestBody.EntityName.ToLower();
             bool isJobRequest = entityName.ToLower() == "jobrequest" || entityName.ToLower() == "preregistration";
 
-            string fileName = "", fullPath=""; long RowNumber =0;    
+            string fullPath=""; long RowNumber =0;
+            string fileName = file.FileName.GenerateFileName();
             var userId = !isJobRequest ? User?.FindFirst("userId")?.Value : "0";
             if ((string.IsNullOrEmpty(userId) || userId == "0") && !isJobRequest) return Unauthorized();
 
@@ -60,7 +61,7 @@ public class FileCenterController : ControllerBase
             if (fileType == "images")
             {
                 RowNumber = await _imageRep.GetNewRowNumber();
-                fileName = $"{entityName}_{RowNumber}_{userId}{Path.GetExtension(file.FileName)}";
+                //fileName = $"{entityName}_{RowNumber}_{userId}{Path.GetExtension(file.FileName)}";
                 fullPath = Path.Combine(savePath, fileName);
                 Image theImage = new()
                 {
@@ -91,7 +92,7 @@ public class FileCenterController : ControllerBase
             else if (fileType == "files")
             {
                 RowNumber = await _fileUploadRep.GetNewRowNumber();
-                fileName = $"{entityName}_{RowNumber}_{userId}{Path.GetExtension(file.FileName)}";
+                //fileName = $"{entityName}_{RowNumber}_{userId}{Path.GetExtension(file.FileName)}";
                 fullPath = Path.Combine(savePath, fileName);
 
                 FileUpload theFile = new()

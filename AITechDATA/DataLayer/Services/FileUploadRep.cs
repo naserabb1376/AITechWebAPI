@@ -151,8 +151,9 @@ namespace AITechDATA.DataLayer.Services
                 }
 
                 var theRow = await query.FirstOrDefaultAsync();
-                var theRole= _context.Roles.AsNoTracking().FirstOrDefault(x=> x.ID== roleId) ?? new Role();
-                if (theRow.Description.ToLower() != "public" && ((!theRole.Name.Contains("مدیر") && !theRole.Name.Contains("استاد")) && theRow.CreatorId != userId))
+                var theRole = _context.Roles.AsNoTracking().FirstOrDefault(x => x.ID == roleId) ?? new Role();
+                var alowRoles = new long[] { (long)BaseRole.Teacher, (long)BaseRole.MiddleAdmin, (long)BaseRole.GeneralAdmin, (long)BaseRole.ContentAdmin, (long)BaseRole.PublicRelationsAdmin , (long)BaseRole.EduAdmin };
+                if (theRow.Description.ToLower() != "public" && ( !alowRoles.Contains(theRole.ID) && theRow.CreatorId != userId))
                 {
                     result.Status = false;
                     result.ErrorMessage = $"The User Has No Access To This File";
@@ -193,13 +194,13 @@ namespace AITechDATA.DataLayer.Services
         {
             long rowNumber = await _context.FileUploads.CountAsync() + 1;
 
-            bool existRow = await _context.FileUploads.AnyAsync(x => x.FileName.Contains($"_{rowNumber}_"));
+            //bool existRow = await _context.FileUploads.AnyAsync(x => x.FileName.Contains($"_{rowNumber}_"));
 
-            while (existRow)
-            {
-                rowNumber++;
-                existRow = await _context.FileUploads.AnyAsync(x => x.FileName.Contains($"_{rowNumber}_"));
-            }
+            //while (existRow)
+            //{
+            //    rowNumber++;
+            //    existRow = await _context.FileUploads.AnyAsync(x => x.FileName.Contains($"_{rowNumber}_"));
+            //}
 
             return rowNumber;
         }

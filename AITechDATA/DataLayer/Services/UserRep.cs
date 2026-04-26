@@ -309,7 +309,7 @@ namespace AITechDATA.DataLayer.Services
                 results.Results = await query.OrderByDescending(x => x.CreateDate)
                      .SortBy(sortQuery).ToPaging(pageIndex, pageSize)
                     .Include(x => x.Role)
-                    .Include(x => x.TeacherResumes)
+                    .Include(x => x.TeacherResume)
                     .Include(x => x.PaymentHistories)
                     .Include(x => x.UserCourses)
                     // .Include(x => x.CoursesEnrolled)
@@ -343,7 +343,7 @@ namespace AITechDATA.DataLayer.Services
                 result.Result = await _context.Users
                     .AsNoTracking()
                     .Include(x => x.Role)
-                    .Include(x => x.TeacherResumes)
+                    .Include(x => x.TeacherResume)
                     .Include(x => x.PaymentHistories)
                     .Include(x => x.UserCourses)
                     //.Include(x => x.CoursesEnrolled)

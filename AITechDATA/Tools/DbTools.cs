@@ -2,6 +2,7 @@
 using AITechDATA.Domain;
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -15,7 +16,16 @@ using System.Threading.Tasks;
 
 namespace AITechDATA.Tools
 {
-
+    public enum BaseRole : long
+    {
+        Student = 1,
+        Teacher = 2,
+        MiddleAdmin = 3,
+        GeneralAdmin = 4,
+        ContentAdmin = 7,
+        PublicRelationsAdmin = 8,
+        EduAdmin = 9,
+    }
     public static class SqlServerJsonFunctions
     {
         // JSON_VALUE(expression, path)  -> برمی‌گرداند string (یا null)
@@ -31,6 +41,29 @@ namespace AITechDATA.Tools
 
     public static class DbTools
     {
+        private static IConfigurationRoot Configuration { get; }
+
+        static DbTools()
+        {
+            var builder = new ConfigurationBuilder()
+          .SetBasePath(Directory.GetCurrentDirectory())
+          .AddJsonFile("DataSetting.json", optional: false, reloadOnChange: true);
+            Configuration = builder.Build();
+        }
+
+        public static string GetAppWebAddress()
+        {
+            return Configuration["AppWebAdress"]?.ToString();
+        }
+
+        public static string CreateDownloadLink(this string getUrl)
+        {
+            if (!string.IsNullOrEmpty(getUrl))
+            {
+                getUrl = $"{GetAppWebAddress()}/{getUrl}";
+            }
+            return getUrl ;
+        }
 
         public static List<T> ToPaging<T>(this List<T> list, int pageIndex = 1, int pageSize = 20)
         {
@@ -305,19 +338,20 @@ namespace AITechDATA.Tools
             };
 
             var groupIds = _context.UserGroups.AsNoTracking().Where(g => g.IsActive && g.UserId == userId).Select(x=> x.GroupId).ToList();
-            var discount =  _context.Discounts.Include(x => x.DiscountTargets).AsNoTracking().Where(x => 
+            var discount =  _context.Discounts.Include(x => x.DiscountTargets).Include(x => x.PaymentHistories).AsNoTracking().Where(x => 
             x.EntityName.ToLower() == entityName.ToLower() && x.ForeignKeyId == foreignkeyId 
-            && x.ExpireDate >= DateTime.Now && x.IsActive && !x.CodeRequired
+            && x.ExpireDate >= DateTime.Now && x.DiscountMaxUsage > (x.PaymentHistories.Count(x=> x.UserId == userId)) && x.IsActive && !x.CodeRequired
             && (x.DiscountTargets.Any(t=> (t.IsActive && (
-            (t.TargetEntityName.ToLower() == "group" && groupIds.Contains(t.TargetId)) ||
-            (t.TargetEntityName.ToLower() == "role" && t.TargetId == roleId) ||
-            (t.TargetEntityName.ToLower() == "user" && t.TargetId == userId) 
-            ))))).OrderByDescending(x => x.DiscountPercent).FirstOrDefault();
+            (t.TargetEntityName.ToLower() == "group" && (t.TargetId <= 0 || groupIds.Contains(t.TargetId))) ||
+            (t.TargetEntityName.ToLower() == "role" && (t.TargetId <= 0 || t.TargetId == roleId)) ||
+            (t.TargetEntityName.ToLower() == "user" && (t.TargetId <= 0 || t.TargetId == userId)) 
+            ))))).OrderByDescending(x => x.DiscountPercent).OrderByDescending(x=> x.DiscountAmount).FirstOrDefault();
 
             if (discount != null && discount.DiscountPercent > 0)
             {
                 result.DiscountPercent = discount.DiscountPercent;
-                result.DiscountedFee = fee - (fee * discount.DiscountPercent / 100m);
+                result.DiscountAmount = discount.DiscountAmount;
+                result.DiscountedFee = fee - (result.DiscountAmount);
             }
 
             return result;

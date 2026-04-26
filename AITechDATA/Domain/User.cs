@@ -20,7 +20,7 @@ namespace AITechDATA.Domain
         public Role Role { get; set; } // ارتباط با Role
         public long? AddressId { get; set; } // کلید خارجی به Address
         public Address? Address { get; set; } // ارتباط با Address
-        public ICollection<TeacherResume> TeacherResumes { get; set; } // رزومه‌های مرتبط با استاد
+        public TeacherResume TeacherResume { get; set; } // رزومه‌های مرتبط با استاد
         //public string ParentInfo { get; set; } // اطلاعات والدین برای دانش‌آموزان
         public ICollection<PaymentHistory> PaymentHistories { get; set; } // ارتباط یک به چند با PaymentHistory
         //public ICollection<Course> CoursesTaught { get; set; } // دوره‌هایی که تدریس می‌کند

@@ -33,6 +33,8 @@ namespace AITechWebAPI.Tools
             CreateMap(typeof(CourseListCustomResponse<>), typeof(CourseListCustomResponse<>));
             CreateMap(typeof(ArticleRowCustomResponse<>), typeof(ArticleRowCustomResponse<>));
             CreateMap(typeof(ArticleListCustomResponse<>), typeof(ArticleListCustomResponse<>));
+            CreateMap(typeof(BookRowCustomResponse<>), typeof(BookRowCustomResponse<>));
+            CreateMap(typeof(BookListCustomResponse<>), typeof(BookListCustomResponse<>));
             CreateMap(typeof(TicketRowCustomResponse<>), typeof(TicketRowCustomResponse<>));
             CreateMap(typeof(TicketListCustomResponse<>), typeof(TicketListCustomResponse<>));
 
@@ -69,7 +71,7 @@ namespace AITechWebAPI.Tools
             CreateMap<Discount, DiscountVM>();
             CreateMap<FormField, FormFieldVM>();
 
-            CreateMap<Course, CourseVM>()
+            CreateMap<CourseDto, CourseVM>()
              .ForMember(dest => dest.CategoryName, opt => opt.MapFrom(src => src.Category.CategoryName));
 
             CreateMap<EntityScore, EntityScoreVM>()
@@ -135,6 +137,11 @@ namespace AITechWebAPI.Tools
 .ForMember(dest => dest.UserName, opt => opt.MapFrom(src => $"{src.User.FirstName} {src.User.LastName}"))
 .ForMember(dest => dest.SenderUserName, opt => opt.MapFrom(src => $"{src.SenderUser.FirstName} {src.SenderUser.LastName}"))
 ;
+ CreateMap<Dismissal, DismissalVM>()
+.ForMember(dest => dest.UserName, opt => opt.MapFrom(src => $"{src.User.FirstName} {src.User.LastName}"))
+.ForMember(dest => dest.CheckerUserName, opt => opt.MapFrom(src => $"{src.CheckerUser.FirstName} {src.CheckerUser.LastName}"))
+;
+            ;
 
             CreateMap<Parent, ParentVM>()
 .ForMember(dest => dest.StudentName, opt => opt.MapFrom(src => $"{src.StudentDetails.User.FirstName} {src.StudentDetails.User.LastName}"));

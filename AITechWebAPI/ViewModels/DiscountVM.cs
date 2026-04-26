@@ -12,6 +12,8 @@ namespace AITechWebAPI.ViewModels
     {
         public string DiscountCode { get; set; } 
         public int DiscountPercent { get; set; }
+        public decimal DiscountAmount { get; set; }
+        public int DiscountMaxUsage { get; set; } = 0;
         public long ForeignKeyId { get; set; } // کلید خارجی به رکورد اصلی
         public string EntityName { get; set; } // نام جدول مبدا (مثلاً "User", "Course", "Event")
         public string TargetEntityName { get; set; } // نام جدول مقصد (مثلاً "User", "Course", "Event")

@@ -4,5 +4,6 @@
     "publicdb": "Server=aitechac.com;Initial Catalog=aitechac_AITechDb;User ID=aitechac_AITechDbUser;Password=Dp23$s15o;MultipleActiveResultSets=True;TrustServerCertificate=True;",
     "schooldb": "Server=aitechac.com;Initial Catalog=aitechac_SchoolAITechDb;User ID=aitechac_school_sa;Password=Srjh552$3;MultipleActiveResultSets=True;TrustServerCertificate=True;",
     "localdb": "Data Source =.;Initial Catalog=AITechDb;Integrated Security=True;MultipleActiveResultSets=True;TrustServerCertificate=True;"
-  }
+  },
+  "AppWebAdress": "https://api.aitechac.com"
 }

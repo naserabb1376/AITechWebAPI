@@ -124,7 +124,7 @@ namespace AITechDATA.Migrations
                     b.Property<string>("AuthorName")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<long>("CategoryId")
+                    b.Property<long?>("CategoryId")
                         .HasColumnType("bigint");
 
                     b.Property<DateTime?>("CreateDate")
@@ -342,6 +342,10 @@ namespace AITechDATA.Migrations
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("ID"));
 
                     b.Property<string>("CategoryDescription")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("CategoryEntityType")
+                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("CategoryName")
@@ -604,9 +608,15 @@ namespace AITechDATA.Migrations
                     b.Property<string>("Description")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<decimal>("DiscountAmount")
+                        .HasColumnType("decimal(18,2)");
+
                     b.Property<string>("DiscountCode")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("DiscountMaxUsage")
+                        .HasColumnType("int");
 
                     b.Property<int>("DiscountPercent")
                         .HasColumnType("int");
@@ -670,6 +680,66 @@ namespace AITechDATA.Migrations
                     b.HasIndex("DiscountId");
 
                     b.ToTable("DiscountTargets");
+                });
+
+            modelBuilder.Entity("AITechDATA.Domain.Dismissal", b =>
+                {
+                    b.Property<long>("ID")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("ID"));
+
+                    b.Property<string>("CheckerDescription")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<long?>("CheckerUserId")
+                        .HasColumnType("bigint");
+
+                    b.Property<DateTime?>("CreateDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("DismissalApprovedEndDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("DismissalApprovedStartDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("DismissalRequestDescription")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("DismissalRequestEndDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("DismissalRequestStartDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("DismissalType")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsApproved")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("OtherLangs")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("UpdateDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<long>("UserId")
+                        .HasColumnType("bigint");
+
+                    b.HasKey("ID");
+
+                    b.HasIndex("CheckerUserId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("Dismissals");
                 });
 
             modelBuilder.Entity("AITechDATA.Domain.Duty", b =>
@@ -2138,7 +2208,8 @@ namespace AITechDATA.Migrations
 
                     b.HasKey("ID");
 
-                    b.HasIndex("UserId");
+                    b.HasIndex("UserId")
+                        .IsUnique();
 
                     b.ToTable("TeacherResumes");
                 });
@@ -2661,8 +2732,7 @@ namespace AITechDATA.Migrations
                     b.HasOne("AITechDATA.Domain.Category", "Category")
                         .WithMany("Articles")
                         .HasForeignKey("CategoryId")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.NoAction);
 
                     b.Navigation("Category");
                 });
@@ -2746,6 +2816,23 @@ namespace AITechDATA.Migrations
                         .IsRequired();
 
                     b.Navigation("Discount");
+                });
+
+            modelBuilder.Entity("AITechDATA.Domain.Dismissal", b =>
+                {
+                    b.HasOne("AITechDATA.Domain.User", "CheckerUser")
+                        .WithMany()
+                        .HasForeignKey("CheckerUserId");
+
+                    b.HasOne("AITechDATA.Domain.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("CheckerUser");
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("AITechDATA.Domain.Duty", b =>
@@ -2998,8 +3085,8 @@ namespace AITechDATA.Migrations
             modelBuilder.Entity("AITechDATA.Domain.TeacherResume", b =>
                 {
                     b.HasOne("AITechDATA.Domain.User", "User")
-                        .WithMany("TeacherResumes")
-                        .HasForeignKey("UserId")
+                        .WithOne("TeacherResume")
+                        .HasForeignKey("AITechDATA.Domain.TeacherResume", "UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -3099,7 +3186,7 @@ namespace AITechDATA.Migrations
             modelBuilder.Entity("AiTech.Domains.PaymentHistory", b =>
                 {
                     b.HasOne("AITechDATA.Domain.Discount", "Discount")
-                        .WithMany()
+                        .WithMany("PaymentHistories")
                         .HasForeignKey("DiscountId");
 
                     b.HasOne("AITechDATA.Domain.Group", null)
@@ -3178,6 +3265,8 @@ namespace AITechDATA.Migrations
             modelBuilder.Entity("AITechDATA.Domain.Discount", b =>
                 {
                     b.Navigation("DiscountTargets");
+
+                    b.Navigation("PaymentHistories");
                 });
 
             modelBuilder.Entity("AITechDATA.Domain.FormField", b =>
@@ -3263,7 +3352,8 @@ namespace AITechDATA.Migrations
                     b.Navigation("StudentDetails")
                         .IsRequired();
 
-                    b.Navigation("TeacherResumes");
+                    b.Navigation("TeacherResume")
+                        .IsRequired();
 
                     b.Navigation("TicketMessages");
 

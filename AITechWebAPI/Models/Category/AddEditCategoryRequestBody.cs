@@ -10,6 +10,10 @@ namespace AITechWebAPI.Models.Category
         [Required(ErrorMessage = "لطفا {0} را وارد کنید")]
         public string CategoryName { get; set; }
 
+        [Display(Name = "نوع دسته بندی")]
+        [Required(ErrorMessage = "لطفا {0} را وارد کنید")]
+        public string CategoryEntityType { get; set; }
+
         [Display(Name = "شرح دسته بندی")]
         public string? CategoryDescription { get; set; }
 

@@ -5,7 +5,7 @@ namespace AITechWebAPI.ViewModels
     public class PermissionRoleVM : BaseVM
     {
         public long RoleId { get; set; }
-        public long PerrmissionId { get; set; }
+        public long PermissionId { get; set; }
         public string PermissionName { get; set; }
         public string RouteName { get; set; }
         public string PermissionType { get; set; }

@@ -226,6 +226,7 @@ namespace AITechWebAPI
             builder.Services.AddScoped<IDiscountRep, DiscountRep>();
             builder.Services.AddScoped<IDiscountTargetRep, DiscountTargetRep>();
             builder.Services.AddScoped<IDutyRep, DutyRep>();
+            builder.Services.AddScoped<IDismissalRep, DismissalRep>();
             builder.Services.AddScoped<IGadgetAccessRep, GadgetAccessRep>();
 
 

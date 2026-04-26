@@ -78,7 +78,7 @@ namespace AITechWebAPI.Controllers
             {
                 return BadRequest(requestBody);
             }
-            var result = await _DiscountRep.ExistDiscountAsync(requestBody.ExistType,requestBody.KeyValue);
+            var result = await _DiscountRep.ExistDiscountAsync(requestBody.ExistType,requestBody.KeyValue,User.GetCurrentUserId());
             if (string.IsNullOrEmpty(result.ErrorMessage))
             {
                 return Ok(result);
@@ -89,9 +89,24 @@ namespace AITechWebAPI.Controllers
         [HttpPost("AddDiscount_Base")]
         public async Task<ActionResult<RowResultObject<Discount>>> AddDiscount_Base(AddEditDiscountRequestBody requestBody)
         {
+            int discountPercent = 0;
+            decimal discountAmount = 0;
             if (!ModelState.IsValid)
             {
                 return BadRequest(requestBody);
+            }
+            if (requestBody.DiscountValue.Contains("%"))
+            {
+                discountPercent = int.Parse(requestBody.DiscountValue.Replace("%",""));
+                if (discountPercent < 0 || discountPercent > 100)
+                {
+                    ModelState.AddModelError("DiscountValue", "مفدار درصد تخفیف نامعتبر است");
+                    return BadRequest(requestBody);
+                }
+            }
+            else
+            {
+                discountAmount = decimal.Parse(requestBody.DiscountValue.Replace("%", ""));
             }
             Discount Discount = new Discount()
             {
@@ -104,7 +119,9 @@ namespace AITechWebAPI.Controllers
                 EntityName = requestBody.EntityName,
                 ForeignKeyId = requestBody.ForeignKeyId,
                 CodeRequired = requestBody.CodeRequired,
-                DiscountPercent = requestBody.DiscountPercent,
+                DiscountPercent = discountPercent,
+                DiscountAmount = discountAmount,
+                DiscountMaxUsage = requestBody.DiscountMaxUsage,
                 ExpireDate = requestBody.ExpireDate.StringToDate().Value,
                 DiscountCode = requestBody.DiscountCode.GenerateDiscountCode(),
 
@@ -137,9 +154,24 @@ namespace AITechWebAPI.Controllers
         public async Task<ActionResult<RowResultObject<Discount>>> EditDiscount_Base(AddEditDiscountRequestBody requestBody)
         {
             var result = new RowResultObject<Discount>();
+            int discountPercent = 0;
+            decimal discountAmount = 0;
             if (!ModelState.IsValid)
             {
                 return BadRequest(requestBody);
+            }
+            if (requestBody.DiscountValue.Contains("%"))
+            {
+                discountPercent = int.Parse(requestBody.DiscountValue.Replace("%", ""));
+                if (discountPercent < 0 || discountPercent > 100)
+                {
+                    ModelState.AddModelError("DiscountValue", "مفدار درصد تخفیف نامعتبر است");
+                    return BadRequest(requestBody);
+                }
+            }
+            else
+            {
+                discountAmount = decimal.Parse(requestBody.DiscountValue.Replace("%", ""));
             }
             var theRow = await _DiscountRep.GetDiscountByIdAsync(requestBody.ID);
             if (!theRow.Status)
@@ -160,7 +192,9 @@ namespace AITechWebAPI.Controllers
                 EntityName = requestBody.EntityName,
                 ForeignKeyId = requestBody.ForeignKeyId,
                 CodeRequired = requestBody.CodeRequired,
-                DiscountPercent = requestBody.DiscountPercent,
+                DiscountPercent = discountPercent,
+                DiscountAmount = discountAmount,
+                DiscountMaxUsage = requestBody.DiscountMaxUsage,
                 ExpireDate = requestBody.ExpireDate.StringToDate().Value,
                 DiscountCode = requestBody.DiscountCode.GenerateDiscountCode(), 
             };

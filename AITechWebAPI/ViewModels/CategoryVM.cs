@@ -6,6 +6,8 @@ namespace AITechWebAPI.ViewModels
     {
         public string CategoryName { get; set; }
 
+        public string CategoryEntityType { get; set; }
+
         public string? CategoryDescription { get; set; }
 
     }

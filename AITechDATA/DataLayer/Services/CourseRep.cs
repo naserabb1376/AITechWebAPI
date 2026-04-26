@@ -75,78 +75,147 @@ namespace AITechDATA.DataLayer.Services
             return result;
         }
 
-        public async Task<CourseListCustomResponse<Course>> GetAllCoursesAsync(long categoryId = 0, int pageIndex = 1, int pageSize = 20, string searchText = "",string sortQuery ="")
+        public async Task<CourseListCustomResponse<CourseDto>> GetAllCoursesAsync(
+      long categoryId = 0,
+      int pageIndex = 1,
+      int pageSize = 20,
+      string searchText = "",
+      string sortQuery = "")
         {
-            CourseListCustomResponse<Course> results = new CourseListCustomResponse<Course>();
+            var results = new CourseListCustomResponse<CourseDto>();
+
             try
             {
-                var query = _context.Courses.AsNoTracking().Include(x => x.Category)
-                    .Include(x => x.Groups)
-.Select(a => new Course()
-                {
-                    ID = a.ID,
-                    Title = a.Title,
-                    CategoryId = a.CategoryId,
-                    Category = a.Category,
-                    Note = a.Note,
-                    CreateDate = a.CreateDate,
-                    UpdateDate = a.UpdateDate,
-                    Groups = a.Groups,
-                    Description = "",
-                    OtherLangs = "",
+                var query = _context.Courses.Include(g=> g.Groups).ThenInclude(g=> g.Teacher).ThenInclude(g=> g.TeacherResume)
+                    .AsNoTracking()
+                    .Select(a => new CourseDto
+                    {
+                        ID = a.ID,
+                        Title = a.Title,
+                        Description = a.Description,
+                        Note = a.Note,
+                        CategoryId = a.CategoryId,
+                        Category = a.Category,
+                        CreateDate = a.CreateDate,
+                        UpdateDate = a.UpdateDate,
 
-                });
-                if (categoryId> 0)
+                        Groups = a.Groups.Select(g => new CourseGroupDto
+                        {
+                            ID = g.ID,
+                            Name = g.Name,
+                            DayOfWeek = g.DayOfWeek,
+                            StartDate = g.StartDate,
+                            EndDate = g.EndDate,
+                            StartTime = g.StartTime,
+                            EndTime = g.EndTime,
+                            Fee = g.Fee,
+                            Status = g.Status,
+                            GroupType = g.GroupType,
+                            Note = g.Note,
+                            TeacherId = g.TeacherId,
+
+                            TeacherFirstName = g.Teacher.FirstName,
+                            TeacherLastName = g.Teacher.LastName,
+
+                            TeacherCVLink = _context.FileUploads.Where(f => f.EntityType.ToLower() == "TeacherResume".ToLower() && f.ForeignKeyId == g.Teacher.TeacherResume.ID)
+                            .Select(x => x.GetUrl).FirstOrDefault().CreateDownloadLink(),
+
+
+                        }).ToList()
+                    });
+
+                if (categoryId > 0)
                 {
                     query = query.Where(x => x.CategoryId == categoryId);
                 }
-                query =query.Where(x =>
-                        ((!string.IsNullOrEmpty(x.Title) && x.Title.Contains(searchText)) ||
-                        (!string.IsNullOrEmpty(x.Note) && x.Note.Contains(searchText)) ||
-                        (!string.IsNullOrEmpty(x.Description) && x.Description.Contains(searchText)))
-                    );
 
-                results.TotalCount = query.Count();
+                if (!string.IsNullOrWhiteSpace(searchText))
+                {
+                    query = query.Where(x =>
+                        (!string.IsNullOrEmpty(x.Title) && x.Title.Contains(searchText)) ||
+                        (!string.IsNullOrEmpty(x.Note) && x.Note.Contains(searchText)) ||
+                        (!string.IsNullOrEmpty(x.Description) && x.Description.Contains(searchText))
+                    );
+                }
+
+                results.TotalCount = await query.CountAsync();
                 results.PageCount = DbTools.GetPageCount(results.TotalCount, pageSize);
-                results.Results = await query.OrderByDescending(x => x.CreateDate)
-                     .SortBy(sortQuery).ToPaging(pageIndex, pageSize)
+
+                results.Results = await query
+                    .OrderByDescending(x => x.CreateDate)
+                    .SortBy(sortQuery)
+                    .ToPaging(pageIndex, pageSize)
                     .ToListAsync();
 
-                // Map images for each Course
-                results.ResultImages = results.Results
-                    .ToDictionary(
-                        user => user,
-                        user => _context.Images
-                            .Where(img => img.ForeignKeyId == user.ID && img.EntityType == "Course")
-                            .ToList()
-                    );
+                results.ResultImages = results.Results.ToDictionary(
+                    course => course,
+                    course => _context.Images
+                        .Where(img => img.ForeignKeyId == course.ID && img.EntityType.ToLower() == "course")
+                        .ToList()
+                );
             }
             catch (Exception ex)
             {
                 results.Status = false;
                 results.ErrorMessage = $"{ex.Message} - {ex.InnerException?.Message}";
             }
+
             return results;
         }
-
-        public async Task<CourseRowCustomResponse<Course>> GetCourseByIdAsync(long courseId)
+        public async Task<CourseRowCustomResponse<CourseDto>> GetCourseByIdAsync(long courseId)
         {
-            CourseRowCustomResponse<Course> result = new CourseRowCustomResponse<Course>();
+            var result = new CourseRowCustomResponse<CourseDto>();
+
             try
             {
-                result.Result = await _context.Courses
+                result.Result = await _context.Courses.Include(g => g.Groups).ThenInclude(g => g.Teacher).ThenInclude(g => g.TeacherResume)
                     .AsNoTracking()
-                    .Include(x => x.Category)
-                    .Include(x => x.Groups)
-                    .SingleOrDefaultAsync(x => x.ID == courseId);
+                    .Where(x => x.ID == courseId)
+                    .Select(a => new CourseDto
+                    {
+                        ID = a.ID,
+                        Title = a.Title,
+                        Description = a.Description,
+                        Note = a.Note,
+                        CategoryId = a.CategoryId,
+                        Category = a.Category,
+                        CreateDate = a.CreateDate,
+                        UpdateDate = a.UpdateDate,
+
+                        Groups = a.Groups.Select(g => new CourseGroupDto
+                        {
+                            ID = g.ID,
+                            Name = g.Name,
+                            DayOfWeek = g.DayOfWeek,
+                            StartDate = g.StartDate,
+                            EndDate = g.EndDate,
+                            StartTime = g.StartTime,
+                            EndTime = g.EndTime,
+                            Fee = g.Fee,
+                            Status = g.Status,
+                            GroupType = g.GroupType,
+                            Note = g.Note,
+                            TeacherId = g.TeacherId,
+
+                            TeacherFirstName = g.Teacher.FirstName,
+                            TeacherLastName = g.Teacher.LastName,
+                            TeacherCVLink = _context.FileUploads.Where(f => f.EntityType.ToLower() == "TeacherResume".ToLower() && f.ForeignKeyId == g.Teacher.TeacherResume.ID)
+                            .Select(x => x.GetUrl).FirstOrDefault().CreateDownloadLink(),
+
+                        }).ToList()
+                    })
+                    .SingleOrDefaultAsync();
 
                 if (result.Result != null)
                 {
-                    result.ResultImages = new Dictionary<Course, List<Image>?>
+                    result.ResultImages = new Dictionary<CourseDto, List<Image>?>
             {
-                { result.Result, await _context.Images
-                    .Where(img => img.ForeignKeyId == courseId && img.EntityType == "Course")
-                    .ToListAsync() }
+                {
+                    result.Result,
+                    await _context.Images
+                        .Where(img => img.ForeignKeyId == courseId && img.EntityType.ToLower() == "course")
+                        .ToListAsync()
+                }
             };
                 }
             }
@@ -155,6 +224,7 @@ namespace AITechDATA.DataLayer.Services
                 result.Status = false;
                 result.ErrorMessage = $"{ex.Message} - {ex.InnerException?.Message}";
             }
+
             return result;
         }
 
@@ -184,8 +254,21 @@ namespace AITechDATA.DataLayer.Services
             BitResultObject result = new BitResultObject();
             try
             {
-                var course = await GetCourseByIdAsync(courseId);
-                result = await RemoveCourseAsync(course.Result);
+                var courseDto = await GetCourseByIdAsync(courseId);
+                var theCourse = new Course
+                {
+                    OtherLangs = courseDto.Result.OtherLangs,
+                    CategoryId = courseDto.Result.CategoryId,
+                    CreateDate = courseDto.Result.CreateDate,
+                    IsActive = courseDto.Result.IsActive,
+                    UpdateDate = courseDto.Result.UpdateDate,
+                    Description = courseDto.Result.Description,
+                    ID = courseDto.Result.ID,
+                    Note = courseDto.Result.Note,
+                    Title = courseDto.Result.Title,
+                    
+                };
+                result = await RemoveCourseAsync(theCourse);
             }
             catch (Exception ex)
             {

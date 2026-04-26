@@ -46,6 +46,7 @@ namespace AITechDATA.DataLayer
         public DbSet<Minutes> Minutes { get; set; }
         public DbSet<Notification> Notifications { get; set; }
         public DbSet<Duty> Duties { get; set; }
+        public DbSet<Dismissal> Dismissals { get; set; }
         public DbSet<Parent> Parents { get; set; }
         public DbSet<PaymentHistory> PaymentHistories { get; set; }
         public DbSet<PreRegistration> PreRegistrations { get; set; }
@@ -299,8 +300,7 @@ namespace AITechDATA.DataLayer
 
             modelBuilder.Entity<TeacherResume>()
 .HasOne(x => x.User)
-.WithMany(x => x.TeacherResumes)
-.HasForeignKey(x => x.UserId)
+.WithOne(x => x.TeacherResume)
 .OnDelete(DeleteBehavior.Cascade);
 
             modelBuilder.Entity<LoginMethod>()

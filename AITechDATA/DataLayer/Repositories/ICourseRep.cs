@@ -11,9 +11,9 @@ namespace AITechDATA.DataLayer.Repositories
 {
     public interface ICourseRep
     {
-        Task<CourseListCustomResponse<Course>> GetAllCoursesAsync(long categoryId = 0,int pageIndex = 1, int pageSize = 20, string searchText = "",string sortQuery ="");
+        Task<CourseListCustomResponse<CourseDto>> GetAllCoursesAsync(long categoryId = 0,int pageIndex = 1, int pageSize = 20, string searchText = "",string sortQuery ="");
 
-        Task<CourseRowCustomResponse<Course>> GetCourseByIdAsync(long courseId);
+        Task<CourseRowCustomResponse<CourseDto>> GetCourseByIdAsync(long courseId);
 
         Task<BitResultObject> AddCourseAsync(Course course);
 

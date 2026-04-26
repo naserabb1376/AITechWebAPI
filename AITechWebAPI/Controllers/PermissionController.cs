@@ -287,7 +287,7 @@ namespace AITechWebAPI.Controllers
 
                     if (result.Status)
                     {
-                        var roleIds = new long[] { 3, 4, 7 };
+                        var roleIds = new long[] { (long)BaseRole.MiddleAdmin, (long)BaseRole.GeneralAdmin, (long)BaseRole.ContentAdmin, (long)BaseRole.EduAdmin };
                         foreach (var roleId in roleIds)
                         {
                             MTPermissionCenter_PermissionRole permissionRole = new MTPermissionCenter_PermissionRole()

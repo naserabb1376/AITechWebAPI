@@ -1,4 +1,5 @@
-﻿using MTPermissionCenter.EFCore.Entities;
+﻿using AiTech.Domains;
+using MTPermissionCenter.EFCore.Entities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,6 +12,8 @@ namespace AITechDATA.Domain
     {
         public string DiscountCode { get; set; } 
         public int DiscountPercent { get; set; }
+        public decimal DiscountAmount { get; set; }
+        public int DiscountMaxUsage { get; set; } = 0;
         public string EntityName { get; set; } // نام جدول مبدا (مثلاً "User", "Course", "Event")
         public long ForeignKeyId { get; set; } // کلید خارجی به رکورد اصلی
         public string? Description { get; set; } = ""; // توضیحات تصویر
@@ -19,6 +22,7 @@ namespace AITechDATA.Domain
         public bool CodeRequired { get; set; }
 
         public ICollection<DiscountTarget> DiscountTargets { get; set; } 
+        public ICollection<PaymentHistory> PaymentHistories { get; set; } 
 
     }
 
@@ -26,5 +30,7 @@ namespace AITechDATA.Domain
     {
         public int DiscountPercent { get; set; }
         public decimal DiscountedFee { get; set; }
+        public decimal DiscountAmount { get; set; }
+
     }
 }
