@@ -297,7 +297,7 @@ namespace AITechWebAPI.Controllers
                                 IsActive = true,
                                 PermissionId = Permission.ID,
                                 RoleId = roleId,
-                                OwnerOnly = roleId < 4,
+                                OwnerOnly = roleId < (long)BaseRole.GeneralAdmin,
                             };
 
                             result = await _PermissionRoleRep.AddPermissionRolesAsync(new List<MTPermissionCenter_PermissionRole>() { permissionRole });

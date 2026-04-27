@@ -293,7 +293,8 @@ await _GroupRep.GetGroupByIdAsync(requestBody.ForeignKeyId);
 
                         rowAmount = theRow.Result.Fee;
                         targetObjName = theRow.Result.Name;
-                        groupType = theRow.Result.GroupType.ToLower();
+                       // groupType = theRow.Result.GroupType.ToLower();
+                        groupType = theRow.Result.Course.Category.CategoryName;
                         discountedrowAmount = theRow.Result.DiscountedFee;
 
                     }
@@ -407,7 +408,8 @@ await _GroupRep.GetGroupByIdAsync(requestBody.ForeignKeyId);
             else
             {
                 var userRow = await _UserRep.GetUserByIdAsync(UserId);
-                if (groupType == "online" || groupType == "video")
+                //if (groupType == "online" || groupType == "video")
+                if (groupType.Contains( "آنلاین") || groupType.Contains( "آفلاین"))
                 {
                     UserGroup userGroup = new UserGroup()
                     {
@@ -545,8 +547,8 @@ await _GroupRep.GetGroupByIdAsync(requestBody.ForeignKeyId);
                             }
 
                             targetObjName = targetObj.Result.Name;
-                            groupType = targetObj.Result.GroupType;
-
+                            //groupType = targetObj.Result.GroupType;
+                            groupType = targetObj.Result.Course.Category.CategoryName.ToLower();
                         }
                         break;
                     case "event":
@@ -582,7 +584,8 @@ await _GroupRep.GetGroupByIdAsync(requestBody.ForeignKeyId);
                 if (verifyResult.Status == PaymentVerifyResultStatus.Succeed)
                 {
                     paymentHistory.Result.PaymentStatus = true;
-                    if (groupType == "online" || groupType == "video")
+                    // if (groupType == "online" || groupType == "video")
+                    if (groupType.Contains("آنلاین") || groupType.Contains("آفلاین"))
                     {
                         UserGroup userGroup = new UserGroup()
                         {
