@@ -54,7 +54,7 @@ namespace AITechWebAPI.Controllers
             {
                 return BadRequest(requestBody);
             }
-            var result = await _UserRep.GetAllUsersAsync(requestBody.GroupId,requestBody.CourseId,requestBody.SessionAssignmentId,requestBody.SessionId,requestBody.AddressId,requestBody.RoleId,requestBody.StudyField,requestBody.EducationalGrade,requestBody.PageIndex,requestBody.PageSize,requestBody.SearchText,requestBody.SortQuery);
+            var result = await _UserRep.GetAllUsersAsync(requestBody.GroupId,requestBody.CourseId,requestBody.SessionAssignmentId,requestBody.SessionId,requestBody.AddressId,requestBody.RoleIds,requestBody.StudyField,requestBody.EducationalGrade,requestBody.PageIndex,requestBody.PageSize,requestBody.SearchText,requestBody.SortQuery);
             if (result.Status)
             {
                 var resultVM = _mapper.Map<UserListCustomResponse<UserVM>>(result);
@@ -71,7 +71,7 @@ namespace AITechWebAPI.Controllers
             {
                 return BadRequest(requestBody);
             }
-            var result = await _UserRep.GetAllUsersAsync(requestBody.GroupId, requestBody.CourseId, requestBody.SessionAssignmentId, requestBody.SessionId, requestBody.AddressId,2,requestBody.StudyField,requestBody.EducationalGrade, requestBody.PageIndex, requestBody.PageSize, requestBody.SearchText, requestBody.SortQuery);
+            var result = await _UserRep.GetAllUsersAsync(requestBody.GroupId, requestBody.CourseId, requestBody.SessionAssignmentId, requestBody.SessionId, requestBody.AddressId,new List<long>() { (long)BaseRole.Teacher},requestBody.StudyField,requestBody.EducationalGrade, requestBody.PageIndex, requestBody.PageSize, requestBody.SearchText, requestBody.SortQuery);
             if (result.Status)
             {
                 var resultVM = _mapper.Map<UserListCustomResponse<TeacherVM>>(result);

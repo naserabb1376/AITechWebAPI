@@ -476,7 +476,7 @@ await _GroupRep.GetGroupByIdAsync(requestBody.ForeignKeyId);
 
                         if (targetObj.Result.Course.Category.CategoryName.Contains("دانش آموزی"))
                         {
-                            var eduAdmins = await _UserRep.GetAllUsersAsync(RoleId: (long)BaseRole.EduAdmin, pageSize: 0);
+                            var eduAdmins = await _UserRep.GetAllUsersAsync(RoleIds: new List<long>() { (long)BaseRole.EduAdmin }, pageSize: 0);
 
                             phoneNumbers.AddRange(eduAdmins.Results.Select(x => x.Username).ToList());
 
@@ -652,7 +652,7 @@ await _GroupRep.GetGroupByIdAsync(requestBody.ForeignKeyId);
 
                             if (targetObj.Result.Course.Category.CategoryName.Contains("دانش آموزی"))
                             {
-                                var eduAdmins = await _UserRep.GetAllUsersAsync(RoleId: (long)BaseRole.EduAdmin, pageSize: 0);
+                                var eduAdmins = await _UserRep.GetAllUsersAsync(RoleIds: new List<long>() { (long)BaseRole.EduAdmin }, pageSize: 0);
 
                                 phoneNumbers.AddRange(eduAdmins.Results.Select(x => x.Username).ToList());
 

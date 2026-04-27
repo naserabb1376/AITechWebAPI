@@ -211,7 +211,7 @@ namespace AITechDATA.DataLayer.Services
             return result;
         }
 
-        public async Task<UserListCustomResponse<User>> GetAllUsersAsync(long groupId = 0, long courseId = 0, long sessionAssignmentId = 0, long sessionId = 0, long AddressId = 0, long RoleId = 0, string StudyField = "", string EducationalGrade = "", int pageIndex = 1, int pageSize = 20, string searchText = "", string sortQuery = "")
+        public async Task<UserListCustomResponse<User>> GetAllUsersAsync(long groupId = 0, long courseId = 0, long sessionAssignmentId = 0, long sessionId = 0, long AddressId = 0, List<long>? RoleIds = null, string StudyField = "", string EducationalGrade = "", int pageIndex = 1, int pageSize = 20, string searchText = "", string sortQuery = "")
         {
             UserListCustomResponse<User> results = new UserListCustomResponse<User>();
             try
@@ -222,8 +222,8 @@ namespace AITechDATA.DataLayer.Services
                     query = _context.UserGroups.Where(x => x.GroupId == groupId).Select(x => x.User).Include(x=>x.EducationalBackground)
                    .AsNoTracking()
                    .Where(x =>
-                         ((AddressId > 0 ? x.AddressId == AddressId : true) &&
-                      (RoleId > 0 ? x.RoleId == RoleId : true)) &&
+                         ((AddressId > 0 ? x.AddressId == AddressId : true)
+                      ) &&
                        ((!string.IsNullOrEmpty(x.FirstName) && x.FirstName.Contains(searchText)) ||
                        (!string.IsNullOrEmpty(x.LastName) && x.LastName.Contains(searchText)) ||
                        (!string.IsNullOrEmpty(x.Email) && x.Email.Contains(searchText)) ||
@@ -238,8 +238,8 @@ namespace AITechDATA.DataLayer.Services
                     query = _context.UserCourses.Where(x => x.CourseId == courseId).Select(x => x.User).Include(x => x.EducationalBackground)
                    .AsNoTracking()
                    .Where(x =>
-                        ((AddressId > 0 ? x.AddressId == AddressId : true) &&
-                      (RoleId > 0 ? x.RoleId == RoleId : true)) &&
+                        ((AddressId > 0 ? x.AddressId == AddressId : true) 
+                      ) &&
                        ((!string.IsNullOrEmpty(x.FirstName) && x.FirstName.Contains(searchText)) ||
                        (!string.IsNullOrEmpty(x.LastName) && x.LastName.Contains(searchText)) ||
                        (!string.IsNullOrEmpty(x.Email) && x.Email.Contains(searchText)) ||
@@ -253,8 +253,8 @@ namespace AITechDATA.DataLayer.Services
                     query = _context.Assignments.Where(x => x.SessionAssignmentId == sessionAssignmentId).Select(x => x.User).Include(x => x.EducationalBackground)
                    .AsNoTracking()
                    .Where(x =>
-                      ((AddressId > 0 ? x.AddressId == AddressId : true) &&
-                      (RoleId > 0 ? x.RoleId == RoleId : true)) &&
+                      ((AddressId > 0 ? x.AddressId == AddressId : true)
+                      ) &&
                        ((!string.IsNullOrEmpty(x.FirstName) && x.FirstName.Contains(searchText)) ||
                        (!string.IsNullOrEmpty(x.LastName) && x.LastName.Contains(searchText)) ||
                        (!string.IsNullOrEmpty(x.Email) && x.Email.Contains(searchText)) ||
@@ -268,8 +268,8 @@ namespace AITechDATA.DataLayer.Services
                     query = _context.Attendances.Where(x => x.SessionId == sessionId).Select(x => x.User).Include(x => x.EducationalBackground)
                    .AsNoTracking()
                    .Where(x =>
-                         ((AddressId > 0 ? x.AddressId == AddressId : true) &&
-                      (RoleId > 0 ? x.RoleId == RoleId : true)) &&
+                         ((AddressId > 0 ? x.AddressId == AddressId : true)
+                      ) &&
                        ((!string.IsNullOrEmpty(x.FirstName) && x.FirstName.Contains(searchText)) ||
                        (!string.IsNullOrEmpty(x.LastName) && x.LastName.Contains(searchText)) ||
                        (!string.IsNullOrEmpty(x.Email) && x.Email.Contains(searchText)) ||
@@ -283,8 +283,8 @@ namespace AITechDATA.DataLayer.Services
                     query = _context.Users.Include(x => x.EducationalBackground)
                 .AsNoTracking()
                 .Where(x =>
-                     ((AddressId > 0 ? x.AddressId == AddressId : true) &&
-                      (RoleId > 0 ? x.RoleId == RoleId : true)) &&
+                     ((AddressId > 0 ? x.AddressId == AddressId : true)
+                      ) &&
                        ((!string.IsNullOrEmpty(x.FirstName) && x.FirstName.Contains(searchText)) ||
                        (!string.IsNullOrEmpty(x.LastName) && x.LastName.Contains(searchText)) ||
                        (!string.IsNullOrEmpty(x.Email) && x.Email.Contains(searchText)) ||
@@ -292,6 +292,11 @@ namespace AITechDATA.DataLayer.Services
                        (!string.IsNullOrEmpty(x.EducationalBackground.EducationalGrade) && x.EducationalBackground.EducationalGrade.Contains(searchText)) ||
                        (!string.IsNullOrEmpty(x.Username) && x.Username.Contains(searchText)))
                 );
+                }
+
+                if (RoleIds != null)
+                {
+                    query = query.Where(x => RoleIds.Contains(x.RoleId));
                 }
 
                 if (!string.IsNullOrEmpty(StudyField))

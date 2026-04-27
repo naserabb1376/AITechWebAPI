@@ -116,10 +116,16 @@ namespace AITechDATA.DataLayer.Services
 
                             TeacherFirstName = g.Teacher.FirstName,
                             TeacherLastName = g.Teacher.LastName,
-
+                            IsActive = a.IsActive,
                             TeacherCVLink = _context.FileUploads.Where(f => f.EntityType.ToLower() == "TeacherResume".ToLower() && f.ForeignKeyId == g.Teacher.TeacherResume.ID)
                             .Select(x => x.GetUrl).FirstOrDefault().CreateDownloadLink(),
-
+                            CreateDate=a.CreateDate,
+                            UpdateDate=a.UpdateDate,
+                            OtherLangs = a.OtherLangs,
+                            TeacherResumeId = g.Teacher.TeacherResume.ID,
+                            TeacherResumeDateAchieved = g.Teacher.TeacherResume.DateAchieved,
+                            TeacherResumeDescription = g.Teacher.TeacherResume.Description,
+                            TeacherResumeTitle = g.Teacher.TeacherResume.Title,
 
                         }).ToList()
                     });
@@ -201,6 +207,15 @@ namespace AITechDATA.DataLayer.Services
                             TeacherLastName = g.Teacher.LastName,
                             TeacherCVLink = _context.FileUploads.Where(f => f.EntityType.ToLower() == "TeacherResume".ToLower() && f.ForeignKeyId == g.Teacher.TeacherResume.ID)
                             .Select(x => x.GetUrl).FirstOrDefault().CreateDownloadLink(),
+                            IsActive = a.IsActive,
+                            CreateDate = a.CreateDate,
+                            UpdateDate = a.UpdateDate,
+                            OtherLangs = a.OtherLangs,
+                            TeacherResumeId = g.Teacher.TeacherResume.ID,
+                            TeacherResumeDateAchieved = g.Teacher.TeacherResume.DateAchieved,
+                            TeacherResumeDescription = g.Teacher.TeacherResume.Description,
+                            TeacherResumeTitle = g.Teacher.TeacherResume.Title,
+                            
 
                         }).ToList()
                     })

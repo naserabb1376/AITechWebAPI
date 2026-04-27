@@ -241,6 +241,11 @@ namespace AITechDATA.DataLayer.Services
                         Name = x.Name,
                         TeacherCVLink = _context.FileUploads.Where(f => f.EntityType.ToLower() == "TeacherResume".ToLower() && f.ForeignKeyId == x.Teacher.TeacherResume.ID)
                             .Select(x => x.GetUrl).FirstOrDefault().CreateDownloadLink(),
+                        TeacherResumeId = x.Teacher.TeacherResume.ID,
+                        TeacherResumeDateAchieved = x.Teacher.TeacherResume.DateAchieved,
+                        TeacherResumeDescription = x.Teacher.TeacherResume.Description,
+                        TeacherResumeTitle = x.Teacher.TeacherResume.Title,
+                        
 
                         // اگر کاربر عضو قطعی گروه باشد => Registered
                         // وگرنه اگر در PreRegistration باشد => PreRegistration
@@ -304,10 +309,16 @@ namespace AITechDATA.DataLayer.Services
                         OtherLangs = x.OtherLangs,
                         IsActive = x.IsActive,
                         ID = x.ID,
+                       
 
                         TeacherId = x.TeacherId,
                         TeacherCVLink = _context.FileUploads.Where(f => f.EntityType.ToLower() == "TeacherResume".ToLower() && f.ForeignKeyId == x.Teacher.TeacherResume.ID)
                             .Select(x => x.GetUrl).FirstOrDefault().CreateDownloadLink(),
+                        TeacherResumeId = x.Teacher.TeacherResume.ID,
+                        TeacherResumeDateAchieved = x.Teacher.TeacherResume.DateAchieved,
+                        TeacherResumeDescription = x.Teacher.TeacherResume.Description,
+                        TeacherResumeTitle = x.Teacher.TeacherResume.Title,
+
                         Status = x.Status,
                         Note = x.Note,
                         DayOfWeek = x.DayOfWeek,
