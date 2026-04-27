@@ -80,35 +80,43 @@ namespace AITechDATA.DataLayer.Services
             BookListCustomResponse<Book> results = new BookListCustomResponse<Book>();
             try
             {
-                var query = _context.Books.AsNoTracking().Include(x => x.Category)
+                var query = _context.Books
+                                .AsNoTracking()
+                                .Include(x => x.Category)
+                                .AsQueryable();
 
-                     .Select(a => new Book()
-                     {
-                       ID =  a.ID,
-                       Title = a.Title,
-                       CategoryId = a.CategoryId,
-                       Category = a.Category,
-                       Note = a.Note,
-                       CreateDate = a.CreateDate,
-                       UpdateDate = a.UpdateDate,
-                       Description = "",
-                       OtherLangs = "",
-                     });
                 if (categoryId > 0)
                 {
                     query = query.Where(x => x.CategoryId == categoryId);
                 }
-                query = query.Where(x =>
-                    ((!string.IsNullOrEmpty(x.Title) && x.Title.Contains(searchText)) ||
+
+                if (!string.IsNullOrEmpty(searchText))
+                {
+                    query = query.Where(x =>
+                        (!string.IsNullOrEmpty(x.Title) && x.Title.Contains(searchText)) ||
                         (!string.IsNullOrEmpty(x.Note) && x.Note.Contains(searchText)) ||
                         (!string.IsNullOrEmpty(x.AuthorName) && x.AuthorName.Contains(searchText)) ||
-                        (!string.IsNullOrEmpty(x.Description) && x.Description.Contains(searchText)))
+                        (!string.IsNullOrEmpty(x.Description) && x.Description.Contains(searchText))
                     );
-
-                results.TotalCount = query.Count();
+                }
+                results.TotalCount = await query.CountAsync();
                 results.PageCount = DbTools.GetPageCount(results.TotalCount, pageSize);
-                results.Results = await query.OrderByDescending(x => x.CreateDate)
-                     .SortBy(sortQuery).ToPaging(pageIndex, pageSize)
+
+                results.Results = await query
+                    .OrderByDescending(x => x.CreateDate)
+                    .Select(a => new Book
+                    {
+                        ID = a.ID,
+                        Title = a.Title,
+                        CategoryId = a.CategoryId,
+                        Category = a.Category,
+                        Note = a.Note,
+                        AuthorName = a.AuthorName,
+                        CreateDate = a.CreateDate,
+                        UpdateDate = a.UpdateDate,
+                        Description = a.Description,
+                        OtherLangs = a.OtherLangs
+                    })
                     .ToListAsync();
 
                 // Map images for each Book

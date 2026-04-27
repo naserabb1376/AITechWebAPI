@@ -80,35 +80,42 @@ namespace AITechDATA.DataLayer.Services
             ArticleListCustomResponse<Article> results = new ArticleListCustomResponse<Article>();
             try
             {
-                var query = _context.Articles.AsNoTracking().Include(x => x.Category)
+                var query = _context.Articles
+                    .AsNoTracking()
+                    .Include(x => x.Category)
+                    .AsQueryable();
 
-                     .Select(a => new Article()
-                     {
-                       ID =  a.ID,
-                       Title = a.Title,
-                       CategoryId = a.CategoryId,
-                       Category = a.Category,
-                       Note = a.Note,
-                       CreateDate = a.CreateDate,
-                       UpdateDate = a.UpdateDate,
-                       Description = "",
-                       OtherLangs = "",
-                     });
                 if (categoryId > 0)
                 {
                     query = query.Where(x => x.CategoryId == categoryId);
                 }
-                query = query.Where(x =>
-                    ((!string.IsNullOrEmpty(x.Title) && x.Title.Contains(searchText)) ||
+
+                if (!string.IsNullOrEmpty(searchText))
+                {
+                    query = query.Where(x =>
+                        (!string.IsNullOrEmpty(x.Title) && x.Title.Contains(searchText)) ||
                         (!string.IsNullOrEmpty(x.Note) && x.Note.Contains(searchText)) ||
                         (!string.IsNullOrEmpty(x.AuthorName) && x.AuthorName.Contains(searchText)) ||
-                        (!string.IsNullOrEmpty(x.Description) && x.Description.Contains(searchText)))
+                        (!string.IsNullOrEmpty(x.Description) && x.Description.Contains(searchText))
                     );
-
-                results.TotalCount = query.Count();
+                }
+                results.TotalCount = await query.CountAsync();
                 results.PageCount = DbTools.GetPageCount(results.TotalCount, pageSize);
-                results.Results = await query.OrderByDescending(x => x.CreateDate)
-                     .SortBy(sortQuery).ToPaging(pageIndex, pageSize)
+                results.Results = await query
+                    .OrderByDescending(x => x.CreateDate)
+                    .Select(a => new Article
+                    {
+                        ID = a.ID,
+                        Title = a.Title,
+                        CategoryId = a.CategoryId,
+                        Category = a.Category,
+                        Note = a.Note,
+                        AuthorName = a.AuthorName,
+                        CreateDate = a.CreateDate,
+                        UpdateDate = a.UpdateDate,
+                        Description = a.Description,
+                        OtherLangs = a.OtherLangs
+                    })
                     .ToListAsync();
 
                 // Map images for each Article
@@ -116,7 +123,7 @@ namespace AITechDATA.DataLayer.Services
                     .ToDictionary(
                         user => user,
                         user => _context.Images
-                            .Where(img => img.ForeignKeyId == user.ID && img.EntityType == "Article")
+                            .Where(img => img.ForeignKeyId == user.ID && img.EntityType == "article".ToLower())
                             .ToList()
                     );
             }
@@ -143,7 +150,7 @@ namespace AITechDATA.DataLayer.Services
                     result.ResultImages = new Dictionary<Article, List<Image>?>
             {
                 { result.Result, await _context.Images
-                    .Where(img => img.ForeignKeyId == ArticleId && img.EntityType == "Article")
+                    .Where(img => img.ForeignKeyId == ArticleId && img.EntityType == "article".ToLower())
                     .ToListAsync() }
             };
                 }
