@@ -196,14 +196,14 @@ namespace AITechDATA.DataLayer.Services
 
         public async Task<long> GetNewRowNumber()
         {
-            long rowNumber = await _context.Images.CountAsync() +1;
+            long rowNumber = await _context.Images.MaxAsync(x=> x.ID) +1;  
 
-            //bool existRow = await _context.Images.AnyAsync(x => x.FileName.Contains($"_{rowNumber}_"));
+            bool existRow = await _context.Images.AnyAsync(x => x.FileName.Contains($"_{rowNumber}_"));
 
-            //while (existRow)
-            //{
-            //    rowNumber++;
-            //}
+            while (existRow)
+            {
+                rowNumber++;
+            }
             return rowNumber;
         }
 

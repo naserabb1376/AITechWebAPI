@@ -60,10 +60,10 @@ namespace AITechDATA.Domain
         public long TeacherId { get; set; } // کلید خارجی به استاد
         public User Teacher { get; set; } // ارتباط با استاد
         public string? TeacherCVLink { get; set; }
-        public long TeacherResumeId { get; set; } // عنوان رزومه (مثلاً مدرک یا پروژه)
-        public string TeacherResumeTitle { get; set; } // عنوان رزومه (مثلاً مدرک یا پروژه)
-        public string TeacherResumeDescription { get; set; } // توضیحات رزومه
-        public DateTime TeacherResumeDateAchieved { get; set; } // تاریخ کسب یا انجام
+        public long? TeacherResumeId { get; set; } // عنوان رزومه (مثلاً مدرک یا پروژه)
+        public string? TeacherResumeTitle { get; set; } // عنوان رزومه (مثلاً مدرک یا پروژه)
+        public string? TeacherResumeDescription { get; set; } // توضیحات رزومه
+        public DateTime? TeacherResumeDateAchieved { get; set; } // تاریخ کسب یا انجام
 
         public ICollection<UserGroup> Students { get; set; } // دانش‌آموزان ثبت‌نام‌شده در گروه
         public ICollection<PaymentHistory> PaymentHistories { get; set; } // وضعیت پرداخت ها در گروه
@@ -95,10 +95,10 @@ namespace AITechDATA.Domain
         public string? TeacherFirstName { get; set; }
         public string? TeacherLastName { get; set; }
         public string? TeacherCVLink { get; set; }
-        public long TeacherResumeId { get; set; } 
-        public string TeacherResumeTitle { get; set; } // عنوان رزومه (مثلاً مدرک یا پروژه)
-        public string TeacherResumeDescription { get; set; } // توضیحات رزومه
-        public DateTime TeacherResumeDateAchieved { get; set; } // تاریخ کسب یا انجام
+        public long? TeacherResumeId { get; set; } 
+        public string? TeacherResumeTitle { get; set; } // عنوان رزومه (مثلاً مدرک یا پروژه)
+        public string? TeacherResumeDescription { get; set; } // توضیحات رزومه
+        public DateTime? TeacherResumeDateAchieved { get; set; } // تاریخ کسب یا انجام
 
     }
 }

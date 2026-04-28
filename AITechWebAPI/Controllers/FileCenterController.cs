@@ -40,28 +40,22 @@ public class FileCenterController : ControllerBase
         {
             if (file == null || file.Length == 0)
                 return BadRequest("فایلی انتخاب نشده است.");
-
             var fileType = requestBody.FileType.ToLower();
             var entityName = requestBody.EntityName.ToLower();
             bool isJobRequest = entityName.ToLower() == "jobrequest" || entityName.ToLower() == "preregistration";
-
-            string fullPath=""; long RowNumber =0;
-            string fileName = file.FileName.GenerateFileName();
+            string fileName = "", fullPath = ""; long RowNumber = 0;
             var userId = !isJobRequest ? User?.FindFirst("userId")?.Value : "0";
             if ((string.IsNullOrEmpty(userId) || userId == "0") && !isJobRequest) return Unauthorized();
-
             string savePath = requestBody.IsPublic
                 ? Path.Combine(_env.ContentRootPath, "FileCenter", entityName, fileType, "Public")
                 : Path.Combine(_env.ContentRootPath, "FileCenter", entityName, fileType, userId);
-
             Directory.CreateDirectory(savePath);
             long resultId = 0;
             string downloadUrl = "";
-
             if (fileType == "images")
             {
                 RowNumber = await _imageRep.GetNewRowNumber();
-                //fileName = $"{entityName}_{RowNumber}_{userId}{Path.GetExtension(file.FileName)}";
+                fileName = $"{entityName}_{RowNumber}_{userId}{Path.GetExtension(file.FileName)}";
                 fullPath = Path.Combine(savePath, fileName);
                 Image theImage = new()
                 {
@@ -77,31 +71,29 @@ public class FileCenterController : ControllerBase
                     Tag = requestBody.Tag,
                     CreatorId = long.Parse(userId),
                 };
-                var removeoldResult = await _imageRep.RemoveOldImagesAsync(theImage.ForeignKeyId,entityName);
+
+                var removeoldResult = await _imageRep.RemoveOldImagesAsync(theImage.ForeignKeyId, entityName);
                 if (!removeoldResult.Status) return BadRequest(removeoldResult);
 
                 var saveResult = await _imageRep.AddImagesAsync(new List<Image> { theImage });
                 if (!saveResult.Status) return BadRequest(saveResult);
                 resultId = saveResult.ID;
-
                 downloadUrl = $"/filecenter/downloadfile?fileType={fileType}&rowId={resultId}&entityName={entityName}";
                 theImage.GetUrl = downloadUrl;
                 await _imageRep.EditImagesAsync(new List<Image>() { theImage });
-
             }
             else if (fileType == "files")
             {
                 RowNumber = await _fileUploadRep.GetNewRowNumber();
-                //fileName = $"{entityName}_{RowNumber}_{userId}{Path.GetExtension(file.FileName)}";
+                fileName = $"{entityName}_{RowNumber}_{userId}{Path.GetExtension(file.FileName)}";
                 fullPath = Path.Combine(savePath, fileName);
-
                 FileUpload theFile = new()
                 {
                     CreateDate = DateTime.Now.ToShamsi(),
                     UpdateDate = DateTime.Now.ToShamsi(),
                     FileName = fileName,
                     FilePath = fullPath,
-                    EntityType= entityName,
+                    EntityType = entityName,
                     ForeignKeyId = requestBody.RowId <= 0 ? RowNumber : requestBody.RowId,
                     ContentType = fullPath.GetContentType(),
                     Description = requestBody.IsPublic ? "Public" : "Private",
@@ -110,24 +102,20 @@ public class FileCenterController : ControllerBase
                     Tag = requestBody.Tag,
                     CreatorId = long.Parse(userId),
                 };
+
                 var removeoldResult = await _fileUploadRep.RemoveOldFilesAsync(theFile.ForeignKeyId, entityName);
                 if (!removeoldResult.Status) return BadRequest(removeoldResult);
 
                 var saveResult = await _fileUploadRep.AddFileUploadAsync(theFile);
                 if (!saveResult.Status) return BadRequest(saveResult);
                 resultId = saveResult.ID;
-
                 downloadUrl = $"/filecenter/downloadfile?fileType={fileType}&rowId={resultId}&entityName={entityName}";
                 theFile.GetUrl = downloadUrl;
                 await _fileUploadRep.EditFileUploadAsync(theFile);
-
-
             }
             else return BadRequest("Invalid File Category!");
-
             using var stream = new FileStream(fullPath, FileMode.Create);
             await file.CopyToAsync(stream);
-
             Log log = new()
             {
                 CreateDate = DateTime.Now.ToShamsi(),
@@ -136,7 +124,6 @@ public class FileCenterController : ControllerBase
                 ActionName = $"UploadFile:{{Entity={entityName},Type={fileType},Row={requestBody.RowId},Path={fullPath},Id={resultId}}}",
             };
             await _logRep.AddLogAsync(log);
-
             return Ok(new
             {
                 success = true,

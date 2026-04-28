@@ -96,13 +96,26 @@ namespace AITechDATA.DataLayer.Services
                     query = query.Where(x => x.IsApproved == Convert.ToBoolean(approveState));
                 }
 
-                query = query.Where(x =>
-                        ((!string.IsNullOrEmpty(x.DismissalType) && x.DismissalType.Contains(searchText)) ||
-                        ((!string.IsNullOrEmpty($"{x.User.FirstName} {x.User.LastName}") && $"{x.User.FirstName} {x.User.LastName}".Contains(searchText))) ||
-                        ((!string.IsNullOrEmpty($"{x.CheckerUser.FirstName} {x.CheckerUser.LastName}") && $"{x.CheckerUser.FirstName} {x.CheckerUser.LastName}".Contains(searchText))) ||
-                        ((!string.IsNullOrEmpty(x.DismissalRequestDescription) && x.DismissalRequestDescription.Contains(searchText)) ||
-                        ((!string.IsNullOrEmpty(x.CheckerDescription) && x.CheckerDescription.Contains(searchText))
-                        ))));
+                if (!string.IsNullOrWhiteSpace(searchText))
+                {
+                    query = query.Where(x =>
+                        (!string.IsNullOrEmpty(x.DismissalType) &&
+                            x.DismissalType.Contains(searchText)) ||
+
+                        ((x.User.FirstName + " " + x.User.LastName)
+                            .Contains(searchText)) ||
+
+                        (x.CheckerUser != null &&
+                            (x.CheckerUser.FirstName + " " + x.CheckerUser.LastName)
+                            .Contains(searchText)) ||
+
+                        (!string.IsNullOrEmpty(x.DismissalRequestDescription) &&
+                            x.DismissalRequestDescription.Contains(searchText)) ||
+
+                        (!string.IsNullOrEmpty(x.CheckerDescription) &&
+                            x.CheckerDescription.Contains(searchText))
+                    );
+                }
 
                 results.TotalCount = query.Count();
                 results.PageCount = DbTools.GetPageCount(results.TotalCount, pageSize);
@@ -126,7 +139,7 @@ namespace AITechDATA.DataLayer.Services
             {
                 result.Result = await _context.Dismissals
                     .AsNoTracking()
-                    .Include(x => x.User)
+                    .Include(x => x.User).Include(x => x.CheckerUser).AsNoTracking()
                     .SingleOrDefaultAsync(x => x.ID == DismissalId);
             }
             catch (Exception ex)
