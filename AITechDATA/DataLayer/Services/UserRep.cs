@@ -27,6 +27,7 @@ namespace AITechDATA.DataLayer.Services
             BitResultObject result = new BitResultObject();
             try
             {
+                user.IdentificationCode = $"AITech{await _context.Users.MaxAsync(x=> x.ID) + 1000 }";
                 await _context.Users.AddAsync(user);
                 await _context.SaveChangesAsync();
                 result.ID = user.ID;
@@ -92,6 +93,12 @@ namespace AITechDATA.DataLayer.Services
                     case "nationalcode":
                         {
                             var theUser = await query.FirstOrDefaultAsync(x => x.NationalCode == fieldValue) ?? new User();
+                            userId = theUser.ID;
+                            break;
+                        }
+                    case "Identificationcode":
+                        {
+                            var theUser = await query.FirstOrDefaultAsync(x => x.IdentificationCode == fieldValue) ?? new User();
                             userId = theUser.ID;
                             break;
                         }
@@ -226,6 +233,7 @@ namespace AITechDATA.DataLayer.Services
                       ) &&
                        ((!string.IsNullOrEmpty(x.FirstName) && x.FirstName.Contains(searchText)) ||
                        (!string.IsNullOrEmpty(x.LastName) && x.LastName.Contains(searchText)) ||
+                       (!string.IsNullOrEmpty(x.IdentificationCode) && x.IdentificationCode.Contains(searchText)) ||
                        (!string.IsNullOrEmpty(x.Email) && x.Email.Contains(searchText)) ||
                        (!string.IsNullOrEmpty(x.EducationalBackground.StudyField) && x.EducationalBackground.StudyField.Contains(searchText)) ||
                        (!string.IsNullOrEmpty(x.EducationalBackground.EducationalGrade) && x.EducationalBackground.EducationalGrade.Contains(searchText)) ||
@@ -242,6 +250,7 @@ namespace AITechDATA.DataLayer.Services
                       ) &&
                        ((!string.IsNullOrEmpty(x.FirstName) && x.FirstName.Contains(searchText)) ||
                        (!string.IsNullOrEmpty(x.LastName) && x.LastName.Contains(searchText)) ||
+                       (!string.IsNullOrEmpty(x.IdentificationCode) && x.IdentificationCode.Contains(searchText)) ||
                        (!string.IsNullOrEmpty(x.Email) && x.Email.Contains(searchText)) ||
                        (!string.IsNullOrEmpty(x.EducationalBackground.StudyField) && x.EducationalBackground.StudyField.Contains(searchText)) ||
                        (!string.IsNullOrEmpty(x.EducationalBackground.EducationalGrade) && x.EducationalBackground.EducationalGrade.Contains(searchText)) ||
@@ -257,6 +266,7 @@ namespace AITechDATA.DataLayer.Services
                       ) &&
                        ((!string.IsNullOrEmpty(x.FirstName) && x.FirstName.Contains(searchText)) ||
                        (!string.IsNullOrEmpty(x.LastName) && x.LastName.Contains(searchText)) ||
+                       (!string.IsNullOrEmpty(x.IdentificationCode) && x.IdentificationCode.Contains(searchText)) ||
                        (!string.IsNullOrEmpty(x.Email) && x.Email.Contains(searchText)) ||
                        (!string.IsNullOrEmpty(x.EducationalBackground.StudyField) && x.EducationalBackground.StudyField.Contains(searchText)) ||
                        (!string.IsNullOrEmpty(x.EducationalBackground.EducationalGrade) && x.EducationalBackground.EducationalGrade.Contains(searchText)) ||
@@ -273,6 +283,7 @@ namespace AITechDATA.DataLayer.Services
                        ((!string.IsNullOrEmpty(x.FirstName) && x.FirstName.Contains(searchText)) ||
                        (!string.IsNullOrEmpty(x.LastName) && x.LastName.Contains(searchText)) ||
                        (!string.IsNullOrEmpty(x.Email) && x.Email.Contains(searchText)) ||
+                       (!string.IsNullOrEmpty(x.IdentificationCode) && x.IdentificationCode.Contains(searchText)) ||
                        (!string.IsNullOrEmpty(x.EducationalBackground.StudyField) && x.EducationalBackground.StudyField.Contains(searchText)) ||
                        (!string.IsNullOrEmpty(x.EducationalBackground.EducationalGrade) && x.EducationalBackground.EducationalGrade.Contains(searchText)) ||
                        (!string.IsNullOrEmpty(x.Username) && x.Username.Contains(searchText)))
@@ -287,6 +298,7 @@ namespace AITechDATA.DataLayer.Services
                       ) &&
                        ((!string.IsNullOrEmpty(x.FirstName) && x.FirstName.Contains(searchText)) ||
                        (!string.IsNullOrEmpty(x.LastName) && x.LastName.Contains(searchText)) ||
+                       (!string.IsNullOrEmpty(x.IdentificationCode) && x.IdentificationCode.Contains(searchText)) ||
                        (!string.IsNullOrEmpty(x.Email) && x.Email.Contains(searchText)) ||
                        (!string.IsNullOrEmpty(x.EducationalBackground.StudyField) && x.EducationalBackground.StudyField.Contains(searchText)) ||
                        (!string.IsNullOrEmpty(x.EducationalBackground.EducationalGrade) && x.EducationalBackground.EducationalGrade.Contains(searchText)) ||

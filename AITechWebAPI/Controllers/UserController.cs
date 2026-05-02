@@ -8,6 +8,7 @@ using AITechWebAPI.Models;
 using AITechWebAPI.Models.Authenticate;
 using AITechWebAPI.Models.Public;
 using AITechWebAPI.Models.User;
+using AITechWebAPI.Tools;
 using AITechWebAPI.Validations;
 using AITechWebAPI.ViewModels;
 using AutoMapper;
@@ -34,17 +35,19 @@ namespace AITechWebAPI.Controllers
     public class UserController : ControllerBase
     {
         IUserRep _UserRep;
+        ISettingRep _settingRep;
         ILogRep _logRep;
         IAddressRep _addressRep;
         private readonly IMapper _mapper;
 
 
-        public UserController(IUserRep UserRep,IAddressRep addressRep,ILogRep logRep,IMapper mapper)
+        public UserController(IUserRep UserRep,IAddressRep addressRep,ISettingRep settingRep,ILogRep logRep,IMapper mapper)
         {
            _UserRep = UserRep;
            _logRep = logRep;
            _addressRep = addressRep;
-            _mapper = mapper;   
+           _settingRep = settingRep;
+           _mapper = mapper;   
         }
 
         [HttpPost("GetAllUsers_Base")]
@@ -546,5 +549,49 @@ namespace AITechWebAPI.Controllers
             }
             return BadRequest(result);
         }
+
+
+        [HttpPost("InviteUser")]
+        public async Task<ActionResult<BitResultObject>> InviteUser(InviteUserRequestBody requestBody)
+        {
+            var result = new BitResultObject();
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(requestBody);
+            }
+
+
+            var validUserName = await _UserRep.ExistUserAsync(requestBody.PhoneNumber, "username");
+
+            if (validUserName.Status)
+            {
+                result.Status = !validUserName.Status;
+                result.ErrorMessage = "نام کاربری (شماره موبایل) قبلا ثبت نام شده است";
+                return BadRequest(result);
+            }
+
+            var userId = User.GetCurrentUserId();
+
+            var userRow = await _UserRep.GetUserByIdAsync(userId);
+           
+            var inviteLinkRow = await _settingRep.GetSettingRowAsync(0,"invitelink");
+            var invitedDiscountPercentRow = await _settingRep.GetSettingRowAsync(0, "inviteddiscountpercent");
+
+            var infoMessage = $@"سلام!
+شما از طرف {userRow.Result.FirstName} {userRow.Result.LastName} دعوت شدید به عضویت در خانواده آیتک
+همین الان با کلیک روی لینک زین میتوانید از تخفیف {invitedDiscountPercentRow.Result.Value} درصدی روی محصولات آیتک بهره مند شوید
+{inviteLinkRow.Result.Value.Replace("invitecode",userRow.Result.IdentificationCode)}";
+            bool sent = await ToolBox.SendSMSMessage(requestBody.PhoneNumber, infoMessage);
+
+            result.Status = sent;
+
+            if (sent)
+            {
+                return Ok(result);
+
+            }
+            return BadRequest(result);
+        }
+
     }
 }

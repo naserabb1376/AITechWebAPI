@@ -10,6 +10,7 @@ namespace AITechWebAPI.ViewModels
         public string Email { get; set; }
         public string NationalCode { get; set; }
         public string Username { get; set; }
+        public string IdentificationCode { get; set; }
         public long RoleId { get; set; } // کلید خارجی به Role
         public long StudentDetailsId { get; set; } // کلید خارجی به StudentDetails
         public string RoleName { get; set; } // ارتباط با Role
@@ -23,5 +24,7 @@ namespace AITechWebAPI.ViewModels
         public string FirstName { get; set; }
         public string LastName { get; set; }
         public string Email { get; set; }
+        public string IdentificationCode { get; set; }
+
     }
 }

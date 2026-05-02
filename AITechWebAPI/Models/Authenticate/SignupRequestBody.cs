@@ -44,6 +44,9 @@ namespace AITechWebAPI.Models.Authenticate
         [Required(ErrorMessage = "لطفا {0} را وارد کنید")]
         public string NationalCode { get; set; }
 
+        [Display(Name = "کد دعوت")]
+        public string? InvitationCode { get; set; }
+
         public AddEditAddressRequestBody? Address { get; set; }
 
         [Display(Name = "زبان های دیگر")]

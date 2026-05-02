@@ -84,12 +84,12 @@ namespace AITechDATA.DataLayer.Services
             ListResultObject<SMSMessage> results = new ListResultObject<SMSMessage>();
             try
             {
-                IQueryable<SMSMessage> query = _context.SMSMessages
-                        .AsNoTracking().Include(x => x.User);
+                IQueryable<SMSMessage> query = _context.SMSMessages.Include(x => x.User)
+                        .AsNoTracking();
 
                 if (userId == 0)
                 {
-                    query = query.Where(x=> x.UserID == userId);
+                    query = query.Where(x=> x.UserID > userId);
                 }
 
                 query = query.Where(x =>
