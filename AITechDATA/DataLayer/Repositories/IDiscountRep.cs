@@ -16,6 +16,6 @@ namespace AITechDATA.DataLayer.Repositories
         Task<RowResultObject<Discount>> EditDiscountAsync(Discount Discount);
         Task<BitResultObject> RemoveDiscountAsync(Discount Discount);
         Task<BitResultObject> RemoveDiscountAsync(long DiscountId);
-        Task<BitResultObject> ExistDiscountAsync(string existType,string keyValue,long userId);
+        Task<BitResultObject> ExistDiscountAsync(string existType,string keyValue,long userId, long? foreignkeyId, string? entityName, long? roleId);
     }
 }

@@ -78,7 +78,7 @@ namespace AITechWebAPI.Controllers
             {
                 return BadRequest(requestBody);
             }
-            var result = await _DiscountRep.ExistDiscountAsync(requestBody.ExistType,requestBody.KeyValue,User.GetCurrentUserId());
+            var result = await _DiscountRep.ExistDiscountAsync(requestBody.ExistType,requestBody.KeyValue,User.GetCurrentUserId(),requestBody.ForeignkeyId,requestBody.EntityType,User.GetCurrentRoleId());
             if (string.IsNullOrEmpty(result.ErrorMessage))
             {
                 return Ok(result);

@@ -15,6 +15,7 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using Microsoft.IdentityModel.Tokens;
 using Parbad;
@@ -268,6 +269,7 @@ await _GroupRep.GetGroupByIdAsync(requestBody.ForeignKeyId);
             }
 
             var UserId = User.GetCurrentUserId();
+            var RoleId = User.GetCurrentRoleId();
 
             switch (requestBody.EntityType.ToLower())
             {
@@ -322,11 +324,23 @@ await _GroupRep.GetGroupByIdAsync(requestBody.ForeignKeyId);
 
             if (discountedrowAmount == rowAmount && requestBody.DiscountId > 0)
             {
-                var discount = await _discountRep.GetDiscountByIdAsync(requestBody.DiscountId.Value);
-                if (discount.Result.IsActive && discount.Result.EntityName.ToLower() == requestBody.EntityType.ToLower() && discount.Result.ForeignKeyId == requestBody.ForeignKeyId && discount.Result.IsActive && discount.Result.DiscountMaxUsage > discount.Result.PaymentHistories.Count(x=> x.UserId == UserId) && DateTime.Now.ToShamsi() >= discount.Result.ExpireDate)
+                var x = await _discountRep.GetDiscountByIdAsync(requestBody.DiscountId.Value);
+
+                var groups = await _UserGroupRep.GetAllUserGroupsAsync(UserId,pageSize:0);
+                var groupIds = groups.Results.Select(x => x.GroupId).ToList();
+                var validdiscount = ((x.Result.EntityName.ToLower() == requestBody.EntityType.ToLower() && x.Result.ForeignKeyId == requestBody.ForeignKeyId)
+               || (string.IsNullOrEmpty(x.Result.EntityName) && x.Result.ForeignKeyId <= 0))
+                && x.Result.ExpireDate >= DateTime.Now && x.Result.DiscountMaxUsage > (x.Result.PaymentHistories.Count(x => x.UserId == UserId)) && x.Result.IsActive
+                && (x.Result.DiscountTargets.Any(t => (t.IsActive && (
+                (t.TargetEntityName.ToLower() == "group" && (t.TargetId <= 0 || groupIds.Contains(t.TargetId))) ||
+                (t.TargetEntityName.ToLower() == "role" && (t.TargetId <= 0 || t.TargetId == RoleId)) ||
+                (t.TargetEntityName.ToLower() == "user" && (t.TargetId <= 0 || t.TargetId == UserId))
+                ))));
+
+                if (validdiscount)
                 {
-                    decimal discountAAmount = rowAmount - discount.Result.DiscountAmount ;
-                    decimal discountPAmount =  rowAmount - (rowAmount * discount.Result.DiscountPercent / 100m);
+                    decimal discountAAmount = rowAmount - x.Result.DiscountAmount ;
+                    decimal discountPAmount =  rowAmount - (rowAmount * x.Result.DiscountPercent / 100m);
                     discountedrowAmount =  decimal.Min(discountAAmount,discountPAmount);
                 }
             }
@@ -346,6 +360,8 @@ await _GroupRep.GetGroupByIdAsync(requestBody.ForeignKeyId);
                     UserId = UserId,
                     PaymentDate = DateTime.Now.ToShamsi(),
                     PaymentStatus = false,
+                    DiscountId = requestBody.ForeignKeyId,
+                    IsActive = true,
 
                     //  Description = requestBody.Description,
                 };

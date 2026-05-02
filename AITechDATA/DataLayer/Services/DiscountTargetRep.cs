@@ -89,7 +89,7 @@ namespace AITechDATA.DataLayer.Services
             ListResultObject<DiscountTarget> results = new ListResultObject<DiscountTarget>();
             try
             {
-                var query = _context.DiscountTargets.Include(x => x.DiscountId).AsNoTracking();
+                var query = _context.DiscountTargets.Include(x => x.Discount).AsNoTracking();
 
                 if (DiscountId > 0)
                 {

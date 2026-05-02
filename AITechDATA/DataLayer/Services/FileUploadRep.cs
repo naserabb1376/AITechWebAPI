@@ -27,6 +27,7 @@ namespace AITechDATA.DataLayer.Services
             BitResultObject result = new BitResultObject();
             try
             {
+                fileUpload.FileNumber = await GetNewRowNumber();
                 await _context.FileUploads.AddAsync(fileUpload);
                 await _context.SaveChangesAsync();
                 result.ID = fileUpload.ID;
@@ -192,7 +193,7 @@ namespace AITechDATA.DataLayer.Services
 
         public async Task<long> GetNewRowNumber()
         {
-            long rowNumber = await _context.FileUploads.MaxAsync(x => x.ID) + 1;
+            long rowNumber = await _context.FileUploads.MaxAsync(x => x.FileNumber.Value) + 1;
 
             bool existRow = await _context.FileUploads.AnyAsync(x => x.FileName.Contains($"_{rowNumber}_"));
 

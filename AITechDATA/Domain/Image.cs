@@ -19,5 +19,7 @@ namespace AITechDATA.Domain
         public string? GetUrl { get; set; } // لینک دانلود
         public string? Tag { get; set; }
         public string? Note { get; set; }
+        public long? FileNumber { get; set; } //کد فایل
+
     }
 }

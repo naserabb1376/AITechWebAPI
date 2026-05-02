@@ -26,6 +26,10 @@ namespace AITechDATA.DataLayer.Services
             BitResultObject result = new BitResultObject();
             try
             {
+                for (int i = 0; i < images.Count; i++)
+                {
+                    images[i].FileNumber = await GetNewRowNumber() + (i+1);
+                }
                 await _context.Images.AddRangeAsync(images);
                 await _context.SaveChangesAsync();
                 result.ID = images.FirstOrDefault().ID;
@@ -196,7 +200,7 @@ namespace AITechDATA.DataLayer.Services
 
         public async Task<long> GetNewRowNumber()
         {
-            long rowNumber = await _context.Images.MaxAsync(x=> x.ID) +1;  
+            long rowNumber = await _context.Images.MaxAsync(x=> x.FileNumber.Value) +1;  
 
             bool existRow = await _context.Images.AnyAsync(x => x.FileName.Contains($"_{rowNumber}_"));
 

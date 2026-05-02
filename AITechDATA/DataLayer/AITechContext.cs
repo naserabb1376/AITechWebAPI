@@ -40,6 +40,7 @@ namespace AITechDATA.DataLayer
         public DbSet<LoginMethod> LoginMethods { get; set; }
         public DbSet<UserCourse> UserCourses { get; set; }
         public DbSet<UserGroup> UserGroups { get; set; }
+        public DbSet<UserMeeting> UserMeetings { get; set; }
         public DbSet<News> News { get; set; }
         public DbSet<Log> Logs { get; set; }
         public DbSet<Meeting> Meetings { get; set; }
@@ -206,17 +207,29 @@ namespace AITechDATA.DataLayer
            .HasForeignKey(x => x.GroupId)
            .OnDelete(DeleteBehavior.Cascade);
 
-          //  modelBuilder.Entity<PermissionRole>()
-          //.HasOne(x => x.Permission)
-          //.WithMany(x => x.PermissionRoles)
-          //.HasForeignKey(x => x.PerrmissionId)
-          //.OnDelete(DeleteBehavior.Cascade);
+            modelBuilder.Entity<UserMeeting>()
+      .HasOne(x => x.User)
+      .WithMany(x => x.UserMeetings)
+      .HasForeignKey(x => x.UserId)
+      .OnDelete(DeleteBehavior.Cascade);
 
-          //  modelBuilder.Entity<PermissionRole>()
-          //.HasOne(x => x.Role)
-          //.WithMany(x => x.PermissionRoles)
-          //.HasForeignKey(x => x.RoleId)
-          //.OnDelete(DeleteBehavior.Cascade);
+            modelBuilder.Entity<UserMeeting>()
+           .HasOne(x => x.Meeting)
+           .WithMany(x => x.UserMeetings)
+           .HasForeignKey(x => x.MeetingId)
+           .OnDelete(DeleteBehavior.Cascade);
+
+            //  modelBuilder.Entity<PermissionRole>()
+            //.HasOne(x => x.Permission)
+            //.WithMany(x => x.PermissionRoles)
+            //.HasForeignKey(x => x.PerrmissionId)
+            //.OnDelete(DeleteBehavior.Cascade);
+
+            //  modelBuilder.Entity<PermissionRole>()
+            //.HasOne(x => x.Role)
+            //.WithMany(x => x.PermissionRoles)
+            //.HasForeignKey(x => x.RoleId)
+            //.OnDelete(DeleteBehavior.Cascade);
 
             modelBuilder.Entity<Assignment>()
           .HasOne(x => x.User)

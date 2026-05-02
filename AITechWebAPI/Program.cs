@@ -206,6 +206,7 @@ namespace AITechWebAPI
             builder.Services.AddScoped<ITokenRep, TokenRep>();
             builder.Services.AddScoped<IUserCourseRep, UserCourseRep>();
             builder.Services.AddScoped<IUserGroupRep, UserGroupRep>();
+            builder.Services.AddScoped<IUserMeetingRep, UserMeetingRep>();
             builder.Services.AddScoped<IUserRep, UserRep>();
             builder.Services.AddScoped<ILinkedEntityRep, LinkedEntityRep>();
             builder.Services.AddScoped<IJobRequestRep, JobRequestRep>();

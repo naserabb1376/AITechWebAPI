@@ -100,6 +100,8 @@ namespace AITechWebAPI.Controllers
                 Note = x.Note,
                 Tag = x.Tag,
                 GetUrl = x.GetUrl ?? "",
+                IsActive = true,
+                Priority = x.Priority,
             }).ToList();
             
             var result = await _ImageRep.AddImagesAsync(Images);
@@ -160,6 +162,8 @@ namespace AITechWebAPI.Controllers
                     GetUrl = body.GetUrl ?? "",
                     Note = body.Note,
                     Tag = body.Tag,
+                    IsActive = true,
+                    Priority = body.Priority,
 
 
                 };

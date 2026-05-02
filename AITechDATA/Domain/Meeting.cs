@@ -13,5 +13,6 @@ namespace AITechDATA.Domain
         public string MeetingOrganizer { get; set; }
 
         public List<Minutes> Minutes { get; set; }
+        public ICollection<UserMeeting> UserMeetings { get; set; }
     }
 }

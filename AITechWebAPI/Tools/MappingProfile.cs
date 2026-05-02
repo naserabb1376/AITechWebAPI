@@ -186,6 +186,16 @@ namespace AITechWebAPI.Tools
 .ForMember(dest => dest.GroupName, opt => opt.MapFrom(src => src.Group.Name))
 .ForMember(dest => dest.UserName, opt => opt.MapFrom(src => src.User.Username))
 ;
+            CreateMap<UserMeeting, UserMeetingVM>()
+.ForMember(dest => dest.FullName, opt => opt.MapFrom(src => $"{src.User.FirstName} {src.User.LastName}"))
+.ForMember(dest => dest.MeetingTitle, opt => opt.MapFrom(src => src.Meeting.MeetingTitle))
+.ForMember(dest => dest.MeetingStatus, opt => opt.MapFrom(src => src.Meeting.MeetingStatus))
+.ForMember(dest => dest.MeetingOrganizer, opt => opt.MapFrom(src => src.Meeting.MeetingOrganizer))
+.ForMember(dest => dest.MeetingDate, opt => opt.MapFrom(src => src.Meeting.MeetingDate))
+.ForMember(dest => dest.MeetingStartTime, opt => opt.MapFrom(src => src.Meeting.MeetingStartTime))
+.ForMember(dest => dest.UserName, opt => opt.MapFrom(src => src.User.Username))
+;
+
             CreateMap<Comment, CommentVM>()
 .ForMember(dest => dest.FullName, opt => opt.MapFrom(src => $"{src.User.FirstName} {src.User.LastName}"))
 .ForMember(dest => dest.Username, opt => opt.MapFrom(src => src.User.Username))

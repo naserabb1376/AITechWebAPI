@@ -68,7 +68,7 @@ namespace AITechDATA.DataLayer.Services
             return result;
         }
 
-        public async Task<BitResultObject> ExistDiscountAsync(string existType, string keyValue,long userId)
+        public async Task<BitResultObject> ExistDiscountAsync(string existType, string keyValue,long userId,long? foreignkeyId ,string? entityName, long? roleId)
         {
             BitResultObject result = new BitResultObject();
          
@@ -86,7 +86,18 @@ namespace AITechDATA.DataLayer.Services
                             }
                         case "validatecode":
                             {
-                                var theDiscount = await _context.Discounts.Include(x=> x.PaymentHistories).AsNoTracking().FirstOrDefaultAsync(x => x.DiscountCode.ToLower() == keyValue.ToLower() && x.IsActive && x.DiscountMaxUsage > x.PaymentHistories.Count(p=> p.UserId == userId) && x.ExpireDate >= DateTime.Now.ToShamsi()) ?? new Discount();
+
+                            var groupIds = await _context.UserGroups.AsNoTracking().Where(g => g.IsActive && g.UserId == userId).Select(x => x.GroupId).ToListAsync();
+                            var theDiscount = await _context.Discounts.Include(x => x.DiscountTargets).Include(x => x.PaymentHistories).AsNoTracking().FirstOrDefaultAsync(x =>
+                            x.DiscountCode.ToLower() == keyValue.ToLower() &&
+                           (((entityName != null && x.EntityName.ToLower() == entityName.ToLower()) && (foreignkeyId != null && x.ForeignKeyId == foreignkeyId))
+                           || (string.IsNullOrEmpty(x.EntityName) && x.ForeignKeyId <= 0))
+                            && x.ExpireDate >= DateTime.Now && x.DiscountMaxUsage > (x.PaymentHistories.Count(x => x.UserId == userId)) && x.IsActive && !x.CodeRequired
+                            && (x.DiscountTargets.Any(t => (t.IsActive && (
+                            (t.TargetEntityName.ToLower() == "group" && (t.TargetId <= 0 || groupIds.Contains(t.TargetId))) ||
+                            (t.TargetEntityName.ToLower() == "role" && (t.TargetId <= 0 || t.TargetId == roleId)) ||
+                            (t.TargetEntityName.ToLower() == "user" && (t.TargetId <= 0 || t.TargetId == userId))
+                            ))))) ?? new Discount();
                                 discountId = theDiscount.ID;
                                 break;
                             }

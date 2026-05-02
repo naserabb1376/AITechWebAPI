@@ -1039,6 +1039,9 @@ namespace AITechDATA.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<long?>("FileNumber")
+                        .HasColumnType("bigint");
+
                     b.Property<string>("FilePath")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -1370,6 +1373,9 @@ namespace AITechDATA.Migrations
                     b.Property<string>("FileName")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<long?>("FileNumber")
+                        .HasColumnType("bigint");
 
                     b.Property<string>("FilePath")
                         .IsRequired()
@@ -2473,6 +2479,41 @@ namespace AITechDATA.Migrations
                     b.ToTable("UserGroups");
                 });
 
+            modelBuilder.Entity("AITechDATA.Domain.UserMeeting", b =>
+                {
+                    b.Property<long>("ID")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("ID"));
+
+                    b.Property<DateTime?>("CreateDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<long>("MeetingId")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("OtherLangs")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("UpdateDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<long>("UserId")
+                        .HasColumnType("bigint");
+
+                    b.HasKey("ID");
+
+                    b.HasIndex("MeetingId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("UserMeetings");
+                });
+
             modelBuilder.Entity("AiTech.Domains.PaymentHistory", b =>
                 {
                     b.Property<long>("ID")
@@ -3183,6 +3224,25 @@ namespace AITechDATA.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("AITechDATA.Domain.UserMeeting", b =>
+                {
+                    b.HasOne("AITechDATA.Domain.Meeting", "Meeting")
+                        .WithMany("UserMeetings")
+                        .HasForeignKey("MeetingId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("AITechDATA.Domain.User", "User")
+                        .WithMany("UserMeetings")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Meeting");
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("AiTech.Domains.PaymentHistory", b =>
                 {
                     b.HasOne("AITechDATA.Domain.Discount", "Discount")
@@ -3288,6 +3348,8 @@ namespace AITechDATA.Migrations
             modelBuilder.Entity("AITechDATA.Domain.Meeting", b =>
                 {
                     b.Navigation("Minutes");
+
+                    b.Navigation("UserMeetings");
                 });
 
             modelBuilder.Entity("AITechDATA.Domain.Role", b =>
@@ -3360,6 +3422,8 @@ namespace AITechDATA.Migrations
                     b.Navigation("UserCourses");
 
                     b.Navigation("UserGroups");
+
+                    b.Navigation("UserMeetings");
                 });
 
             modelBuilder.Entity("MTPermissionCenter.EFCore.Entities.MTPermissionCenter_Permission", b =>
