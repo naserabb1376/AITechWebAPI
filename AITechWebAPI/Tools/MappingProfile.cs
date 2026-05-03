@@ -137,7 +137,16 @@ namespace AITechWebAPI.Tools
 .ForMember(dest => dest.UserName, opt => opt.MapFrom(src => $"{src.User.FirstName} {src.User.LastName}"))
 .ForMember(dest => dest.SenderUserName, opt => opt.MapFrom(src => $"{src.SenderUser.FirstName} {src.SenderUser.LastName}"))
 ;
- CreateMap<Dismissal, DismissalVM>()
+            CreateMap<TimeFunction, TimeFunctionVM>()
+.ForMember(dest => dest.UserName, opt => opt.MapFrom(src => $"{src.User.FirstName} {src.User.LastName}"))
+;
+
+            CreateMap<TimeBreak, TimeBreakVM>()
+           .ForMember(dest => dest.TimeFunctionStartDate, opt => opt.MapFrom(src => src.TimeFunction.TimeFunctionStartDate))
+           .ForMember(dest => dest.TimeFunctionEndDate, opt => opt.MapFrom(src => src.TimeFunction.TimeFunctionEndDate))
+           ;
+
+            CreateMap<Dismissal, DismissalVM>()
 .ForMember(dest => dest.UserName, opt => opt.MapFrom(src => $"{src.User.FirstName} {src.User.LastName}"))
 .ForMember(dest => dest.CheckerUserName, opt => opt.MapFrom(src => $"{src.CheckerUser.FirstName} {src.CheckerUser.LastName}"))
 ;

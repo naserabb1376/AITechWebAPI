@@ -15,15 +15,15 @@ namespace AITechDATA.DataLayer
 {
     public class AITechContext : DbContext
     {
-        //public AITechContext()
-        //{
-
-        //}
-
-        public AITechContext(DbContextOptions<AITechContext> options)
-      : base(options)
+        public AITechContext()
         {
+
         }
+
+      //  public AITechContext(DbContextOptions<AITechContext> options)
+      //: base(options)
+      //  {
+      //  }
 
         public DbSet<Address> Addresses { get; set; }
         public DbSet<AdminReport> AdminReports { get; set; }
@@ -79,6 +79,8 @@ namespace AITechDATA.DataLayer
         public DbSet<FieldInForm> FieldInForms { get; set; }
         public DbSet<Discount> Discounts { get; set; }
         public DbSet<DiscountTarget> DiscountTargets { get; set; }
+        public DbSet<TimeFunction> TimeFunctions { get; set; }
+        public DbSet<TimeBreak> TimeBreaks { get; set; }
 
 
         // Manual
@@ -95,12 +97,12 @@ namespace AITechDATA.DataLayer
 
 
 
-        //protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-        //{
-        //    ConfigurationHelper configurationHelper = new ConfigurationHelper();
-        //    optionsBuilder.UseSqlServer(configurationHelper.GetConnectionString("publicdb"));
-        //    //  base.OnConfiguring(optionsBuilder);
-        //}
+        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+        {
+            ConfigurationHelper configurationHelper = new ConfigurationHelper();
+            optionsBuilder.UseSqlServer(configurationHelper.GetConnectionString("publicdb"));
+            //  base.OnConfiguring(optionsBuilder);
+        }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -344,6 +346,12 @@ namespace AITechDATA.DataLayer
 .HasOne(x => x.User)
 .WithMany(x => x.Notifications)
 .HasForeignKey(x => x.UserId)
+.OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<TimeBreak>()
+.HasOne(x => x.TimeFunction)
+.WithMany(x => x.TimeBreaks)
+.HasForeignKey(x => x.TimeFunctionId)
 .OnDelete(DeleteBehavior.Cascade);
 
             // رابطه با Group
