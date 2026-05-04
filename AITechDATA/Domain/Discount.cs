@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 
 namespace AITechDATA.Domain
 {
+
     public class Discount : BaseEntity
     {
         public string DiscountCode { get; set; } 
