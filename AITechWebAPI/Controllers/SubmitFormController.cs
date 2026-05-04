@@ -73,6 +73,7 @@ namespace AITechWebAPI.Controllers
         }
 
         [HttpPost("GetSubmitFormObject")]
+        [AllowAnonymous]
         public async Task<ActionResult<RowResultObject<SubmitFormObjDto>>> GetSubmitFormObject(GetSubmitFormObjRequestBody requestBody)
         {
             if (!ModelState.IsValid)
@@ -121,6 +122,7 @@ namespace AITechWebAPI.Controllers
                 CreateDate = DateTime.Now.ToShamsi(),
                 UpdateDate = DateTime.Now.ToShamsi(),
                 OtherLangs = requestBody.OtherLangs,
+                FormConfig = requestBody.FormConfig,
                 Description = requestBody.Description,
                 IsActive = requestBody.IsActive,
                 CreatorId = User.GetCurrentUserId(),
@@ -188,6 +190,7 @@ namespace AITechWebAPI.Controllers
                 UpdateDate = DateTime.Now.ToShamsi(),
                 ID = requestBody.ID,
                 OtherLangs = requestBody.OtherLangs,
+                FormConfig = requestBody.FormConfig,
                 Description = requestBody.Description,
                 IsActive = requestBody.IsActive,
                 CreatorId = theRow.Result.CreatorId,
@@ -198,6 +201,25 @@ namespace AITechWebAPI.Controllers
             result = await _SubmitFormRep.EditSubmitFormAsync(SubmitForm);
             if (result.Status)
             {
+                var currentFields = await _FieldInForm.GetAllFieldInFormsAsync(requestBody.ID, pageSize: 0);
+                if (currentFields.Status && currentFields.Results != null)
+                {
+                    var nextFieldIds = requestBody.FieldIds.ToHashSet();
+                    var removedFieldInFormIds = currentFields.Results
+                        .Where(x => !nextFieldIds.Contains(x.FormFieldId))
+                        .Select(x => x.ID)
+                        .ToList();
+
+                    if (removedFieldInFormIds.Any())
+                    {
+                        var removeResult = await _FieldInForm.RemoveFieldInFormsAsync(removedFieldInFormIds);
+                        if (!removeResult.Status)
+                        {
+                            return BadRequest(removeResult);
+                        }
+                    }
+                }
+
                 var fieldInForms = requestBody.FieldIds.Select(x => new FieldInForm()
                 {
                     CreateDate = DateTime.Now.ToShamsi(),

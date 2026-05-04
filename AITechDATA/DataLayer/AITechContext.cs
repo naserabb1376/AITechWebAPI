@@ -20,10 +20,10 @@ namespace AITechDATA.DataLayer
 
         }
 
-      //  public AITechContext(DbContextOptions<AITechContext> options)
-      //: base(options)
-      //  {
-      //  }
+        public AITechContext(DbContextOptions<AITechContext> options)
+            : base(options)
+        {
+        }
 
         public DbSet<Address> Addresses { get; set; }
         public DbSet<AdminReport> AdminReports { get; set; }
@@ -99,9 +99,11 @@ namespace AITechDATA.DataLayer
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
-            ConfigurationHelper configurationHelper = new ConfigurationHelper();
-            optionsBuilder.UseSqlServer(configurationHelper.GetConnectionString("publicdb"));
-            //  base.OnConfiguring(optionsBuilder);
+            if (!optionsBuilder.IsConfigured)
+            {
+                ConfigurationHelper configurationHelper = new ConfigurationHelper();
+                optionsBuilder.UseSqlServer(configurationHelper.GetConnectionString("publicdb"));
+            }
         }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)

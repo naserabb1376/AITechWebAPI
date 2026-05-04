@@ -58,6 +58,9 @@ namespace AITechWebAPI.Models.PreRegistration
         [Display(Name = " آدرس شبکه اجتماعی")]
         public string? SocialAddress { get; set; } // آدرس شبکه اجتماعی
 
+        [Display(Name = "داده های فرم ساز")]
+        public string? FormData { get; set; } = "";
+
 
         [Display(Name = "تاریخ ثبت نام")]
         public string? RegistrationDate { get; set; } // تاریخ ثبت نام

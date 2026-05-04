@@ -101,15 +101,17 @@ namespace AITechDATA.DataLayer.Services
 
                 }
 
-                query = query.Where(x =>
-                        x.Form.FormKey.ToString().Contains(searchText) ||
-                        x.Form.Title.ToString().Contains(searchText) ||
-                        x.Form.Description.ToString().Contains(searchText) ||
-                        x.Form.EntityName.ToString().Contains(searchText) ||
-                        x.FormField.FieldName.ToString().Contains(searchText) ||
-                        x.FormField.DisplayName.ToString().Contains(searchText) ||
-                        x.Form.Description.ToString().Contains(searchText)
-                    );
+                if (!string.IsNullOrWhiteSpace(searchText))
+                {
+                    query = query.Where(x =>
+                            (!string.IsNullOrEmpty(x.Form.FormKey) && x.Form.FormKey.Contains(searchText)) ||
+                            (!string.IsNullOrEmpty(x.Form.Title) && x.Form.Title.Contains(searchText)) ||
+                            (!string.IsNullOrEmpty(x.Form.Description) && x.Form.Description.Contains(searchText)) ||
+                            (!string.IsNullOrEmpty(x.Form.EntityName) && x.Form.EntityName.Contains(searchText)) ||
+                            (!string.IsNullOrEmpty(x.FormField.FieldName) && x.FormField.FieldName.Contains(searchText)) ||
+                            (!string.IsNullOrEmpty(x.FormField.DisplayName) && x.FormField.DisplayName.Contains(searchText))
+                        );
+                }
 
 
                 results.TotalCount = query.Count();

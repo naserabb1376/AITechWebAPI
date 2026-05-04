@@ -21,6 +21,7 @@ namespace AITechWebAPI.ViewModels
         public string? RecognitionLevel { get; set; } // میزان آشنایی با حوزه علاقمندی
         public string? ProgrammingSkillLevel { get; set; } // میزان تسلط به زبان های برنامه نویسی
         public string? SocialAddress { get; set; } // آدرس شبک اجتماعی
+        public string? FormData { get; set; } = ""; // داده های فیلدهای داینامیک فرم ساز
 
 
     }

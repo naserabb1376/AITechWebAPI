@@ -110,6 +110,7 @@ namespace AITechDATA.DataLayer.Services
                         (!string.IsNullOrEmpty(x.FavoriteField) && x.FavoriteField.Contains(searchText)) ||
                         (!string.IsNullOrEmpty(x.RecognitionLevel) && x.RecognitionLevel.Contains(searchText)) ||
                         (!string.IsNullOrEmpty(x.SocialAddress) && x.SocialAddress.Contains(searchText)) ||
+                        (!string.IsNullOrEmpty(x.FormData) && x.FormData.Contains(searchText)) ||
                         (!string.IsNullOrEmpty(x.EntityType) && x.EntityType.Contains(searchText)) ||
                         (!string.IsNullOrEmpty(x.TargetObjName) && x.TargetObjName.Contains(searchText)) ||
                         (!string.IsNullOrEmpty(x.ProgrammingSkillLevel) && x.ProgrammingSkillLevel.Contains(searchText))

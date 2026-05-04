@@ -178,6 +178,7 @@ namespace AITechDATA.DataLayer.Services
                     result.Result.UpdateDate =form.UpdateDate;
                     result.Result.ID =form.ID;
                     result.Result.OtherLangs =form.OtherLangs;
+                    result.Result.FormConfig = form.FormConfig;
                     result.Result.IsActive =form.IsActive;
                     result.Result.Description =form.Description;
                     result.Result.CreatorId =form.CreatorId;
