@@ -7,6 +7,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
+
+
 namespace AITechDATA.DataLayer.Repositories
 {
     public interface IDiscountTargetRep
