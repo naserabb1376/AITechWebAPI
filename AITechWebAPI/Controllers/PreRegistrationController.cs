@@ -112,6 +112,8 @@ namespace AITechWebAPI.Controllers
                 FavoriteField = requestBody.FavoriteField,
                 RecognitionLevel = requestBody.RecognitionLevel,
                 ProgrammingSkillLevel = requestBody.ProgrammingSkillLevel,
+                SocialAddress = requestBody.SocialAddress,
+                FormData = requestBody.FormData ?? "",
 
                 ForeignKeyId = requestBody.ForeignKeyId,
                 EntityType = requestBody.EntityType,
@@ -172,6 +174,8 @@ namespace AITechWebAPI.Controllers
                 FavoriteField = requestBody.FavoriteField,
                 RecognitionLevel = requestBody.RecognitionLevel,
                 ProgrammingSkillLevel = requestBody.ProgrammingSkillLevel,
+                SocialAddress = requestBody.SocialAddress,
+                FormData = requestBody.FormData ?? theRow.Result.FormData ?? "",
 
                 ForeignKeyId = requestBody.ForeignKeyId,
                 EntityType = requestBody.EntityType,

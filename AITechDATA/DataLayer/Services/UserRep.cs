@@ -96,7 +96,7 @@ namespace AITechDATA.DataLayer.Services
                             userId = theUser.ID;
                             break;
                         }
-                    case "Identificationcode":
+                    case "identificationcode":
                         {
                             var theUser = await query.FirstOrDefaultAsync(x => x.IdentificationCode == fieldValue) ?? new User();
                             userId = theUser.ID;

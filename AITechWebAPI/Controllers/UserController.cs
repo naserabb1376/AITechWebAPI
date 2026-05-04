@@ -270,6 +270,7 @@ namespace AITechWebAPI.Controllers
                 AddressId = (requestBody.AdressId > 0) ? requestBody.AdressId : theRow.Result.AddressId,
                 FirstName = requestBody.FirstName,
                 LastName = requestBody.LastName,
+                IdentificationCode = theRow.Result.IdentificationCode,
                 PasswordHash = theRow.Result.PasswordHash,
                 RoleId = requestBody.RoleId ?? theRow.Result.RoleId,
                 OtherLangs = requestBody.OtherLangs ?? "",
@@ -489,6 +490,7 @@ namespace AITechWebAPI.Controllers
                     AddressId = (address != null && address.ID > 0) ? address.ID : null,
                     FirstName = requestBody.FirstName,
                     LastName = requestBody.LastName,
+                    IdentificationCode = theRow.Result.IdentificationCode,
                     PasswordHash = theRow.Result.PasswordHash,
                     RoleId = requestBody.RoleId ?? theRow.Result.RoleId,
                     OtherLangs = requestBody.OtherLangs ?? "",
@@ -580,7 +582,7 @@ namespace AITechWebAPI.Controllers
             var infoMessage = $@"سلام!
 شما از طرف {userRow.Result.FirstName} {userRow.Result.LastName} دعوت شدید به عضویت در خانواده آیتک
 همین الان با کلیک روی لینک زین میتوانید از تخفیف {invitedDiscountPercentRow.Result.Value} درصدی روی محصولات آیتک بهره مند شوید
-{inviteLinkRow.Result.Value.Replace("invitecode",userRow.Result.IdentificationCode)}";
+{inviteLinkRow.Result.Value.Replace("invitecode", userRow.Result.IdentificationCode ?? "")}";
             bool sent = await ToolBox.SendSMSMessage(requestBody.PhoneNumber, infoMessage);
 
             result.Status = sent;

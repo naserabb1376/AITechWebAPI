@@ -99,6 +99,8 @@ namespace AITechDATA.Domain
         public string? TeacherResumeTitle { get; set; } // عنوان رزومه (مثلاً مدرک یا پروژه)
         public string? TeacherResumeDescription { get; set; } // توضیحات رزومه
         public DateTime? TeacherResumeDateAchieved { get; set; } // تاریخ کسب یا انجام
+        public int DiscountPercent { get; set; }
+        public decimal DiscountedFee { get; set; }
 
     }
 }

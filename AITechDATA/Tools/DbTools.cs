@@ -346,13 +346,15 @@ namespace AITechDATA.Tools
             (t.TargetEntityName.ToLower() == "group" && (t.TargetId <= 0 || groupIds.Contains(t.TargetId))) ||
             (t.TargetEntityName.ToLower() == "role" && (t.TargetId <= 0 || t.TargetId == roleId)) ||
             (t.TargetEntityName.ToLower() == "user" && (t.TargetId <= 0 || t.TargetId == userId)) 
-            ))))).OrderByDescending(x => x.DiscountPercent).OrderByDescending(x=> x.DiscountAmount).FirstOrDefault();
+            ))))).OrderByDescending(x => x.DiscountPercent).ThenByDescending(x=> x.DiscountAmount).FirstOrDefault();
 
-            if (discount != null && discount.DiscountPercent > 0)
+            if (discount != null && (discount.DiscountPercent > 0 || discount.DiscountAmount > 0))
             {
                 result.DiscountPercent = discount.DiscountPercent;
-                result.DiscountAmount = discount.DiscountAmount;
-                result.DiscountedFee = fee - (result.DiscountAmount);
+                result.DiscountAmount = discount.DiscountPercent > 0
+                    ? Math.Round(fee * discount.DiscountPercent / 100, 0)
+                    : discount.DiscountAmount;
+                result.DiscountedFee = Math.Max(0, fee - result.DiscountAmount);
             }
 
             return result;

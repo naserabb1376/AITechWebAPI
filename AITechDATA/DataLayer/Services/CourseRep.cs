@@ -80,7 +80,9 @@ namespace AITechDATA.DataLayer.Services
       int pageIndex = 1,
       int pageSize = 20,
       string searchText = "",
-      string sortQuery = "")
+      string sortQuery = "",
+      long clientUserId = 0,
+      long clientRoleId = 0)
         {
             var results = new CourseListCustomResponse<CourseDto>();
 
@@ -126,6 +128,8 @@ namespace AITechDATA.DataLayer.Services
                             TeacherResumeDateAchieved = g.Teacher.TeacherResume.DateAchieved,
                             TeacherResumeDescription = g.Teacher.TeacherResume.Description,
                             TeacherResumeTitle = g.Teacher.TeacherResume.Title,
+                            DiscountPercent = _context.GetDiscount(g.Fee, "group", g.ID, clientUserId, clientRoleId).DiscountPercent,
+                            DiscountedFee = _context.GetDiscount(g.Fee, "group", g.ID, clientUserId, clientRoleId).DiscountedFee,
 
                         }).ToList()
                     });
@@ -168,7 +172,7 @@ namespace AITechDATA.DataLayer.Services
 
             return results;
         }
-        public async Task<CourseRowCustomResponse<CourseDto>> GetCourseByIdAsync(long courseId)
+        public async Task<CourseRowCustomResponse<CourseDto>> GetCourseByIdAsync(long courseId, long clientUserId = 0, long clientRoleId = 0)
         {
             var result = new CourseRowCustomResponse<CourseDto>();
 
@@ -215,6 +219,8 @@ namespace AITechDATA.DataLayer.Services
                             TeacherResumeDateAchieved = g.Teacher.TeacherResume.DateAchieved,
                             TeacherResumeDescription = g.Teacher.TeacherResume.Description,
                             TeacherResumeTitle = g.Teacher.TeacherResume.Title,
+                            DiscountPercent = _context.GetDiscount(g.Fee, "group", g.ID, clientUserId, clientRoleId).DiscountPercent,
+                            DiscountedFee = _context.GetDiscount(g.Fee, "group", g.ID, clientUserId, clientRoleId).DiscountedFee,
                             
 
                         }).ToList()

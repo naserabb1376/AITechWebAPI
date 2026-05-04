@@ -52,7 +52,10 @@ namespace AITechWebAPI.Controllers
             {
                 return BadRequest(requestBody);
             }
-            var result = await _CourseRep.GetAllCoursesAsync(requestBody.CategoryId,requestBody.PageIndex,requestBody.PageSize,requestBody.SearchText,requestBody.SortQuery);
+            var clientRoleId = User.GetCurrentRoleId();
+            var clientUserId = User.GetCurrentUserId();
+
+            var result = await _CourseRep.GetAllCoursesAsync(requestBody.CategoryId,requestBody.PageIndex,requestBody.PageSize,requestBody.SearchText,requestBody.SortQuery,clientUserId,clientRoleId);
             if (result.Status)
             {
                 var resultVM = _mapper.Map<CourseListCustomResponse<CourseVM>>(result);
@@ -69,7 +72,10 @@ namespace AITechWebAPI.Controllers
             {
                 return BadRequest(requestBody);
             }
-            var result = await _CourseRep.GetCourseByIdAsync(requestBody.ID);
+            var clientRoleId = User.GetCurrentRoleId();
+            var clientUserId = User.GetCurrentUserId();
+
+            var result = await _CourseRep.GetCourseByIdAsync(requestBody.ID,clientUserId,clientRoleId);
             if (result.Status)
             {
                 var resultVM = _mapper.Map<CourseRowCustomResponse<CourseVM>>(result);

@@ -26,6 +26,9 @@ namespace AITechWebAPI.Models.SubmitForm
         [Display(Name = "زبان های دیگر")]
         public string? OtherLangs { get; set; }
 
+        [Display(Name = "تنظیمات فرم")]
+        public string? FormConfig { get; set; }
+
         [Display(Name = "کد فیلدها")]
         public List<long> FieldIds { get; set; } = new List<long>();    
 
