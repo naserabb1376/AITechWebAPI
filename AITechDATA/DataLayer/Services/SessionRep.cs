@@ -94,10 +94,10 @@ namespace AITechDATA.DataLayer.Services
                     .Include(s => s.Attendances)
                     .Include(s => s.SessionAssignments);
 
-                // Filter: فقط Session های کاربر
+                // Filter: فقط Session های گروه‌هایی که کاربر در آن‌ها ثبت‌نام قطعی شده است
                 if (userId > 0)
                 {
-                    query = query.Where(s => s.Attendances.Any(a => a.UserId == userId));
+                    query = query.Where(s => s.Group.Students.Any(ug => ug.UserId == userId && ug.IsActive));
                 }
 
                 // Filter: group
