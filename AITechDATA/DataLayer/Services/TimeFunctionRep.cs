@@ -76,16 +76,31 @@ namespace AITechDATA.DataLayer.Services
             return result;
         }
 
-        public async Task<ListResultObject<TimeFunction>> GetAllTimeFunctionsAsync(long userId = 0,string startDate = "",string endDate="",int pageIndex = 1, int pageSize = 20, string searchText = "", string sortQuery = "")
+        public async Task<ListResultObject<TimeFunctionDto>> GetAllTimeFunctionsAsync(long userId = 0,string startDate = "",string endDate="",int pageIndex = 1, int pageSize = 20, string searchText = "", string sortQuery = "")
         {
-            ListResultObject<TimeFunction> results = new ListResultObject<TimeFunction>();
+            ListResultObject<TimeFunctionDto> results = new ListResultObject<TimeFunctionDto>();
             try
             {
-                var query = _context.TimeFunctions.Include(x=> x.User).AsNoTracking();
-
+                var query = _context.TimeFunctions
+                           .Include(x => x.User)
+                           .Include(x => x.TimeBreaks)
+                           .AsNoTracking();
+                
                 if (userId > 0)
                 {
                     query = query.Where(x => x.UserId == userId);
+                }
+
+                if (!string.IsNullOrEmpty(startDate))
+                {
+                    var sDate = startDate.StringToDate();
+                    query = query.Where(x=> x.TimeFunctionStartDate >= sDate);
+                }
+
+                if (!string.IsNullOrEmpty(endDate))
+                {
+                    var eDate = endDate.StringToDate();
+                    query = query.Where(x => x.TimeFunctionEndDate <= eDate);
                 }
 
                 query = query.Where(x =>
@@ -98,9 +113,52 @@ namespace AITechDATA.DataLayer.Services
 
                 results.TotalCount = query.Count();
                 results.PageCount = DbTools.GetPageCount(results.TotalCount, pageSize);
-                results.Results = await query.OrderByDescending(x => x.CreateDate)
-                     .SortBy(sortQuery).ToPaging(pageIndex, pageSize)
-                    .ToListAsync();
+
+                // کل رکوردهای فیلترشده برای محاسبه مجموع بازه
+                var allFilteredItems = await query.ToListAsync();
+
+                var totalRangeBreakTime = TimeSpan.Zero;
+                var totalRangeUsefulWorkTime = TimeSpan.Zero;
+
+                foreach (var item in allFilteredItems)
+                {
+                    var totalWorkTime = item.TimeFunctionEndDate - item.TimeFunctionStartDate;
+
+                    if (totalWorkTime < TimeSpan.Zero)
+                        totalWorkTime = TimeSpan.Zero;
+
+                    var totalBreakTime = CalculateTotalBreakTime(item.TimeBreaks);
+
+                    if (totalBreakTime > totalWorkTime)
+                        totalBreakTime = totalWorkTime;
+
+                    var totalUsefulWorkTime = totalWorkTime - totalBreakTime;
+
+                    totalRangeBreakTime += totalBreakTime;
+                    totalRangeUsefulWorkTime += totalUsefulWorkTime;
+                }
+
+                // صفحه فعلی
+                var pagedItems = allFilteredItems
+                    .OrderByDescending(x => x.CreateDate)
+                    .AsQueryable()
+                    .SortBy(sortQuery)
+                    .ToPaging(pageIndex, pageSize)
+                    .ToList();
+
+                results.Results = pagedItems
+                    .Select(item =>
+                    {
+                        var dto = MapTimeFunctionToDto(item);
+
+                        // این دو مقدار برای همه رکوردهای صفحه یکی هستند
+                        // چون مربوط به کل بازه تاریخی فیلتر شده‌اند
+                        dto.TotalRangeBreakTime = totalRangeBreakTime;
+                        dto.TotalRangeUsefulWorkTime = totalRangeUsefulWorkTime;
+
+                        return dto;
+                    })
+                    .ToList();
             }
             catch (Exception ex)
             {
@@ -110,14 +168,17 @@ namespace AITechDATA.DataLayer.Services
             return results;
         }
 
-        public async Task<RowResultObject<TimeFunction>> GetTimeFunctionByIdAsync(long TimeFunctionId)
+        public async Task<RowResultObject<TimeFunctionDto>> GetTimeFunctionByIdAsync(long TimeFunctionId)
         {
-            RowResultObject<TimeFunction> result = new RowResultObject<TimeFunction>();
+            RowResultObject<TimeFunctionDto> result = new RowResultObject<TimeFunctionDto>();
             try
             {
-                result.Result = await _context.TimeFunctions.Include(x=> x.User)
-                    .AsNoTracking()
-                    .SingleOrDefaultAsync(x => x.ID == TimeFunctionId);
+                var item = await _context.TimeFunctions
+            .Include(x => x.User)
+            .Include(x => x.TimeBreaks)
+            .AsNoTracking()
+            .FirstOrDefaultAsync(x => x.ID == TimeFunctionId);
+                result.Result = MapTimeFunctionToDto(item);
             }
             catch (Exception ex)
             {
@@ -150,8 +211,20 @@ namespace AITechDATA.DataLayer.Services
             BitResultObject result = new BitResultObject();
             try
             {
-                var TimeFunction = await GetTimeFunctionByIdAsync(TimeFunctionId);
-                result = await RemoveTimeFunctionAsync(TimeFunction.Result);
+                var TimeFunctionDto = await GetTimeFunctionByIdAsync(TimeFunctionId);
+                var TimeFunction = new TimeFunction()
+                {
+                    CreateDate = TimeFunctionDto.Result.CreateDate,
+                    UpdateDate = TimeFunctionDto.Result.UpdateDate,
+                    ID = TimeFunctionDto.Result.ID,
+                    OtherLangs = TimeFunctionDto.Result.OtherLangs,
+                    IsActive = TimeFunctionDto.Result.IsActive,
+                    Description = TimeFunctionDto.Result.Description,
+                    UserId = TimeFunctionDto.Result.UserId,
+                    TimeFunctionStartDate = TimeFunctionDto.Result.TimeFunctionStartDate,
+                    TimeFunctionEndDate = TimeFunctionDto.Result.TimeFunctionEndDate
+                };
+                result = await RemoveTimeFunctionAsync(TimeFunction);
             }
             catch (Exception ex)
             {
@@ -159,6 +232,81 @@ namespace AITechDATA.DataLayer.Services
                 result.ErrorMessage = $"{ex.Message} - {ex.InnerException?.Message}";
             }
             return result;
+        }
+
+        private TimeSpan CalculateTotalBreakTime(List<TimeBreak>? timeBreaks)
+        {
+            if (timeBreaks == null || !timeBreaks.Any())
+                return TimeSpan.Zero;
+
+            var totalBreakTime = TimeSpan.Zero;
+
+            foreach (var timeBreak in timeBreaks)
+            {
+                var breakDuration = timeBreak.TimeBreakEndTime - timeBreak.TimeBreakStartTime;
+
+                // اگر تایم استراحت از نیمه‌شب رد شده باشد
+                if (breakDuration < TimeSpan.Zero)
+                {
+                    breakDuration = breakDuration.Add(TimeSpan.FromDays(1));
+                }
+
+                totalBreakTime += breakDuration;
+            }
+
+            return totalBreakTime;
+        }
+
+        private TimeFunctionDto MapTimeFunctionToDto(TimeFunction item)
+        {
+            var totalWorkTime = item.TimeFunctionEndDate - item.TimeFunctionStartDate;
+
+            var totalBreakTime = CalculateTotalBreakTime(item.TimeBreaks);
+
+            if (totalBreakTime > totalWorkTime)
+            {
+                totalBreakTime = totalWorkTime;
+            }
+
+            var totalUsefulWorkTime = totalWorkTime - totalBreakTime;
+
+            return new TimeFunctionDto
+            {
+                ID = item.ID,
+
+                TimeFunctionStartDate = item.TimeFunctionStartDate,
+                TimeFunctionEndDate = item.TimeFunctionEndDate,
+
+                UserId = item.UserId,
+                UserFullName = item.User != null
+                    ? $"{item.User.FirstName} {item.User.LastName}"
+                    : null,
+
+                Description = item.Description,
+
+                TimeBreaks = item.TimeBreaks != null
+                    ? item.TimeBreaks.Select(x => new TimeBreak
+                    {
+                        ID = x.ID,
+                        TimeBreakStartTime = x.TimeBreakStartTime,
+                        TimeBreakEndTime = x.TimeBreakEndTime,
+                        Description = x.Description,
+                        CreateDate = x.CreateDate,
+                        IsActive = x.IsActive,
+                        OtherLangs = x.OtherLangs,
+                        TimeFunctionId = x.TimeFunctionId,
+                        UpdateDate = x.UpdateDate,
+                    }).ToList()
+                    : new List<TimeBreak>(),
+
+                TotalBreakTime = totalBreakTime,
+                TotalUsefulWorkTime = totalUsefulWorkTime,
+                CreateDate = item.CreateDate,
+                UpdateDate = item.UpdateDate,
+                IsActive = item.IsActive,
+                OtherLangs = item.OtherLangs,
+                
+            };
         }
     }
 }
