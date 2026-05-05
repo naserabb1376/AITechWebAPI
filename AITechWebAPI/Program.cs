@@ -229,6 +229,8 @@ namespace AITechWebAPI
             builder.Services.AddScoped<IDutyRep, DutyRep>();
             builder.Services.AddScoped<IDismissalRep, DismissalRep>();
             builder.Services.AddScoped<IGadgetAccessRep, GadgetAccessRep>();
+            builder.Services.AddScoped<ITimeFunctionRep, TimeFunctionRep>();
+            builder.Services.AddScoped<ITimeBreakRep, TimeBreakRep>();
 
 
             #endregion ImportDbServices

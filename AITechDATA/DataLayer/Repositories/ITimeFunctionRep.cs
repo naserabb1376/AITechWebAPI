@@ -10,9 +10,9 @@ namespace AITechDATA.DataLayer.Repositories
 {
     public interface ITimeFunctionRep
     {
-        Task<ListResultObject<TimeFunction>> GetAllTimeFunctionsAsync(long userId=0,string startDate="",string endDate ="",int pageIndex = 1, int pageSize = 20, string searchText = "", string sortQuery = "");
+        Task<ListResultObject<TimeFunctionDto>> GetAllTimeFunctionsAsync(long userId=0,string startDate="",string endDate ="",int pageIndex = 1, int pageSize = 20, string searchText = "", string sortQuery = "");
 
-        Task<RowResultObject<TimeFunction>> GetTimeFunctionByIdAsync(long TimeFunctionId);
+        Task<RowResultObject<TimeFunctionDto>> GetTimeFunctionByIdAsync(long TimeFunctionId);
 
         Task<BitResultObject> AddTimeFunctionAsync(TimeFunction TimeFunction);
 
