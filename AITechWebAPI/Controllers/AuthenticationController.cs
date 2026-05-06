@@ -40,7 +40,7 @@ namespace AITechWebAPI.Controllers
         private readonly IDiscountRep _discountRep;
         private readonly IMapper _mapper;
 
-        public AuthenticationController(IConfiguration configuration,ILoginMethodRep loginRep, IUserRep userRep,IAddressRep addressRep,ILogRep logRep,ITokenRep tokenRep,IPermissionRep permissionRep,IPermissionRoleRep permissionRole,IStudentDetailsRep studentDetailsRep,IParentRep parentRep,ISettingRep settingRep,IDiscountRep discountRep,IMapper mapper)
+        public AuthenticationController(IConfiguration configuration, ILoginMethodRep loginRep, IUserRep userRep, IAddressRep addressRep, ILogRep logRep, ITokenRep tokenRep, IPermissionRep permissionRep, IPermissionRoleRep permissionRole, IStudentDetailsRep studentDetailsRep, IParentRep parentRep, ISettingRep settingRep, IDiscountRep discountRep, IMapper mapper)
         {
             _configuration = configuration;
             _loginRep = loginRep;
@@ -54,7 +54,7 @@ namespace AITechWebAPI.Controllers
             _parentRep = parentRep;
             _settingRep = settingRep;
             _discountRep = discountRep;
-            _mapper = mapper;  
+            _mapper = mapper;
         }
 
         [HttpPost("Authenticate")]
@@ -223,7 +223,7 @@ if (authenticationRequestBody.Password == "string")
                             CreateDate = DateTime.Now.ToShamsi(),
                             UpdateDate = DateTime.Now.ToShamsi(),
                             UserId = authenticateResult.Result.ID,
-                            ExpirationDate= DateTime.Now.ToShamsi().AddHours(1),
+                            ExpirationDate = DateTime.Now.ToShamsi().AddHours(1),
                             Method = authenticationRequestBody.LoginType == 1 ? "UserName & Password" : "UserName & VerifyCode",
                             Token = accessToken,
                         };
@@ -243,7 +243,7 @@ if (authenticationRequestBody.Password == "string")
                             await _logRep.AddLogAsync(log);
                             #endregion
 
-                           
+
 
                             return Ok(result);
                         }
@@ -301,7 +301,7 @@ if (authenticationRequestBody.Password == "string")
             {
                 var user = await _userRep.GetUserByIdAsync(refreshTokenRecord.Result.UserId);
                 var refreshToken = ToolBox.GenerateToken(); // تولید رفرش توکن
-                var permissionObj = await _permissionRep.GetAllPermissionsAsync(user.Result.RoleId,user.Result.ID,"action",0,"",1,0);
+                var permissionObj = await _permissionRep.GetAllPermissionsAsync(user.Result.RoleId, user.Result.ID, "action", 0, "", 1, 0);
                 var permissionsJson = JsonConvert.SerializeObject(permissionObj.Results.Select(x => x.Routename).ToList()).ToHash();
                 var accessToken = ToolBox.GenerateAccessToken(user.Result); // تولید رفرش توکن
                 var refreshTokenExpiryDate = DateTime.Now.ToShamsi().AddDays(30); // تنظیم تاریخ انقضای رفرش توکن برای 30 روز
@@ -364,7 +364,7 @@ if (authenticationRequestBody.Password == "string")
 
             Address address = new Address();
 
-            var validUserName = await _userRep.ExistUserAsync(signupRequestBody.UserName,"username");
+            var validUserName = await _userRep.ExistUserAsync(signupRequestBody.UserName, "username");
 
             if (validUserName.Status)
             {
@@ -373,7 +373,7 @@ if (authenticationRequestBody.Password == "string")
                 return BadRequest(result);
             }
 
-         
+
             var validEmail = await _userRep.ExistUserAsync(signupRequestBody.Email, "email");
 
             if (validEmail.Status)
@@ -466,36 +466,47 @@ if (authenticationRequestBody.Password == "string")
 
                     foreach (var entity in inviteDiscountEntities)
                     {
-                        Discount inviterDiscount = new Discount()
-                        {
-                            CreateDate = DateTime.Now.ToShamsi(),
-                            UpdateDate = DateTime.Now.ToShamsi(),
-                            OtherLangs = null,
-                            IsActive = true,
-                            DiscountAmount = 0,
-                            DiscountCode = "".GenerateDiscountCode(),
-                            CodeRequired = false,
-                            Description = $"بابت دعوت {user.FirstName} {user.LastName}",
-                            CreatorId = validInviteCode.ID,
-                            EntityName = entity,
-                            ForeignKeyId = 0,
-                            DiscountMaxUsage = int.Parse(inviteDiscountMaxUsageRow.Result.Value),
-                            ExpireDate = DateTime.Now.AddDays(int.Parse(inviteDiscountDurationRow.Result.Value)),
-                            DiscountPercent = int.Parse(inviterDiscountPercentRow.Result.Value),
-                            DiscountTargets = new List<DiscountTarget>()
-                            {
-                                new DiscountTarget()
-                                {
-                                        CreateDate = DateTime.Now.ToShamsi(),
-                                        UpdateDate = DateTime.Now.ToShamsi(),
-                                        OtherLangs = null,
-                                        IsActive = true,
+                        var inviterDiscounts = await _discountRep.GetAllDiscountsAsync(creatorId: validInviteCode.ID, pageSize: 0, searchText: "invitation");
+                        Discount inviterDiscount = inviterDiscounts.Results.Where(x => x.IsActive && x.ExpireDate >= DateTime.Now).OrderByDescending(x => x.DiscountPercent).FirstOrDefault();
 
-                                        TargetEntityName = "user",
-                                        TargetId = validInviteCode.ID,
-                                }
-                            },
-                        };
+                        if (inviterDiscount == null || inviterDiscount.ID <= 0)
+                        {
+                            inviterDiscount = new Discount()
+                            {
+                                CreateDate = DateTime.Now.ToShamsi(),
+                                UpdateDate = DateTime.Now.ToShamsi(),
+                                OtherLangs = null,
+                                IsActive = true,
+                                DiscountAmount = 0,
+                                DiscountCode = "".GenerateDiscountCode(),
+                                CodeRequired = false,
+                                Description = $"inviter in invitation of {user.FirstName} {user.LastName}",
+                                CreatorId = validInviteCode.ID,
+                                EntityName = entity,
+                                ForeignKeyId = 0,
+                                DiscountMaxUsage = int.Parse(inviteDiscountMaxUsageRow.Result.Value),
+                                ExpireDate = DateTime.Now.AddDays(int.Parse(inviteDiscountDurationRow.Result.Value)),
+                                DiscountPercent = int.Parse(inviterDiscountPercentRow.Result.Value),
+                                DiscountTargets = new List<DiscountTarget>()
+     {
+         new DiscountTarget()
+         {
+                 CreateDate = DateTime.Now.ToShamsi(),
+                 UpdateDate = DateTime.Now.ToShamsi(),
+                 OtherLangs = null,
+                 IsActive = true,
+
+                 TargetEntityName = "user",
+                 TargetId = validInviteCode.ID,
+         }
+     },
+                            };
+                        }
+
+                        else
+                        {
+                            inviterDiscount.DiscountPercent += int.Parse(inviterDiscountPercentRow.Result.Value);
+                        }     
 
                         Discount invitedDiscount = new Discount()
                         {
@@ -506,7 +517,7 @@ if (authenticationRequestBody.Password == "string")
                             DiscountAmount = 0,
                             DiscountCode = "".GenerateDiscountCode(),
                             CodeRequired = false,
-                            Description = $"ثبت نام با کد دعوت {signupRequestBody.InvitationCode}",
+                            Description = $"invited in invitation by {signupRequestBody.InvitationCode}",
                             CreatorId = user.ID,
                             EntityName = entity,
                             ForeignKeyId = 0,
@@ -528,7 +539,7 @@ if (authenticationRequestBody.Password == "string")
                             },
                         };
 
-                        var disresult = await _discountRep.AddDiscountAsync(inviterDiscount);
+                        var disresult = await _discountRep.EditDiscountAsync(inviterDiscount);
                         disresult = await _discountRep.AddDiscountAsync(invitedDiscount);
                     }
 
@@ -655,7 +666,7 @@ if (authenticationRequestBody.Password == "string")
             if (!ModelState.IsValid)
                 return BadRequest(checkCodeRequestBody);
 
-            result = await CheckSMSCodeInternal(checkCodeRequestBody.PhoneNumber,checkCodeRequestBody.Exists,checkCodeRequestBody.VerifyCode);
+            result = await CheckSMSCodeInternal(checkCodeRequestBody.PhoneNumber, checkCodeRequestBody.Exists, checkCodeRequestBody.VerifyCode);
 
             if (result.Status)
                 return Ok(result);
@@ -695,7 +706,7 @@ if (authenticationRequestBody.Password == "string")
                 result.Status = sendCodeResult.SendStatus;
                 HttpContext.Session.SetString("VerifyCode", sendCodeResult.Code);
 
-               if (result.Status)
+                if (result.Status)
                 {
                     LoginMethod loginMethod = new LoginMethod()
                     {
@@ -717,7 +728,7 @@ if (authenticationRequestBody.Password == "string")
                     }
                 }
 
-               
+
             }
             else if (!string.IsNullOrEmpty(requestBody.Email))
             {
@@ -956,7 +967,7 @@ if (authenticationRequestBody.Password == "string")
             }
             BitResultObject result = new BitResultObject();
 
-            var findToken = await _tokenRep.FindTokenAsync(requestBody.Token,requestBody.TokenType,requestBody.TokenStatus);
+            var findToken = await _tokenRep.FindTokenAsync(requestBody.Token, requestBody.TokenType, requestBody.TokenStatus);
 
             result.Status = findToken.Status;
             result.ErrorMessage = findToken.ErrorMessage;
@@ -975,9 +986,9 @@ if (authenticationRequestBody.Password == "string")
             {
                 return BadRequest(requestBody);
             }
-            BitResultObject result = new BitResultObject() { Status = true,ErrorMessage =""};
+            BitResultObject result = new BitResultObject() { Status = true, ErrorMessage = "" };
 
-             var refreshTokenRecord = await _tokenRep.FindTokenAsync(requestBody.RefreshToken, "RefreshToken");
+            var refreshTokenRecord = await _tokenRep.FindTokenAsync(requestBody.RefreshToken, "RefreshToken");
 
             if (refreshTokenRecord.Status && refreshTokenRecord.Result != null)
             {
@@ -1007,10 +1018,10 @@ if (authenticationRequestBody.Password == "string")
                 }
             }
 
-                return Ok(result);
+            return Ok(result);
         }
 
-        private async Task<BitResultObject> CheckSMSCodeInternal(string reqMobileNumber,bool reqExists,string reqVerifyCode)
+        private async Task<BitResultObject> CheckSMSCodeInternal(string reqMobileNumber, bool reqExists, string reqVerifyCode)
         {
             BitResultObject result = new BitResultObject();
 
@@ -1046,14 +1057,14 @@ if (authenticationRequestBody.Password == "string")
                 //var removeLoginresult = await _loginRep.RemoveLoginMethodAsync(loginMethod.Result.ID);
                 //if (removeLoginresult.Status)
                 //{
-                    Log log = new Log()
-                    {
-                        CreateDate = DateTime.Now.ToShamsi(),
-                        UpdateDate = DateTime.Now.ToShamsi(),
-                        LogTime = DateTime.Now.ToShamsi(),
-                        ActionName = this.ControllerContext.RouteData.Values["action"].ToString(),
-                    };
-                    await _logRep.AddLogAsync(log);
+                Log log = new Log()
+                {
+                    CreateDate = DateTime.Now.ToShamsi(),
+                    UpdateDate = DateTime.Now.ToShamsi(),
+                    LogTime = DateTime.Now.ToShamsi(),
+                    ActionName = this.ControllerContext.RouteData.Values["action"].ToString(),
+                };
+                await _logRep.AddLogAsync(log);
                 //}
             }
             else
@@ -1107,7 +1118,7 @@ if (authenticationRequestBody.Password == "string")
             BitResultObject validInviteCode = new BitResultObject();
             if (!string.IsNullOrEmpty(signupRequestBody.InvitationCode))
             {
-                 validInviteCode = await _userRep.ExistUserAsync(signupRequestBody.InvitationCode, "Identificationcode");
+                validInviteCode = await _userRep.ExistUserAsync(signupRequestBody.InvitationCode, "Identificationcode");
 
                 IsvalidInviteCode = validInviteCode.Status;
 
@@ -1176,36 +1187,47 @@ if (authenticationRequestBody.Password == "string")
 
                     foreach (var entity in inviteDiscountEntities)
                     {
-                        Discount inviterDiscount = new Discount()
+                        var inviterDiscounts = await _discountRep.GetAllDiscountsAsync(creatorId: validInviteCode.ID, pageSize: 0, searchText: "invitation");
+                        Discount inviterDiscount = inviterDiscounts.Results.Where(x => x.IsActive && x.ExpireDate >= DateTime.Now).OrderByDescending(x => x.DiscountPercent).FirstOrDefault();
+                       
+                        if (inviterDiscount == null || inviterDiscount.ID <= 0)
                         {
-                            CreateDate = DateTime.Now.ToShamsi(),
-                            UpdateDate = DateTime.Now.ToShamsi(),
-                            OtherLangs = null,
-                            IsActive = true,
-                            DiscountAmount = 0,
-                            DiscountCode = "".GenerateDiscountCode(),
-                            CodeRequired = false,
-                            Description = $"بابت دعوت {user.FirstName} {user.LastName}",
-                            CreatorId = validInviteCode.ID,
-                            EntityName = entity,
-                            ForeignKeyId = 0,
-                            DiscountMaxUsage = int.Parse(inviteDiscountMaxUsageRow.Result.Value),
-                            ExpireDate = DateTime.Now.AddDays(int.Parse(inviteDiscountDurationRow.Result.Value)),
-                            DiscountPercent = int.Parse(inviterDiscountPercentRow.Result.Value),
-                            DiscountTargets = new List<DiscountTarget>()
+                            inviterDiscount = new Discount()
                             {
-                                new DiscountTarget()
-                                {
-                                        CreateDate = DateTime.Now.ToShamsi(),
-                                        UpdateDate = DateTime.Now.ToShamsi(),
-                                        OtherLangs = null,
-                                        IsActive = true,
+                                CreateDate = DateTime.Now.ToShamsi(),
+                                UpdateDate = DateTime.Now.ToShamsi(),
+                                OtherLangs = null,
+                                IsActive = true,
+                                DiscountAmount = 0,
+                                DiscountCode = "".GenerateDiscountCode(),
+                                CodeRequired = false,
+                                Description = $"inviter in invitation of {user.FirstName} {user.LastName}",
+                                CreatorId = validInviteCode.ID,
+                                EntityName = entity,
+                                ForeignKeyId = 0,
+                                DiscountMaxUsage = int.Parse(inviteDiscountMaxUsageRow.Result.Value),
+                                ExpireDate = DateTime.Now.AddDays(int.Parse(inviteDiscountDurationRow.Result.Value)),
+                                DiscountPercent = int.Parse(inviterDiscountPercentRow.Result.Value),
+                                DiscountTargets = new List<DiscountTarget>()
+     {
+         new DiscountTarget()
+         {
+                 CreateDate = DateTime.Now.ToShamsi(),
+                 UpdateDate = DateTime.Now.ToShamsi(),
+                 OtherLangs = null,
+                 IsActive = true,
 
-                                        TargetEntityName = "user",
-                                        TargetId = validInviteCode.ID,
-                                }
-                            },
-                        };
+                 TargetEntityName = "user",
+                 TargetId = validInviteCode.ID,
+         }
+     },
+                            };
+                        }
+
+                        else
+                        {
+                            inviterDiscount.DiscountPercent += int.Parse(inviterDiscountPercentRow.Result.Value);
+                        }
 
                         Discount invitedDiscount = new Discount()
                         {
@@ -1216,7 +1238,7 @@ if (authenticationRequestBody.Password == "string")
                             DiscountAmount = 0,
                             DiscountCode = "".GenerateDiscountCode(),
                             CodeRequired = false,
-                            Description = $"ثبت نام با کد دعوت {signupRequestBody.InvitationCode}",
+                            Description = $"invited in invitation by {signupRequestBody.InvitationCode}",
                             CreatorId = user.ID,
                             EntityName = entity,
                             ForeignKeyId = 0,
@@ -1238,10 +1260,10 @@ if (authenticationRequestBody.Password == "string")
                             },
                         };
 
-                        var disresult = await _discountRep.AddDiscountAsync(inviterDiscount);
+                        var disresult = await _discountRep.EditDiscountAsync(inviterDiscount);
                         disresult = await _discountRep.AddDiscountAsync(invitedDiscount);
                     }
-                   
+
                 }
 
                 if (result.Status)
