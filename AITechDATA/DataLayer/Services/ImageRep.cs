@@ -207,6 +207,7 @@ namespace AITechDATA.DataLayer.Services
             while (existRow)
             {
                 rowNumber++;
+                existRow = await _context.Images.AnyAsync(x => x.FileName.Contains($"_{rowNumber}_"));
             }
             return rowNumber;
         }
