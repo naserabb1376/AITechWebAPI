@@ -103,6 +103,8 @@ namespace AITechWebAPI.Controllers
                 GroupId = requestBody.GroupId,
                 SessionDate = requestBody.SessionDate.StringToDate().Value,
                 Description = requestBody.Description,
+                Note = requestBody.Note,
+                VideoDurationSeconds = requestBody.VideoDurationSeconds,
             };
             var result = await _SessionRep.AddSessionAsync(Session);
             if (result.Status)
@@ -150,6 +152,8 @@ namespace AITechWebAPI.Controllers
                 GroupId = requestBody.GroupId,
                 SessionDate = requestBody.SessionDate.StringToDate().Value,
                 Description = requestBody.Description,
+                Note = requestBody.Note,
+                VideoDurationSeconds = requestBody.VideoDurationSeconds,
             };
             result = await _SessionRep.EditSessionAsync(Session);
             if (result.Status)

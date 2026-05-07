@@ -262,6 +262,7 @@ await _GroupRep.GetGroupByIdAsync(requestBody.ForeignKeyId);
             result.Result = new RequestPaymentResultBody();
             decimal rowAmount = 0,discountedrowAmount = 0;
             string targetObjName="",groupType="";
+            long? appliedDiscountId = null;
            BitResultObject addResult;
             if (!ModelState.IsValid)
             {
@@ -325,6 +326,13 @@ await _GroupRep.GetGroupByIdAsync(requestBody.ForeignKeyId);
             if (discountedrowAmount == rowAmount && requestBody.DiscountId > 0)
             {
                 var x = await _discountRep.GetDiscountByIdAsync(requestBody.DiscountId.Value);
+                if (!x.Status || x.Result == null)
+                {
+                    result.Result = null;
+                    result.Status = false;
+                    result.ErrorMessage = "کد تخفیف معتبر نیست";
+                    return BadRequest(result);
+                }
 
                 var groups = await _UserGroupRep.GetAllUserGroupsAsync(UserId,pageSize:0);
                 var groupIds = groups.Results.Select(x => x.GroupId).ToList();
@@ -342,6 +350,14 @@ await _GroupRep.GetGroupByIdAsync(requestBody.ForeignKeyId);
                     decimal discountAAmount = rowAmount - x.Result.DiscountAmount ;
                     decimal discountPAmount =  rowAmount - (rowAmount * x.Result.DiscountPercent / 100m);
                     discountedrowAmount =  decimal.Min(discountAAmount,discountPAmount);
+                    appliedDiscountId = requestBody.DiscountId;
+                }
+                else
+                {
+                    result.Result = null;
+                    result.Status = false;
+                    result.ErrorMessage = "کد تخفیف برای این پرداخت قابل استفاده نیست";
+                    return BadRequest(result);
                 }
             }
 
@@ -360,7 +376,7 @@ await _GroupRep.GetGroupByIdAsync(requestBody.ForeignKeyId);
                     UserId = UserId,
                     PaymentDate = DateTime.Now.ToShamsi(),
                     PaymentStatus = false,
-                    DiscountId = requestBody.ForeignKeyId,
+                    DiscountId = appliedDiscountId,
                     IsActive = true,
 
                     //  Description = requestBody.Description,
@@ -419,6 +435,11 @@ await _GroupRep.GetGroupByIdAsync(requestBody.ForeignKeyId);
 
                     return Ok(result);
                 }
+
+                result.Result = null;
+                result.Status = false;
+                result.ErrorMessage = addResult.ErrorMessage;
+                return BadRequest(result);
             }
 
             else
