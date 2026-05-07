@@ -28,7 +28,10 @@ namespace AITechDATA.DataLayer.Services
             {
                 for (int i = 0; i < images.Count; i++)
                 {
-                    images[i].FileNumber = await GetNewRowNumber() + (i+1);
+                    if (!images[i].FileNumber.HasValue || images[i].FileNumber <= 0)
+                    {
+                        images[i].FileNumber = await GetNewRowNumber();
+                    }
                 }
                 await _context.Images.AddRangeAsync(images);
                 await _context.SaveChangesAsync();

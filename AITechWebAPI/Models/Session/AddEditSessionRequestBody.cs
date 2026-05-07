@@ -17,5 +17,12 @@ namespace AITechWebAPI.Models.Session
         [Display(Name = "توضیحات جلسه")]
         public string? Description { get; set; }
 
+        [Display(Name = "نکته جلسه")]
+        public string? Note { get; set; }
+
+        [Display(Name = "مدت ویدئو")]
+        [Range(0, int.MaxValue, ErrorMessage = "مقدار {0} نمی‌تواند منفی باشد")]
+        public int? VideoDurationSeconds { get; set; }
+
     }
 }

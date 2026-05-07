@@ -17,6 +17,7 @@ using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+using System.Text.Json;
 using static AITechWebAPI.Tools.ToolBox;
 
 namespace AITechWebAPI.Controllers
@@ -30,13 +31,15 @@ namespace AITechWebAPI.Controllers
     public class PreRegistrationController : ControllerBase
     {
         IPreRegistrationRep _PreRegistrationRep;
+        ISubmitFormRep _SubmitFormRep;
         ILogRep _logRep;
         private readonly IMapper _mapper;
 
 
-        public PreRegistrationController(IPreRegistrationRep PreRegistrationRep,ILogRep logRep,IMapper mapper)
+        public PreRegistrationController(IPreRegistrationRep PreRegistrationRep, ISubmitFormRep SubmitFormRep, ILogRep logRep,IMapper mapper)
         {
            _PreRegistrationRep = PreRegistrationRep;
+           _SubmitFormRep = SubmitFormRep;
            _logRep = logRep;
             _mapper = mapper;
         }
@@ -98,6 +101,13 @@ namespace AITechWebAPI.Controllers
             {
                 return BadRequest(requestBody);
             }
+
+            var dynamicFormValidation = await ValidateDynamicSubmitFormAsync(requestBody);
+            if (dynamicFormValidation != null)
+            {
+                return dynamicFormValidation;
+            }
+
             PreRegistration PreRegistration = new PreRegistration()
             {
                 CreateDate = DateTime.Now.ToShamsi(),
@@ -143,6 +153,190 @@ namespace AITechWebAPI.Controllers
                 return Ok(result);
             }
             return BadRequest(result);
+        }
+
+        private async Task<ActionResult<BitResultObject>?> ValidateDynamicSubmitFormAsync(AddEditPreRegistrationRequestBody requestBody)
+        {
+            if (string.IsNullOrWhiteSpace(requestBody.FormData))
+            {
+                return null;
+            }
+
+            JsonDocument formDataDocument;
+            try
+            {
+                formDataDocument = JsonDocument.Parse(requestBody.FormData);
+            }
+            catch
+            {
+                return DynamicFormBadRequest("داده‌های فرم‌ساز معتبر نیست");
+            }
+
+            using (formDataDocument)
+            {
+                var root = formDataDocument.RootElement;
+                var formId = GetLong(root, "formId");
+                var formKey = GetString(root, "formKey");
+
+                if (formId <= 0 && string.IsNullOrWhiteSpace(formKey))
+                {
+                    return null;
+                }
+
+                if (!root.TryGetProperty("values", out var valuesElement) || valuesElement.ValueKind != JsonValueKind.Object)
+                {
+                    return DynamicFormBadRequest("مقادیر فرم‌ساز معتبر نیست");
+                }
+
+                var submitForm = await _SubmitFormRep.GetSubmitFormObjAsync(formId, formKey);
+                if (!submitForm.Status || submitForm.Result == null || submitForm.Result.ID <= 0)
+                {
+                    return DynamicFormBadRequest("فرم پیدا نشد یا فعال نیست");
+                }
+
+                var allowedFields = submitForm.Result.Fields
+                    .Select(x => x.FieldName)
+                    .Where(x => !string.IsNullOrWhiteSpace(x))
+                    .ToHashSet(StringComparer.OrdinalIgnoreCase);
+
+                if (!allowedFields.Any())
+                {
+                    return DynamicFormBadRequest("برای این فرم فیلدی تعریف نشده است");
+                }
+
+                var submittedValues = valuesElement.EnumerateObject()
+                    .ToDictionary(x => x.Name, x => x.Value.ValueKind == JsonValueKind.String ? x.Value.GetString() ?? "" : x.Value.ToString(), StringComparer.OrdinalIgnoreCase);
+
+                var invalidField = submittedValues.Keys.FirstOrDefault(x => !allowedFields.Contains(x));
+                if (!string.IsNullOrWhiteSpace(invalidField))
+                {
+                    return DynamicFormBadRequest($"فیلد «{invalidField}» در این فرم تعریف نشده است");
+                }
+
+                using var configDocument = ParseOptionalJson(submitForm.Result.FormConfig);
+                var configRoot = configDocument?.RootElement;
+                var hiddenFields = GetStringArray(configRoot, "hiddenFields").ToHashSet(StringComparer.OrdinalIgnoreCase);
+                var requiredFields = GetStringArray(configRoot, "requiredFields");
+
+                if (!requiredFields.Any())
+                {
+                    requiredFields = new List<string>() { "studentFullName", "firstName", "lastName", "phoneNumber" };
+                }
+
+                var now = DateTime.Now;
+                var startAt = GetString(configRoot, "startAt");
+                var endAt = GetString(configRoot, "endAt");
+
+                if (!string.IsNullOrWhiteSpace(startAt) && DateTime.TryParse(startAt, out var startDate) && now < startDate)
+                {
+                    return DynamicFormBadRequest("زمان ثبت این فرم هنوز شروع نشده است");
+                }
+
+                if (!string.IsNullOrWhiteSpace(endAt) && DateTime.TryParse(endAt, out var endDate) && now > endDate)
+                {
+                    return DynamicFormBadRequest("زمان ثبت این فرم به پایان رسیده است");
+                }
+
+                foreach (var fieldName in requiredFields.Where(x => allowedFields.Contains(x) && !hiddenFields.Contains(x)))
+                {
+                    if (fieldName.Equals("studentFullName", StringComparison.OrdinalIgnoreCase))
+                    {
+                        var hasFullName = HasValue(submittedValues, "studentFullName") ||
+                            (!string.IsNullOrWhiteSpace(requestBody.FirstName) && !string.IsNullOrWhiteSpace(requestBody.LastName));
+
+                        if (!hasFullName)
+                        {
+                            return DynamicFormBadRequest("فیلد نام و نام خانوادگی الزامی است");
+                        }
+
+                        continue;
+                    }
+
+                    if (!HasValue(submittedValues, fieldName))
+                    {
+                        var displayName = submitForm.Result.Fields.FirstOrDefault(x => x.FieldName.Equals(fieldName, StringComparison.OrdinalIgnoreCase))?.DisplayName ?? fieldName;
+                        return DynamicFormBadRequest($"فیلد «{displayName}» الزامی است");
+                    }
+                }
+
+                var configForeignKeyId = GetLong(configRoot, "foreignKeyId");
+                if (configForeignKeyId > 0 && requestBody.ForeignKeyId != configForeignKeyId)
+                {
+                    return DynamicFormBadRequest("کد رکورد مقصد با تنظیمات فرم مطابقت ندارد");
+                }
+
+                if (!string.IsNullOrWhiteSpace(submitForm.Result.EntityName) &&
+                    !string.Equals(requestBody.EntityType, submitForm.Result.EntityName, StringComparison.OrdinalIgnoreCase))
+                {
+                    return DynamicFormBadRequest("نوع موجودیت با تنظیمات فرم مطابقت ندارد");
+                }
+            }
+
+            return null;
+        }
+
+        private ActionResult<BitResultObject> DynamicFormBadRequest(string message)
+        {
+            return BadRequest(new BitResultObject()
+            {
+                Status = false,
+                ErrorMessage = message
+            });
+        }
+
+        private static JsonDocument? ParseOptionalJson(string? json)
+        {
+            if (string.IsNullOrWhiteSpace(json))
+            {
+                return null;
+            }
+
+            try
+            {
+                return JsonDocument.Parse(json);
+            }
+            catch
+            {
+                return null;
+            }
+        }
+
+        private static string GetString(JsonElement? element, string propertyName)
+        {
+            if (element.HasValue && element.Value.ValueKind == JsonValueKind.Object &&
+                element.Value.TryGetProperty(propertyName, out var property) &&
+                property.ValueKind != JsonValueKind.Null && property.ValueKind != JsonValueKind.Undefined)
+            {
+                return property.ValueKind == JsonValueKind.String ? property.GetString() ?? "" : property.ToString();
+            }
+
+            return "";
+        }
+
+        private static long GetLong(JsonElement? element, string propertyName)
+        {
+            var value = GetString(element, propertyName);
+            return long.TryParse(value, out var number) ? number : 0;
+        }
+
+        private static List<string> GetStringArray(JsonElement? element, string propertyName)
+        {
+            if (!element.HasValue || element.Value.ValueKind != JsonValueKind.Object ||
+                !element.Value.TryGetProperty(propertyName, out var property) ||
+                property.ValueKind != JsonValueKind.Array)
+            {
+                return new List<string>();
+            }
+
+            return property.EnumerateArray()
+                .Select(x => x.ValueKind == JsonValueKind.String ? x.GetString() ?? "" : x.ToString())
+                .Where(x => !string.IsNullOrWhiteSpace(x))
+                .ToList();
+        }
+
+        private static bool HasValue(Dictionary<string, string> values, string fieldName)
+        {
+            return values.TryGetValue(fieldName, out var value) && !string.IsNullOrWhiteSpace(value);
         }
 
         [HttpPut("EditPreRegistration_Base")]

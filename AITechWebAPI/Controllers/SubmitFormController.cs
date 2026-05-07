@@ -83,7 +83,14 @@ namespace AITechWebAPI.Controllers
             long recordId = 0;
             if (!requestBody.SearchField.ToLower().Contains("key"))
             {
-                recordId = long.Parse(requestBody.SearchValue);
+                if (!long.TryParse(requestBody.SearchValue, out recordId))
+                {
+                    return BadRequest(new RowResultObject<SubmitFormObjDto>()
+                    {
+                        Status = false,
+                        ErrorMessage = "مقدار شناسه فرم معتبر نیست"
+                    });
+                }
             }
 
             var result = await _SubmitFormRep.GetSubmitFormObjAsync(recordId,requestBody.SearchValue);

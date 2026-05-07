@@ -27,7 +27,12 @@ namespace AITechDATA.DataLayer.Services
             BitResultObject result = new BitResultObject();
             try
             {
-                bool ExistPaymen = await _context.PreRegistrations.AnyAsync(p=>  (string.IsNullOrEmpty(p.EntityType) && p.EntityType.ToLower() == paymentHistory.EntityType.ToLower()) && (p.ForeignKeyId > 0 && p.ForeignKeyId == paymentHistory.ForeignKeyId));
+                bool ExistPaymen = await _context.PreRegistrations.AnyAsync(p=>
+                    !string.IsNullOrEmpty(p.EntityType) &&
+                    !string.IsNullOrEmpty(paymentHistory.EntityType) &&
+                    p.EntityType.ToLower() == paymentHistory.EntityType.ToLower() &&
+                    p.ForeignKeyId > 0 &&
+                    p.ForeignKeyId == paymentHistory.ForeignKeyId);
                 if (ExistPaymen)
                 {
                     throw new Exception("این عملیات پرداخت قبلا برای شما انجام شده است");

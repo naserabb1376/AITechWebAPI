@@ -10,6 +10,8 @@ namespace AITechWebAPI.ViewModels
         public string TeacherName { get; set; } 
         public string CourseTitle { get; set; } 
         public string? Description { get; set; }
+        public string? Note { get; set; }
+        public int? VideoDurationSeconds { get; set; }
         public DateTime SessionDate { get; set; } // تاریخ برگزاری جلسه
     }
 }

@@ -66,6 +66,7 @@ public class FileCenterController : ControllerBase
                     FilePath = fullPath,
                     EntityType = entityName,
                     ForeignKeyId = requestBody.RowId <= 0 ? RowNumber : requestBody.RowId,
+                    FileNumber = RowNumber,
                     IsActive = true,
                     Note = requestBody.Note,
                     Tag = requestBody.Tag,

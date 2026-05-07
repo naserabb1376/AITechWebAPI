@@ -11,6 +11,8 @@ namespace AITechDATA.Domain
     {
         public long GroupId { get; set; } // کلید خارجی به Group
         public string? Description { get; set; } 
+        public string? Note { get; set; }
+        public int? VideoDurationSeconds { get; set; }
         public Group Group { get; set; } // ارتباط با Group
         public DateTime SessionDate { get; set; } // تاریخ برگزاری جلسه
         public ICollection<Attendance> Attendances { get; set; } // حضور و غیاب مرتبط با جلسه
