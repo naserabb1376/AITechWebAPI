@@ -346,6 +346,11 @@ namespace AITechDATA.DataLayer.Services
             return result;
         }
 
+        public async Task<int> GetGroupRegistrationCountAsync(long groupId)
+        {
+            return await _context.GetGroupRegistrationCountAsync(groupId);
+        }
+
         public async Task<BitResultObject> RemoveGroupAsync(Group group)
         {
             BitResultObject result = new BitResultObject();

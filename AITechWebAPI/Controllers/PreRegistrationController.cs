@@ -272,6 +272,31 @@ namespace AITechWebAPI.Controllers
                 {
                     return DynamicFormBadRequest("نوع موجودیت با تنظیمات فرم مطابقت ندارد");
                 }
+
+                if (GetBool(configRoot, "preventDuplicate"))
+                {
+                    var duplicateKey = GetString(configRoot, "duplicateKey");
+                    if (string.IsNullOrWhiteSpace(duplicateKey))
+                    {
+                        duplicateKey = "phoneNumber";
+                    }
+
+                    var duplicateValue = GetDuplicateValue(duplicateKey, requestBody, submittedValues);
+                    if (!string.IsNullOrWhiteSpace(duplicateValue))
+                    {
+                        var exists = await _PreRegistrationRep.ExistsDuplicatePreRegistrationAsync(
+                            requestBody.ForeignKeyId,
+                            requestBody.EntityType,
+                            duplicateKey,
+                            duplicateValue,
+                            submitForm.Result.FormKey ?? formKey);
+
+                        if (exists)
+                        {
+                            return DynamicFormBadRequest("این فرم قبلا با همین اطلاعات ثبت شده است");
+                        }
+                    }
+                }
             }
 
             return null;
@@ -321,6 +346,20 @@ namespace AITechWebAPI.Controllers
             return long.TryParse(value, out var number) ? number : 0;
         }
 
+        private static bool GetBool(JsonElement? element, string propertyName)
+        {
+            if (element.HasValue && element.Value.ValueKind == JsonValueKind.Object &&
+                element.Value.TryGetProperty(propertyName, out var property) &&
+                property.ValueKind != JsonValueKind.Null && property.ValueKind != JsonValueKind.Undefined)
+            {
+                if (property.ValueKind == JsonValueKind.True) return true;
+                if (property.ValueKind == JsonValueKind.False) return false;
+                if (property.ValueKind == JsonValueKind.String && bool.TryParse(property.GetString(), out var result)) return result;
+            }
+
+            return false;
+        }
+
         private static List<string> GetStringArray(JsonElement? element, string propertyName)
         {
             if (!element.HasValue || element.Value.ValueKind != JsonValueKind.Object ||
@@ -339,6 +378,29 @@ namespace AITechWebAPI.Controllers
         private static bool HasValue(Dictionary<string, string> values, string fieldName)
         {
             return values.TryGetValue(fieldName, out var value) && !string.IsNullOrWhiteSpace(value);
+        }
+
+        private static string GetDuplicateValue(string duplicateKey, AddEditPreRegistrationRequestBody requestBody, Dictionary<string, string> submittedValues)
+        {
+            var key = duplicateKey?.Trim() ?? "";
+            switch (key.ToLower())
+            {
+                case "phonenumber":
+                    return requestBody.PhoneNumber ?? "";
+                case "email":
+                    return requestBody.Email ?? "";
+                case "firstname":
+                    return requestBody.FirstName ?? "";
+                case "lastname":
+                    return requestBody.LastName ?? "";
+                case "studentfullname":
+                    var submittedFullName = submittedValues.TryGetValue("studentFullName", out var fullName) ? fullName : "";
+                    return !string.IsNullOrWhiteSpace(submittedFullName)
+                        ? submittedFullName
+                        : $"{requestBody.FirstName} {requestBody.LastName}".Trim();
+                default:
+                    return submittedValues.TryGetValue(key, out var value) ? value : "";
+            }
         }
 
         [HttpPut("EditPreRegistration_Base")]

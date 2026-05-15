@@ -329,6 +329,19 @@ namespace AITechDATA.Tools
             return JsonSerializer.Serialize(rows, options);
         }
 
+        public static async Task<int> GetGroupRegistrationCountAsync(this AITechContext context, long groupId)
+        {
+            var userGroupCount = await context.UserGroups
+                .AsNoTracking()
+                .CountAsync(x => x.IsActive && x.GroupId == groupId);
+
+            var preRegistrationCount = await context.PreRegistrations
+                .AsNoTracking()
+                .CountAsync(x => x.IsActive && x.EntityType.ToLower() == "group" && x.ForeignKeyId == groupId);
+
+            return userGroupCount + preRegistrationCount;
+        }
+
         public static ShowDiscountDto GetDiscount(this AITechContext _context,decimal fee,string entityName,long foreignkeyId,long userId,long roleId)
         {
             ShowDiscountDto result = new ShowDiscountDto()
@@ -341,7 +354,7 @@ namespace AITechDATA.Tools
             var discount =  _context.Discounts.Include(x => x.DiscountTargets).Include(x => x.PaymentHistories).AsNoTracking().Where(x => 
            ((x.EntityName.ToLower() == entityName.ToLower() && x.ForeignKeyId == foreignkeyId) 
            || (string.IsNullOrEmpty(x.EntityName) && x.ForeignKeyId <= 0)) 
-            && x.ExpireDate >= DateTime.Now && x.DiscountMaxUsage > (x.PaymentHistories.Count(x=> x.UserId == userId)) && x.IsActive && !x.CodeRequired
+            && x.ExpireDate >= DateTime.Now && x.DiscountMaxUsage > (x.PaymentHistories.Count(p=> p.UserId == userId && p.PaymentStatus)) && x.IsActive && !x.CodeRequired
             && (x.DiscountTargets.Any(t=> (t.IsActive && (
             (t.TargetEntityName.ToLower() == "group" && (t.TargetId <= 0 || groupIds.Contains(t.TargetId))) ||
             (t.TargetEntityName.ToLower() == "role" && (t.TargetId <= 0 || t.TargetId == roleId)) ||

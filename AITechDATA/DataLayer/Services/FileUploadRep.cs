@@ -151,10 +151,62 @@ namespace AITechDATA.DataLayer.Services
                     }
                 }
 
-                var theRow = await query.FirstOrDefaultAsync();
+                var theRow = await query.OrderByDescending(x => x.ID).FirstOrDefaultAsync();
+                if (theRow == null)
+                {
+                    result.Status = false;
+                    result.ErrorMessage = "File Not Found";
+                    return result;
+                }
+
                 var theRole = _context.Roles.AsNoTracking().FirstOrDefault(x => x.ID == roleId) ?? new Role();
                 var alowRoles = new long[] { (long)BaseRole.Teacher, (long)BaseRole.MiddleAdmin, (long)BaseRole.GeneralAdmin, (long)BaseRole.ContentAdmin, (long)BaseRole.PublicRelationsAdmin , (long)BaseRole.EduAdmin };
-                if (theRow.Description.ToLower() != "public" && ( !alowRoles.Contains(theRole.ID) && theRow.CreatorId != userId))
+                var isPublicFile = string.Equals(theRow.Description, "public", StringComparison.OrdinalIgnoreCase);
+                var isAllowedRole = alowRoles.Contains(theRole.ID);
+                var isCreator = theRow.CreatorId == userId;
+                var isEnrolledSessionVideo = false;
+                var isPreRegisteredSessionVideo = false;
+
+                if (!isPublicFile && !isAllowedRole && !isCreator && userId > 0 && string.Equals(theRow.EntityType, "sessionvideo", StringComparison.OrdinalIgnoreCase))
+                {
+                    var sessionGroupId = await _context.Sessions
+                        .AsNoTracking()
+                        .Where(session => session.ID == theRow.ForeignKeyId)
+                        .Select(session => session.GroupId)
+                        .FirstOrDefaultAsync();
+
+                    isEnrolledSessionVideo = sessionGroupId > 0 && await _context.UserGroups
+                        .AsNoTracking()
+                        .AnyAsync(userGroup =>
+                            userGroup.GroupId == sessionGroupId &&
+                            userGroup.UserId == userId &&
+                            userGroup.IsActive);
+
+                    if (!isEnrolledSessionVideo && sessionGroupId > 0)
+                    {
+                        var userContact = await _context.Users
+                            .AsNoTracking()
+                            .Where(x => x.ID == userId)
+                            .Select(x => new { x.Email, x.Username })
+                            .FirstOrDefaultAsync();
+
+                        var userEmail = (userContact?.Email ?? string.Empty).Trim().ToLower();
+                        var userPhone = (userContact?.Username ?? string.Empty).Trim().ToLower();
+
+                        isPreRegisteredSessionVideo = await _context.PreRegistrations
+                            .AsNoTracking()
+                            .AnyAsync(preRegistration =>
+                                preRegistration.ForeignKeyId == sessionGroupId &&
+                                preRegistration.IsActive &&
+                                preRegistration.EntityType.ToLower() == "group" &&
+                                (
+                                    (!string.IsNullOrEmpty(userEmail) && !string.IsNullOrEmpty(preRegistration.Email) && preRegistration.Email.ToLower() == userEmail) ||
+                                    (!string.IsNullOrEmpty(userPhone) && !string.IsNullOrEmpty(preRegistration.PhoneNumber) && preRegistration.PhoneNumber.ToLower() == userPhone)
+                                ));
+                    }
+                }
+
+                if (!isPublicFile && !isAllowedRole && !isCreator && !isEnrolledSessionVideo && !isPreRegisteredSessionVideo)
                 {
                     result.Status = false;
                     result.ErrorMessage = $"The User Has No Access To This File";

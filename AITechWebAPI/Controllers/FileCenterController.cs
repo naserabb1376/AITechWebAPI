@@ -168,16 +168,36 @@ public class FileCenterController : ControllerBase
             if (fileType.ToLower() == "images")
             {
                 var theImage = await _imageRep.GetImageForShowAsync(rowId, foreignkeyId, entityName, userId, roleId);
-                if (theImage != null) filePath = theImage.Result.FilePath;
+                if (theImage == null || !theImage.Status || theImage.Result == null)
+                {
+                    return BadRequest(theImage?.ErrorMessage ?? "تصویر یافت نشد.");
+                }
+
+                filePath = theImage.Result.FilePath;
             }
             else if (fileType.ToLower() == "files")
             {
                 var theFile = await _fileUploadRep.GetFileForDownloadAsync(rowId, foreignkeyId, entityName, userId, roleId);
-                if (theFile != null) filePath = theFile.Result.FilePath;
+                if (theFile == null || !theFile.Status || theFile.Result == null)
+                {
+                    return BadRequest(theFile?.ErrorMessage ?? "فایل یافت نشد.");
+                }
+
+                filePath = theFile.Result.FilePath;
             }
             else
             {
                 return BadRequest("نوع فایل نامعتبر است.");
+            }
+
+            if (string.IsNullOrWhiteSpace(filePath))
+            {
+                return BadRequest("مسیر فایل ثبت نشده است.");
+            }
+
+            if (!System.IO.File.Exists(filePath))
+            {
+                return NotFound("فایل روی سرور پیدا نشد.");
             }
 
             var contentType = filePath.GetContentType();

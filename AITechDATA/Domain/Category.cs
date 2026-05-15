@@ -16,5 +16,6 @@ namespace AITechDATA.Domain
         public ICollection<Course> Courses { get; set; } // ارتباط یک به چند با Course
         public ICollection<Article>? Articles { get; set; }
         public ICollection<Book>? Books { get; set; }
+        public ICollection<Software>? Softwares { get; set; }
     }
 }

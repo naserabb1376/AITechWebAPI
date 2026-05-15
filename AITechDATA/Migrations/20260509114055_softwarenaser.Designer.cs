@@ -4,6 +4,7 @@ using AITechDATA.DataLayer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace AITechDATA.Migrations
 {
     [DbContext(typeof(AITechContext))]
-    partial class AITechContextModelSnapshot : ModelSnapshot
+    [Migration("20260509114055_softwarenaser")]
+    partial class softwarenaser
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -1925,9 +1928,6 @@ namespace AITechDATA.Migrations
                     b.Property<string>("OtherLangs")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<bool>("PaymentFinished")
-                        .HasColumnType("bit");
-
                     b.Property<string>("PhoneNumber")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -1991,50 +1991,6 @@ namespace AITechDATA.Migrations
                         .IsUnique();
 
                     b.ToTable("Roles");
-                });
-
-            modelBuilder.Entity("AITechDATA.Domain.SMSMessage", b =>
-                {
-                    b.Property<long>("ID")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("ID"));
-
-                    b.Property<DateTime?>("CreateDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<bool>("IsActive")
-                        .HasColumnType("bit");
-
-                    b.Property<string>("Message")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("OtherLangs")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("PhoneNumber")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime>("SentDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<bool>("SentStatus")
-                        .HasColumnType("bit");
-
-                    b.Property<DateTime?>("UpdateDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<long?>("UserID")
-                        .HasColumnType("bigint");
-
-                    b.HasKey("ID");
-
-                    b.HasIndex("UserID");
-
-                    b.ToTable("SMSMessages");
                 });
 
             modelBuilder.Entity("AITechDATA.Domain.Session", b =>
@@ -2744,9 +2700,6 @@ namespace AITechDATA.Migrations
                     b.Property<bool>("IsActive")
                         .HasColumnType("bit");
 
-                    b.Property<bool>("IsInstallment")
-                        .HasColumnType("bit");
-
                     b.Property<string>("OtherLangs")
                         .HasColumnType("nvarchar(max)");
 
@@ -2774,54 +2727,6 @@ namespace AITechDATA.Migrations
                     b.HasIndex("UserId");
 
                     b.ToTable("PaymentHistories");
-                });
-
-            modelBuilder.Entity("AiTech.Domains.PaymentInstallment", b =>
-                {
-                    b.Property<long>("ID")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("ID"));
-
-                    b.Property<decimal>("Amount")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<DateTime?>("CreateDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTime>("DueDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int>("InstallmentNumber")
-                        .HasColumnType("int");
-
-                    b.Property<bool>("IsActive")
-                        .HasColumnType("bit");
-
-                    b.Property<bool>("IsPaid")
-                        .HasColumnType("bit");
-
-                    b.Property<string>("OtherLangs")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime?>("PaidDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<bool>("PayAllowed")
-                        .HasColumnType("bit");
-
-                    b.Property<long>("PaymentHistoryId")
-                        .HasColumnType("bigint");
-
-                    b.Property<DateTime?>("UpdateDate")
-                        .HasColumnType("datetime2");
-
-                    b.HasKey("ID");
-
-                    b.HasIndex("PaymentHistoryId");
-
-                    b.ToTable("PaymentInstallments");
                 });
 
             modelBuilder.Entity("MTPermissionCenter.EFCore.Entities.MTPermissionCenter_Permission", b =>
@@ -2951,6 +2856,50 @@ namespace AITechDATA.Migrations
                         .IsUnique();
 
                     b.ToTable("UserPermissions");
+                });
+
+            modelBuilder.Entity("NobatPlusDATA.Domain.SMSMessage", b =>
+                {
+                    b.Property<long>("ID")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("ID"));
+
+                    b.Property<DateTime?>("CreateDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Message")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("OtherLangs")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("PhoneNumber")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("SentDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("SentStatus")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime?>("UpdateDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<long?>("UserID")
+                        .HasColumnType("bigint");
+
+                    b.HasKey("ID");
+
+                    b.HasIndex("UserID");
+
+                    b.ToTable("SMSMessages");
                 });
 
             modelBuilder.Entity("AITechDATA.Domain.Address", b =>
@@ -3287,15 +3236,6 @@ namespace AITechDATA.Migrations
                     b.Navigation("StudentDetails");
                 });
 
-            modelBuilder.Entity("AITechDATA.Domain.SMSMessage", b =>
-                {
-                    b.HasOne("AITechDATA.Domain.User", "User")
-                        .WithMany()
-                        .HasForeignKey("UserID");
-
-                    b.Navigation("User");
-                });
-
             modelBuilder.Entity("AITechDATA.Domain.Session", b =>
                 {
                     b.HasOne("AITechDATA.Domain.Group", "Group")
@@ -3512,17 +3452,6 @@ namespace AITechDATA.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("AiTech.Domains.PaymentInstallment", b =>
-                {
-                    b.HasOne("AiTech.Domains.PaymentHistory", "PaymentHistory")
-                        .WithMany("PaymentInstallments")
-                        .HasForeignKey("PaymentHistoryId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("PaymentHistory");
-                });
-
             modelBuilder.Entity("MTPermissionCenter.EFCore.Entities.MTPermissionCenter_PermissionRole", b =>
                 {
                     b.HasOne("MTPermissionCenter.EFCore.Entities.MTPermissionCenter_Permission", "Permission")
@@ -3549,6 +3478,15 @@ namespace AITechDATA.Migrations
                         .IsRequired();
 
                     b.Navigation("Permission");
+                });
+
+            modelBuilder.Entity("NobatPlusDATA.Domain.SMSMessage", b =>
+                {
+                    b.HasOne("AITechDATA.Domain.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserID");
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("AITechDATA.Domain.Category", b =>
@@ -3681,11 +3619,6 @@ namespace AITechDATA.Migrations
                     b.Navigation("UserGroups");
 
                     b.Navigation("UserMeetings");
-                });
-
-            modelBuilder.Entity("AiTech.Domains.PaymentHistory", b =>
-                {
-                    b.Navigation("PaymentInstallments");
                 });
 
             modelBuilder.Entity("MTPermissionCenter.EFCore.Entities.MTPermissionCenter_Permission", b =>

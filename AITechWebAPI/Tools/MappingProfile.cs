@@ -34,6 +34,8 @@ namespace AITechWebAPI.Tools
             CreateMap(typeof(ArticleListCustomResponse<>), typeof(ArticleListCustomResponse<>));
             CreateMap(typeof(BookRowCustomResponse<>), typeof(BookRowCustomResponse<>));
             CreateMap(typeof(BookListCustomResponse<>), typeof(BookListCustomResponse<>));
+            CreateMap(typeof(SoftwareRowCustomResponse<>), typeof(SoftwareRowCustomResponse<>));
+            CreateMap(typeof(SoftwareListCustomResponse<>), typeof(SoftwareListCustomResponse<>));
             CreateMap(typeof(TicketRowCustomResponse<>), typeof(TicketRowCustomResponse<>));
             CreateMap(typeof(TicketListCustomResponse<>), typeof(TicketListCustomResponse<>));
 
@@ -101,6 +103,9 @@ namespace AITechWebAPI.Tools
             CreateMap<Book, BookVM>()
 .ForMember(dest => dest.CategoryName, opt => opt.MapFrom(src => src.Category.CategoryName));
 
+            CreateMap<Software, SoftwareVM>()
+.ForMember(dest => dest.CategoryName, opt => opt.MapFrom(src => src.Category != null ? src.Category.CategoryName : ""));
+
             CreateMap<EventDto, EventVM>()
   .ForMember(dest => dest.UserName, opt => opt.MapFrom(src => $"{src.User.FirstName} {src.User.LastName}"));
 
@@ -153,7 +158,10 @@ namespace AITechWebAPI.Tools
 .ForMember(dest => dest.StudentName, opt => opt.MapFrom(src => $"{src.StudentDetails.User.FirstName} {src.StudentDetails.User.LastName}"));
 
             CreateMap<PaymentHistory, PaymentHistoryVM>()
-.ForMember(dest => dest.UserName, opt => opt.MapFrom(src => $"{src.User.FirstName} {src.User.LastName}"));
+.ForMember(dest => dest.UserName, opt => opt.MapFrom(src => $"{src.User.FirstName} {src.User.LastName}"))
+.ForMember(dest => dest.HasDiscount, opt => opt.MapFrom(src => src.DiscountId.HasValue))
+.ForMember(dest => dest.DiscountCode, opt => opt.MapFrom(src => src.Discount != null ? src.Discount.DiscountCode : null))
+.ForMember(dest => dest.DiscountDescription, opt => opt.MapFrom(src => src.Discount != null ? src.Discount.Description : null));
 
             CreateMap<PaymentInstallment, PaymentInstallmentVM>()
 .ForMember(dest => dest.UserName, opt => opt.MapFrom(src => $"{src.PaymentHistory.User.FirstName} {src.PaymentHistory.User.LastName}"))

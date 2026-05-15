@@ -101,6 +101,7 @@ namespace AITechWebAPI.Controllers
             {
                 CreateDate = DateTime.Now.ToShamsi(),
                 UpdateDate = DateTime.Now.ToShamsi(),
+                IsActive = true,
                 UserId = x.UserId,
                 CourseId = x.CourseId,
                 PeresentType = x.PeresentType,
@@ -154,6 +155,7 @@ namespace AITechWebAPI.Controllers
                 {
                     CreateDate = theRow.Result.CreateDate,
                     UpdateDate = DateTime.Now.ToShamsi(),
+                    IsActive = true,
                     ID = body.ID,
                     UserId = body.UserId,
                     CourseId = body.CourseId,

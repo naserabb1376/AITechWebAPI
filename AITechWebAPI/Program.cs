@@ -213,6 +213,7 @@ namespace AITechWebAPI
             builder.Services.AddScoped<IJobRequestRep, JobRequestRep>();
             builder.Services.AddScoped<IArticleRep, ArticleRep>();
             builder.Services.AddScoped<IBookRep, BookRep>();
+            builder.Services.AddScoped<ISoftwareRep, SoftwareRep>();
             builder.Services.AddScoped<ISMSMessageRep, SMSMessageRep>();
             builder.Services.AddScoped<IInterviewTimeRep, InterviewTimeRep>();
             builder.Services.AddScoped<IEducationalBackgroundRep, EducationalBackgroundRep>();
