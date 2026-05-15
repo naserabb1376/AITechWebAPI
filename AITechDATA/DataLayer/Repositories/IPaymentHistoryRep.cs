@@ -10,8 +10,7 @@ namespace AITechDATA.DataLayer.Repositories
 {
     public interface IPaymentHistoryRep
     {
-        Task<ListResultObject<PaymentHistory>> GetAllPaymentHistoriesAsync(long foreignkeyId = 0, string entityType = "", long UserId = 0,long DiscountId=0, bool? paymentStatus = null, bool? hasDiscount = null, int pageIndex = 1, int pageSize = 20, string searchText = "", string sortQuery = "");
-        Task<ListResultObject<PaymentHistory>> GetAllPaymentHistoriesAsync(long foreignkeyId = 0, string entityType = "", long UserId = 0,long DiscountId=0,int payState = 2, int pageIndex = 1, int pageSize = 20, string searchText = "", string sortQuery = "");
+        Task<ListResultObject<PaymentHistory>> GetAllPaymentHistoriesAsync(long foreignkeyId = 0, string entityType = "", long UserId = 0,long DiscountId=0,int payState = 2, bool? hasDiscount = null, int pageIndex = 1, int pageSize = 20, string searchText = "", string sortQuery = "");
 
         Task<RowResultObject<PaymentHistory>> GetPaymentHistoryByIdAsync(long paymentHistoryId);
         Task<BitResultObject> AddPaymentHistoryAsync(PaymentHistory paymentHistory);
