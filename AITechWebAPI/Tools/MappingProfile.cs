@@ -7,7 +7,6 @@ using AutoMapper;
 using Microsoft.AspNetCore.JsonPatch.Adapters;
 using Microsoft.JSInterop;
 using MTPermissionCenter.EFCore.Entities;
-using NobatPlusDATA.Domain;
 
 
 
@@ -163,6 +162,16 @@ namespace AITechWebAPI.Tools
 .ForMember(dest => dest.HasDiscount, opt => opt.MapFrom(src => src.DiscountId.HasValue))
 .ForMember(dest => dest.DiscountCode, opt => opt.MapFrom(src => src.Discount != null ? src.Discount.DiscountCode : null))
 .ForMember(dest => dest.DiscountDescription, opt => opt.MapFrom(src => src.Discount != null ? src.Discount.Description : null));
+
+            CreateMap<PaymentInstallment, PaymentInstallmentVM>()
+.ForMember(dest => dest.UserName, opt => opt.MapFrom(src => $"{src.PaymentHistory.User.FirstName} {src.PaymentHistory.User.LastName}"))
+.ForMember(dest => dest.PaymentHistoryAmount, opt => opt.MapFrom(src => src.PaymentHistory.Amount))
+.ForMember(dest => dest.PaymentHistoryDate, opt => opt.MapFrom(src => src.PaymentHistory.PaymentDate))
+.ForMember(dest => dest.PaymentHistoryStatus, opt => opt.MapFrom(src => src.PaymentHistory.PaymentStatus))
+.ForMember(dest => dest.TargetObjName, opt => opt.MapFrom(src => src.PaymentHistory.TargetObjName))
+.ForMember(dest => dest.ForeignKeyId, opt => opt.MapFrom(src => src.PaymentHistory.ForeignKeyId))
+.ForMember(dest => dest.EntityType, opt => opt.MapFrom(src => src.PaymentHistory.EntityType))
+;
 
             CreateMap<MTPermissionCenter_PermissionRole, PermissionRoleVM>()
 .ForMember(dest => dest.PermissionName, opt => opt.MapFrom(src => src.Permission.Name))

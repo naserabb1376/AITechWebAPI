@@ -1,5 +1,4 @@
 ﻿using AITechDATA.Domain;
-using NobatPlusDATA.Domain;
 
 namespace AITechWebAPI.ViewModels
 {

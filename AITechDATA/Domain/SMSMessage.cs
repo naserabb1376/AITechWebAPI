@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace NobatPlusDATA.Domain
+namespace AITechDATA.Domain
 {
     public class SMSMessage : BaseEntity
     {

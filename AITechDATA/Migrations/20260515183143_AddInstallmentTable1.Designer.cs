@@ -4,6 +4,7 @@ using AITechDATA.DataLayer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace AITechDATA.Migrations
 {
     [DbContext(typeof(AITechContext))]
-    partial class AITechContextModelSnapshot : ModelSnapshot
+    [Migration("20260515183143_AddInstallmentTable1")]
+    partial class AddInstallmentTable1
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -2158,50 +2161,6 @@ namespace AITechDATA.Migrations
                     b.ToTable("Settings");
                 });
 
-            modelBuilder.Entity("AITechDATA.Domain.Software", b =>
-                {
-                    b.Property<long>("ID")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("ID"));
-
-                    b.Property<long?>("CategoryId")
-                        .HasColumnType("bigint");
-
-                    b.Property<DateTime?>("CreateDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("Description")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("DownloadUrl")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<bool>("IsActive")
-                        .HasColumnType("bit");
-
-                    b.Property<string>("Note")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("OtherLangs")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Title")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime?>("UpdateDate")
-                        .HasColumnType("datetime2");
-
-                    b.HasKey("ID");
-
-                    b.HasIndex("CategoryId");
-
-                    b.ToTable("Softwares");
-                });
-
             modelBuilder.Entity("AITechDATA.Domain.StudentDetails", b =>
                 {
                     b.Property<long>("ID")
@@ -2548,17 +2507,7 @@ namespace AITechDATA.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("IdentificationCode")
-                        .HasMaxLength(32)
-                        .HasColumnType("nvarchar(32)");
-
-                    b.Property<bool>("InvitationRewardApplied")
-                        .HasColumnType("bit");
-
-                    b.Property<DateTime?>("InvitationRewardAppliedDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<long?>("InviterUserId")
-                        .HasColumnType("bigint");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<bool>("IsActive")
                         .HasColumnType("bit");
@@ -2594,12 +2543,6 @@ namespace AITechDATA.Migrations
                     b.HasKey("ID");
 
                     b.HasIndex("AddressId");
-
-                    b.HasIndex("IdentificationCode")
-                        .IsUnique()
-                        .HasFilter("[IdentificationCode] IS NOT NULL");
-
-                    b.HasIndex("InviterUserId");
 
                     b.HasIndex("RoleId");
 
@@ -3328,16 +3271,6 @@ namespace AITechDATA.Migrations
                     b.Navigation("Parent");
                 });
 
-            modelBuilder.Entity("AITechDATA.Domain.Software", b =>
-                {
-                    b.HasOne("AITechDATA.Domain.Category", "Category")
-                        .WithMany("Softwares")
-                        .HasForeignKey("CategoryId")
-                        .OnDelete(DeleteBehavior.NoAction);
-
-                    b.Navigation("Category");
-                });
-
             modelBuilder.Entity("AITechDATA.Domain.StudentDetails", b =>
                 {
                     b.HasOne("AITechDATA.Domain.User", "User")
@@ -3558,8 +3491,6 @@ namespace AITechDATA.Migrations
                     b.Navigation("Books");
 
                     b.Navigation("Courses");
-
-                    b.Navigation("Softwares");
                 });
 
             modelBuilder.Entity("AITechDATA.Domain.City", b =>

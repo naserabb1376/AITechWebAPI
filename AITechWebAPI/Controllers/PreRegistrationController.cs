@@ -116,7 +116,9 @@ namespace AITechWebAPI.Controllers
                 FirstName = requestBody.FirstName,
                 LastName = requestBody.LastName,
                 PhoneNumber = requestBody.PhoneNumber,
-
+                IsActive = requestBody.IsActive,
+                PaymentFinished = requestBody.PaymentFinished,
+                
                 EducationalClass = requestBody.EducationalClass,
                 SchoolName = requestBody.SchoolName,
                 FavoriteField = requestBody.FavoriteField,
@@ -424,6 +426,8 @@ namespace AITechWebAPI.Controllers
                 FirstName = requestBody.FirstName,
                 LastName = requestBody.LastName,
                 PhoneNumber = requestBody.PhoneNumber,
+                IsActive = requestBody.IsActive,
+                PaymentFinished = requestBody.PaymentFinished,
 
                 EducationalClass = requestBody.EducationalClass,
                 SchoolName = requestBody.SchoolName,

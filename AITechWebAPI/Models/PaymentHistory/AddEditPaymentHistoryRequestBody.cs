@@ -32,6 +32,9 @@ namespace AITechWebAPI.Models.PaymentHistory
         //[Required(ErrorMessage = "لطفا {0} را وارد کنید")]
         public string? PaymentDate { get; set; }
 
+        [Display(Name = "پرداخت قسطی")]
+        public bool IsInstallment { get; set; }
+
         [Display(Name = "وضعیت پرداخت")]
         public bool PaymentStatus { get; set; } // وضعیت پرداخت
 

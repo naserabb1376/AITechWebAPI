@@ -314,16 +314,6 @@ namespace AITechWebAPI.Controllers
                             }
                         }
 
-
-
-
-
-
-
-
-
-
-
                     }
 
 

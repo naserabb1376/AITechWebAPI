@@ -23,5 +23,8 @@ namespace AITechWebAPI.Models.PaymentHistory
         [Display(Name = "استفاده از تخفیف")]
         public bool? HasDiscount { get; set; }
 
+        [Display(Name = " وضعیت پرداخت")]
+        public int PayState { get; set; } = 2;
+
     }
 }

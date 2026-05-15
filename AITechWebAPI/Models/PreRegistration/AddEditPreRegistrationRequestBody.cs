@@ -61,6 +61,11 @@ namespace AITechWebAPI.Models.PreRegistration
         [Display(Name = "داده های فرم ساز")]
         public string? FormData { get; set; } = "";
 
+        [Display(Name = "تسویه حساب شده")]
+        public bool PaymentFinished { get; set; } = true; // پرداخت تسویه کامل شده
+
+        [Display(Name = "وضعیت فعال")]
+        public bool IsActive { get; set; } = true; 
 
         [Display(Name = "تاریخ ثبت نام")]
         public string? RegistrationDate { get; set; } // تاریخ ثبت نام
