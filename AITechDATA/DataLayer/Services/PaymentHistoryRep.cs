@@ -10,6 +10,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Xml;
 
 namespace AITechDATA.DataLayer.Services
 {
@@ -27,15 +28,44 @@ namespace AITechDATA.DataLayer.Services
             BitResultObject result = new BitResultObject();
             try
             {
-                bool ExistPaymen = await _context.PreRegistrations.AnyAsync(p=>
+                bool ExistPayment = await _context.PreRegistrations.AnyAsync(p=>
                     !string.IsNullOrEmpty(p.EntityType) &&
                     !string.IsNullOrEmpty(paymentHistory.EntityType) &&
                     p.EntityType.ToLower() == paymentHistory.EntityType.ToLower() &&
                     p.ForeignKeyId > 0 &&
                     p.ForeignKeyId == paymentHistory.ForeignKeyId);
-                if (ExistPaymen)
+                if (ExistPayment)
                 {
                     throw new Exception("این عملیات پرداخت قبلا برای شما انجام شده است");
+                }
+                if (paymentHistory.IsInstallment)
+                {
+                    var PaymentInstallmentStandardCountRow = await _context.Settings.FirstOrDefaultAsync(x=> x.Key.ToLower() == "paymentinstallmentstandardcount");
+                    var PaymentInstallmentStandardCount = int.Parse(PaymentInstallmentStandardCountRow.Value);
+                    var PaymentInstallmentStandardDurationRow = await _context.Settings.FirstOrDefaultAsync(x=> x.Key.ToLower() == "paymentinstallmentstandardduration");
+                    var PaymentInstallmentStandardDuration = int.Parse(PaymentInstallmentStandardDurationRow.Value);
+                    var FirstPaymentInstallmentStandardPercentRow = await _context.Settings.FirstOrDefaultAsync(x => x.Key.ToLower() == "firstpaymentinstallmentstandardpercent");
+                    var FirstPaymentInstallmentStandardPercent = int.Parse(FirstPaymentInstallmentStandardPercentRow.Value);
+
+                    var paymentInstallments = new List<PaymentInstallment>();
+                    var firstInstallmenAmount = Math.Round(paymentHistory.Amount * FirstPaymentInstallmentStandardPercent / 100, 0);
+                    for (int i = 0; i < PaymentInstallmentStandardCount; i++)
+                    {
+                        var installmentNum = ++i;
+                        paymentInstallments.Add(new PaymentInstallment()
+                        {
+                            CreateDate = DateTime.Now.ToShamsi(),
+                            UpdateDate = DateTime.Now.ToShamsi(),
+                            IsActive = true,
+                            InstallmentNumber = installmentNum,
+                            PayAllowed = installmentNum == 1,
+                            DueDate = DateTime.Now.AddDays(i * PaymentInstallmentStandardDuration),
+                            Amount = installmentNum == 1 ? firstInstallmenAmount : ((paymentHistory.Amount - firstInstallmenAmount) / (PaymentInstallmentStandardCount - 1)),
+                            IsPaid = false,
+                            
+                        });
+                    }
+                    paymentHistory.PaymentInstallments=paymentInstallments;
                 }
                 await _context.PaymentHistories.AddAsync(paymentHistory);
                 await _context.SaveChangesAsync();
@@ -86,12 +116,12 @@ namespace AITechDATA.DataLayer.Services
             return result;
         }
 
-        public async Task<ListResultObject<PaymentHistory>> GetAllPaymentHistoriesAsync(long foreignkeyId = 0, string entityType = "", long UserId = 0, long DiscountId = 0, int pageIndex = 1, int pageSize = 20, string searchText = "", string sortQuery = "")
+        public async Task<ListResultObject<PaymentHistory>> GetAllPaymentHistoriesAsync(long foreignkeyId = 0, string entityType = "", long UserId = 0, long DiscountId = 0, int payState = 2, int pageIndex = 1, int pageSize = 20, string searchText = "", string sortQuery = "")
         {
             ListResultObject<PaymentHistory> results = new ListResultObject<PaymentHistory>();
             try
             {
-                var query = _context.PaymentHistories.Include(x=> x.User).AsNoTracking();
+                var query = _context.PaymentHistories.Include(x=> x.PaymentInstallments).Include(x=> x.User).AsNoTracking();
 
                 if (!string.IsNullOrEmpty(entityType))
                     query = query.Where(x => x.EntityType == entityType);
@@ -106,6 +136,19 @@ namespace AITechDATA.DataLayer.Services
                 if (DiscountId > 0)
                 {
                     query = query.Where(x => x.DiscountId == DiscountId);
+                }
+
+                if (payState < 2)
+                {
+                    bool status = Convert.ToBoolean(payState);
+
+                    query = query.Where(x =>
+                        x.PaymentStatus == status &&
+                        (
+                            !x.IsInstallment || // اگر قسطی نیست
+                            x.PaymentInstallments.All(i => i.IsPaid == status) // اگر قسطی است، همه اقساط باید همین وضعیت را داشته باشند
+                        )
+                    );
                 }
 
                 query = query.Where(x =>
@@ -137,7 +180,7 @@ namespace AITechDATA.DataLayer.Services
             {
                 result.Result = await _context.PaymentHistories
                     .AsNoTracking()
-                    .Include(x => x.User)
+                    .Include(x=> x.PaymentInstallments).Include(x => x.User)
                     .SingleOrDefaultAsync(x => x.ID == paymentHistoryId);
             }
             catch (Exception ex)

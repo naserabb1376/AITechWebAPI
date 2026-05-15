@@ -7,7 +7,6 @@ using System.Threading.Tasks;
 using AiTech.Domains;
 using AITechDATA.Domain;
 using AITechDATA.Tools;
-using NobatPlusDATA.Domain;
 using MTPermissionCenter.EFCore;
 using MTPermissionCenter.EFCore.Entities;
 
@@ -50,6 +49,7 @@ namespace AITechDATA.DataLayer
         public DbSet<Dismissal> Dismissals { get; set; }
         public DbSet<Parent> Parents { get; set; }
         public DbSet<PaymentHistory> PaymentHistories { get; set; }
+        public DbSet<PaymentInstallment> PaymentInstallments { get; set; }
         public DbSet<PreRegistration> PreRegistrations { get; set; }
         public DbSet<Role> Roles { get; set; }
         public DbSet<Session> Sessions { get; set; }
@@ -162,6 +162,12 @@ namespace AITechDATA.DataLayer
              .WithMany(x => x.Courses)
              .HasForeignKey(x => x.CategoryId)
              .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<PaymentInstallment>()
+      .HasOne(x => x.PaymentHistory)
+      .WithMany(x => x.PaymentInstallments)
+      .HasForeignKey(x => x.PaymentHistoryId)
+      .OnDelete(DeleteBehavior.Cascade);
 
             modelBuilder.Entity<Article>()
             .HasOne(x => x.Category)

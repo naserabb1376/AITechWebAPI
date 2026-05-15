@@ -44,7 +44,7 @@ namespace AITechDATA.DataLayer.Services
             try
             {
                 var groupusers = await _context.UserGroups.Where(x => x.GroupId == group.ID).ToListAsync();
-                var groupprs = await _context.PreRegistrations.Where(x => x.EntityType.ToLower() == "group" && x.ForeignKeyId == group.ID).ToListAsync();
+                var groupprs = await _context.PreRegistrations.Where(x => x.EntityType.ToLower() == "group" && x.ForeignKeyId == group.ID && x.IsActive && x.PaymentFinished).ToListAsync();
 
                 group.RegisterCount = groupusers.Count + groupprs.Count;
 

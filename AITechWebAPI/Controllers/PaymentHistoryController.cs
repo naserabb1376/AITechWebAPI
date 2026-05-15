@@ -11,6 +11,7 @@ using AITechWebAPI.Tools;
 using AITechWebAPI.Validations;
 using AITechWebAPI.ViewModels;
 using AutoMapper;
+using Hangfire;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -75,7 +76,7 @@ namespace AITechWebAPI.Controllers
             {
                 return BadRequest(requestBody);
             }
-            var result = await _PaymentHistoryRep.GetAllPaymentHistoriesAsync(requestBody.ForeignKeyId,requestBody.EntityType,requestBody.UserId,requestBody.DiscountId,requestBody.PageIndex,requestBody.PageSize,requestBody.SearchText,requestBody.SortQuery);
+            var result = await _PaymentHistoryRep.GetAllPaymentHistoriesAsync(requestBody.ForeignKeyId,requestBody.EntityType,requestBody.UserId,requestBody.DiscountId,requestBody.PayState,requestBody.PageIndex,requestBody.PageSize,requestBody.SearchText,requestBody.SortQuery);
             if (result.Status)
             {
                 var resultVM = _mapper.Map<ListResultObject<PaymentHistoryVM>>(result);
@@ -139,7 +140,8 @@ await _GroupRep.GetGroupByIdAsync(requestBody.ForeignKeyId);
                 Amount = requestBody.Amount,
                 UserId = requestBody.UserID,
                 PaymentDate =  string.IsNullOrEmpty(requestBody.PaymentDate) ? DateTime.Now.ToShamsi() : requestBody.PaymentDate.StringToDate().Value,
-                PaymentStatus = false,
+                PaymentStatus = requestBody.PaymentStatus,
+                IsInstallment = requestBody.IsInstallment,
                 DiscountId = requestBody.DiscountId,
               //  Description = requestBody.Description,
             };
@@ -199,6 +201,7 @@ await _GroupRep.GetGroupByIdAsync(requestBody.ForeignKeyId);
                 UserId = requestBody.UserID,
                 PaymentDate = string.IsNullOrEmpty(requestBody.PaymentDate) ? DateTime.Now.ToShamsi() : requestBody.PaymentDate.StringToDate().Value,
                 PaymentStatus = requestBody.PaymentStatus,
+                IsInstallment = requestBody.IsInstallment,
                 DiscountId = requestBody.DiscountId,
                // Description = requestBody.Description,
             };
@@ -321,6 +324,41 @@ await _GroupRep.GetGroupByIdAsync(requestBody.ForeignKeyId);
 
                     }
                     break;
+                case "paymenthistory":
+                    {
+                        var theRow = await _PaymentHistoryRep.GetPaymentHistoryByIdAsync(requestBody.ForeignKeyId);
+
+                        if (theRow.Result == null)
+                        {
+                            result.Result = null;
+                            result.Status = false;
+                            result.ErrorMessage = "درخواست نامعتبر است";
+                            return BadRequest(result);
+                        }
+                        var installments = theRow.Result.PaymentInstallments.Where(i => !i.IsPaid).OrderBy(x => x.InstallmentNumber).Take(requestBody.InstallmentCount).ToList();
+                        if (installments.Any(i=> !i.PayAllowed))
+                        {
+                            result.Result = null;
+                            result.Status = false;
+                            result.ErrorMessage = "شما مجاز به پرداخت این افساط نیستید";
+                            return BadRequest(result);
+
+                        }
+                        var InstallmentFinePercentRow = await _settingRep.GetSettingRowAsync(0, "installmentfinepercent");
+                        var InstallmentFinePercent = int.Parse(InstallmentFinePercentRow.Result.Value);
+                        foreach (var item in installments)
+                        {
+                            if (item.DueDate < DateTime.Now)
+                            {
+                                item.Amount = Math.Round(item.Amount * InstallmentFinePercent / 100, 0);
+                            }
+                        }
+                        rowAmount = installments.Sum(x=> x.Amount);
+                        discountedrowAmount = rowAmount;
+
+
+                    }
+                    break;
             }
 
             if (discountedrowAmount == rowAmount && requestBody.DiscountId > 0)
@@ -336,7 +374,8 @@ await _GroupRep.GetGroupByIdAsync(requestBody.ForeignKeyId);
 
                 var groups = await _UserGroupRep.GetAllUserGroupsAsync(UserId,pageSize:0);
                 var groupIds = groups.Results.Select(x => x.GroupId).ToList();
-                var validdiscount = ((x.Result.EntityName.ToLower() == requestBody.EntityType.ToLower() && x.Result.ForeignKeyId == requestBody.ForeignKeyId)
+                bool installmentDiscount = !requestBody.IsInstallment || x.Result.EntityName.ToLower() == "paymenthistory";
+                var validdiscount = ((installmentDiscount && x.Result.EntityName.ToLower() == requestBody.EntityType.ToLower() && x.Result.ForeignKeyId == requestBody.ForeignKeyId)
                || (string.IsNullOrEmpty(x.Result.EntityName) && x.Result.ForeignKeyId <= 0))
                 && x.Result.ExpireDate >= DateTime.Now && x.Result.DiscountMaxUsage > (x.Result.PaymentHistories.Count(x => x.UserId == UserId)) && x.Result.IsActive
                 && (x.Result.DiscountTargets.Any(t => (t.IsActive && (
@@ -365,23 +404,46 @@ await _GroupRep.GetGroupByIdAsync(requestBody.ForeignKeyId);
 
             if (rowAmount > 0)
             {
-                PaymentHistory PaymentHistory = new PaymentHistory()
+                if (requestBody.EntityType.ToLower() != "paymenthistory")
                 {
-                    CreateDate = DateTime.Now.ToShamsi(),
-                    UpdateDate = DateTime.Now.ToShamsi(),
-                    ForeignKeyId = requestBody.ForeignKeyId,
-                    EntityType = requestBody.EntityType,
-                    TargetObjName = targetObjName,
-                    Amount = rowAmount,
-                    UserId = UserId,
-                    PaymentDate = DateTime.Now.ToShamsi(),
-                    PaymentStatus = false,
-                    DiscountId = appliedDiscountId,
-                    IsActive = true,
+                    PaymentHistory PaymentHistory = new PaymentHistory()
+                    {
+                        CreateDate = DateTime.Now.ToShamsi(),
+                        UpdateDate = DateTime.Now.ToShamsi(),
+                        ForeignKeyId = requestBody.ForeignKeyId,
+                        EntityType = requestBody.EntityType,
+                        TargetObjName = targetObjName,
+                        Amount = rowAmount,
+                        UserId = UserId,
+                        PaymentDate = DateTime.Now.ToShamsi(),
+                        PaymentStatus = false,
+                        DiscountId = appliedDiscountId,
+                        IsActive = true,
+                        IsInstallment = requestBody.IsInstallment,
+                        //  Description = requestBody.Description,
+                    };
+                    addResult = await _PaymentHistoryRep.AddPaymentHistoryAsync(PaymentHistory);
 
-                    //  Description = requestBody.Description,
-                };
-                addResult = await _PaymentHistoryRep.AddPaymentHistoryAsync(PaymentHistory);
+                    if (PaymentHistory.IsInstallment)
+                    {
+                        var addedPayment = await _PaymentHistoryRep.GetPaymentHistoryByIdAsync(addResult.ID);
+
+                        foreach (var item in addedPayment.Result.PaymentInstallments)
+                        {
+                            BackgroundJob.Schedule<JobManager>(
+                              job => job.SendInstallmentRemindMessage(addResult.ID,UserId),
+                              item.DueDate
+                          );
+                        }
+                    }
+
+                    
+                }
+                else
+                {
+                    addResult = new BitResultObject() { Status = true };
+                }
+               
                 if (addResult.Status)
                 {
                     #region AddLog
@@ -401,9 +463,9 @@ await _GroupRep.GetGroupByIdAsync(requestBody.ForeignKeyId);
 
                     #region PaymentGateway
 
-                    var zarInvoice = new ZarinPalInvoice(description: $"{addResult.ID} - {PaymentHistory.PaymentDate}");
+                    var zarInvoice = new ZarinPalInvoice(description: $"{addResult.ID} - {DateTime.Now.ToShamsi()}");
                     // var callbackUrl = Url.Action("VerifyPayment", "PaymentHistory", new { payId = Addresult.ID }, Request.Scheme);
-                    var callbackUrl = $"https://aitechac.com/payment/verify?PayId={addResult.ID}&UserId={UserId}&EntityType={requestBody.EntityType}&ForeignKeyId={requestBody.ForeignKeyId}";
+                    var callbackUrl = $"https://aitechac.com/payment/verify?PayId={addResult.ID}&UserId={UserId}&InstallmentCount={requestBody.InstallmentCount}";
 
                     var invoice = await _onlinePayment.RequestAsync(invoice =>
                     {
@@ -471,6 +533,8 @@ await _GroupRep.GetGroupByIdAsync(requestBody.ForeignKeyId);
                         FirstName = userRow.Result.FirstName,
                         LastName = userRow.Result.LastName,
                         PhoneNumber = userRow.Result.Username,
+                        PaymentFinished = true,
+                        IsActive = true,
 
                         EducationalClass = null,
                         SchoolName = null,
@@ -550,7 +614,7 @@ await _GroupRep.GetGroupByIdAsync(requestBody.ForeignKeyId);
         }
 
         [HttpGet("VerifyPayment")]
-        public async Task<ActionResult<BitResultObject>> VerifyPayment(long PayId = 0,string? EntityType = "" , long? ForeignKeyId = 0,string? paymentToken = "",string? Authority ="", string? Status = "")
+        public async Task<ActionResult<BitResultObject>> VerifyPayment(long PayId = 0,int InstallmentCount = 0, string? paymentToken = "",string? Authority ="", string? Status = "")
         {
             BitResultObject result = new BitResultObject();
             try
@@ -559,22 +623,21 @@ await _GroupRep.GetGroupByIdAsync(requestBody.ForeignKeyId);
                 BitResultObject addResult;
 
                 var paymentHistory = await _PaymentHistoryRep.GetPaymentHistoryByIdAsync(PayId);
-
                 var UserId = User.GetCurrentUserId();
 
                 var userRow = await _UserRep.GetUserByIdAsync(UserId);
 
                 var invoice = await _onlinePayment.FetchAsync();
 
-                dynamic targetObj = EntityType.ToLower().Contains("event") ? await _EventRep.GetEventByIdAsync(ForeignKeyId.Value) :
-    await _GroupRep.GetGroupByIdAsync(ForeignKeyId.Value);
+                dynamic targetObj;
 
 
-                switch (EntityType.ToLower())
+                switch (paymentHistory.Result.EntityType.ToLower())
                 {
                     default:
                     case "group":
                         {
+                            targetObj = await _GroupRep.GetGroupByIdAsync(paymentHistory.Result.ForeignKeyId);
 
                             if (targetObj.Result == null)
                             {
@@ -590,6 +653,7 @@ await _GroupRep.GetGroupByIdAsync(requestBody.ForeignKeyId);
                         break;
                     case "event":
                         {
+                            targetObj = await _EventRep.GetEventByIdAsync(paymentHistory.Result.ForeignKeyId);
 
                             if (targetObj.Result == null)
                             {
@@ -603,7 +667,9 @@ await _GroupRep.GetGroupByIdAsync(requestBody.ForeignKeyId);
 
                         }
                         break;
+                   
                 }
+
 
                         // Check if the invoice is new or it's already processed before.
                         if (invoice.Status != PaymentFetchResultStatus.ReadyForVerifying)
@@ -621,20 +687,45 @@ await _GroupRep.GetGroupByIdAsync(requestBody.ForeignKeyId);
                 if (verifyResult.Status == PaymentVerifyResultStatus.Succeed)
                 {
                     paymentHistory.Result.PaymentStatus = true;
+                    if (paymentHistory.Result.IsInstallment)
+                    {
+                        var installments = paymentHistory.Result.PaymentInstallments.Where(i => !i.IsPaid).OrderBy(x => x.InstallmentNumber).Take(InstallmentCount).ToList();
+
+                        foreach (var inst in installments)
+                        {
+                            inst.IsPaid = true;
+                            inst.PaidDate = DateTime.Now.ToShamsi();
+                            inst.UpdateDate = DateTime.Now.ToShamsi();
+                        }
+
+                        if (paymentHistory.Result.PaymentInstallments.All(i => i.IsPaid))
+                        {
+                            paymentHistory.Result.PaymentStatus = true;
+                        }
+                    }
+
+
                     // if (groupType == "online" || groupType == "video")
                     if (groupType.Contains("آنلاین") || groupType.Contains("آفلاین"))
                     {
-                        UserGroup userGroup = new UserGroup()
+                        if (paymentHistory.Result.PaymentStatus)
                         {
-                            CreateDate = DateTime.Now.ToShamsi(),
-                            UpdateDate = DateTime.Now.ToShamsi(),
-                            IsActive = true,
-                            OtherLangs = "",
+                            UserGroup userGroup = new UserGroup()
+                            {
+                                CreateDate = DateTime.Now.ToShamsi(),
+                                UpdateDate = DateTime.Now.ToShamsi(),
+                                IsActive = true,
+                                OtherLangs = "",
 
-                            GroupId = ForeignKeyId.Value,
-                            UserId = UserId,
-                        };
-                        addResult = await _UserGroupRep.AddUserGroupsAsync(new List<UserGroup>() { userGroup });
+                                GroupId = paymentHistory.Result.ForeignKeyId,
+                                UserId = UserId,
+                            };
+                            addResult = await _UserGroupRep.AddUserGroupsAsync(new List<UserGroup>() { userGroup });
+                        }
+                        else
+                        {
+                            addResult = new BitResultObject() { Status= true };
+                        }
                     }
                     else
                     {
@@ -646,7 +737,7 @@ await _GroupRep.GetGroupByIdAsync(requestBody.ForeignKeyId);
                             FirstName = userRow.Result.FirstName,
                             LastName = userRow.Result.LastName,
                             PhoneNumber = userRow.Result.Username,
-
+                            PaymentFinished = paymentHistory.Result.PaymentStatus,
                             EducationalClass = null,
                             SchoolName = null,
                             FavoriteField = null,
@@ -654,8 +745,8 @@ await _GroupRep.GetGroupByIdAsync(requestBody.ForeignKeyId);
                             ProgrammingSkillLevel = null,
                             SocialAddress = null,
 
-                            ForeignKeyId = ForeignKeyId ?? 0,
-                            EntityType = EntityType ?? "",
+                            ForeignKeyId = paymentHistory.Result.ForeignKeyId,
+                            EntityType = paymentHistory.Result.EntityType,
                             TargetObjName = targetObjName,
                             IsActive = true,
                             RegistrationDate = DateTime.Now.ToShamsi(),
@@ -668,9 +759,9 @@ await _GroupRep.GetGroupByIdAsync(requestBody.ForeignKeyId);
 
                     if (addResult.Status)
                     {
-                        var targetType = EntityType.ToLower().Contains("event") ? "رویداد" : "گروه درسی";
-                        var targetName = EntityType.ToLower().Contains("event") ? targetObj.Result.Title : targetObj.Result.Name;
-                        var targetFee = EntityType.ToLower().Contains("event") ? targetObj.Result.Fee.Value : targetObj.Result.Fee;
+                        var targetType = paymentHistory.Result.EntityType.ToLower().Contains("event") ? "رویداد" : "گروه درسی";
+                        var targetName = paymentHistory.Result.EntityType.ToLower().Contains("event") ? targetObj.Result.Title : targetObj.Result.Name;
+                        var targetFee = paymentHistory.Result.EntityType.ToLower().Contains("event") ? targetObj.Result.Fee.Value : targetObj.Result.Fee;
                         var registerDate = DateTime.Now.ToShamsiString().Split(' ')[0];
                         var registerTime = DateTime.Now.ToShamsiString().Split(' ')[1];
 
@@ -683,7 +774,7 @@ await _GroupRep.GetGroupByIdAsync(requestBody.ForeignKeyId);
 
                         var academyPhoneNum = await _settingRep.GetSettingRowAsync(0, "Contact_Phone_Value_EN");
                         var phoneNumbers = new List<string>() { academyPhoneNum.Result.Value };
-                        if (EntityType.ToLower().Contains("group"))
+                        if (paymentHistory.Result.EntityType.ToLower().Contains("group"))
                         {
                             phoneNumbers.Add(targetObj.Result.Teacher.Username);
 

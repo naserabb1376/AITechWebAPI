@@ -191,6 +191,7 @@ namespace AITechWebAPI
             builder.Services.AddScoped<INotificationRep, NotificationRep>();
             builder.Services.AddScoped<IParentRep, ParentRep>();
             builder.Services.AddScoped<IPaymentHistoryRep, PaymentHistoryRep>();
+            builder.Services.AddScoped<IPaymentInstallmentRep, PaymentInstallmentRep>();
             builder.Services.AddScoped<IPermissionRep, PermissionRep>();
             builder.Services.AddScoped<IPermissionRoleRep, PermissionRoleRep>();
             builder.Services.AddScoped<IUserPermissionRep, UserPermissionRep>();

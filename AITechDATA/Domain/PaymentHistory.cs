@@ -13,6 +13,8 @@ namespace AiTech.Domains
         public string EntityType { get; set; } // نوع جدول مرتبط (مثلاً "User", "Course", "Event")
         public string? TargetObjName { get; set; }
         public bool PaymentStatus { get; set; } // وضعیت پرداخت
+        public bool IsInstallment { get; set; } = false; // آیا این پرداخت قسطی است؟
+        public ICollection<PaymentInstallment>? PaymentInstallments { get; set; }
 
         public long? DiscountId { get; set; } 
         public Discount? Discount { get; set; }

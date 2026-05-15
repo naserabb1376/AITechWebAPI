@@ -16,6 +16,13 @@ namespace AITechWebAPI.Models.PaymentHistory
         [Display(Name = "شناسه تخفیف")]
         public long? DiscountId { get; set; }
 
+        [Display(Name = "پرداخت قسطی")]
+        public bool IsInstallment { get; set; }
+
+        [Display(Name = "تعداد اقساط")]
+        public int InstallmentCount { get; set; }
+
+
     }
 
     public class VerifyPaymentRequestBody

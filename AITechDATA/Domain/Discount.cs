@@ -17,7 +17,7 @@ namespace AITechDATA.Domain
         public int DiscountMaxUsage { get; set; } = 0;
         public string EntityName { get; set; } // نام جدول مبدا (مثلاً "User", "Course", "Event")
         public long ForeignKeyId { get; set; } // کلید خارجی به رکورد اصلی
-        public string? Description { get; set; } = ""; // توضیحات تصویر
+        public string? Description { get; set; } = ""; // توضیحات
         public long CreatorId { get; set; } = 0; // کاربر ایجاد کننده
         public DateTime ExpireDate { get; set; }
         public bool CodeRequired { get; set; }
