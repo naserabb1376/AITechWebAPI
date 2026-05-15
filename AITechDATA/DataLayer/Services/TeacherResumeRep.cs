@@ -79,22 +79,30 @@ namespace AITechDATA.DataLayer.Services
             ListResultObject<TeacherResume> results = new ListResultObject<TeacherResume>();
             try
             {
-                var query = _context.TeacherResumes.AsNoTracking();
+                var query = _context.TeacherResumes
+                    .AsNoTracking()
+                    .Include(x => x.User)
+                    .AsQueryable();
                 if (UserId > 0)
                 {
                     query = query.Where(x=> x.UserId == UserId);
                 }
-                query = query
-                    .Where(x =>
+
+                if (!string.IsNullOrWhiteSpace(searchText))
+                {
+                    query = query.Where(x =>
                         (!string.IsNullOrEmpty(x.Title) && x.Title.Contains(searchText)) ||
-                        (!string.IsNullOrEmpty(x.Description) && x.Description.Contains(searchText))
+                        (!string.IsNullOrEmpty(x.Description) && x.Description.Contains(searchText)) ||
+                        (!string.IsNullOrEmpty(x.User.FirstName) && x.User.FirstName.Contains(searchText)) ||
+                        (!string.IsNullOrEmpty(x.User.LastName) && x.User.LastName.Contains(searchText)) ||
+                        (!string.IsNullOrEmpty(x.User.Username) && x.User.Username.Contains(searchText))
                     );
+                }
 
                 results.TotalCount = query.Count();
                 results.PageCount = DbTools.GetPageCount(results.TotalCount, pageSize);
                 results.Results = await query.OrderByDescending(x => x.DateAchieved)
                      .SortBy(sortQuery).ToPaging(pageIndex, pageSize)
-                    .Include(x => x.User)
                     .ToListAsync();
             }
             catch (Exception ex)

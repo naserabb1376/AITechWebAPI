@@ -43,8 +43,8 @@ namespace AITechDATA.DataLayer.Services
             BitResultObject result = new BitResultObject();
             try
             {
-                var groupusers = await _context.UserGroups.Where(x => x.GroupId == group.ID).ToListAsync();
-                var groupprs = await _context.PreRegistrations.Where(x => x.EntityType.ToLower() == "group" && x.ForeignKeyId == group.ID).ToListAsync();
+                var groupusers = await _context.UserGroups.Where(x => x.IsActive && x.GroupId == group.ID).ToListAsync();
+                var groupprs = await _context.PreRegistrations.Where(x => x.IsActive && x.EntityType.ToLower() == "group" && x.ForeignKeyId == group.ID).ToListAsync();
 
                 group.RegisterCount = groupusers.Count + groupprs.Count;
 
@@ -344,6 +344,11 @@ namespace AITechDATA.DataLayer.Services
                 result.ErrorMessage = $"{ex.Message} - {ex.InnerException?.Message}";
             }
             return result;
+        }
+
+        public async Task<int> GetGroupRegistrationCountAsync(long groupId)
+        {
+            return await _context.GetGroupRegistrationCountAsync(groupId);
         }
 
         public async Task<BitResultObject> RemoveGroupAsync(Group group)

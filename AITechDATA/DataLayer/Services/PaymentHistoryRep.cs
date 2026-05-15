@@ -27,13 +27,15 @@ namespace AITechDATA.DataLayer.Services
             BitResultObject result = new BitResultObject();
             try
             {
-                bool ExistPaymen = await _context.PreRegistrations.AnyAsync(p=>
+                bool existsCompletedPayment = await _context.PaymentHistories.AnyAsync(p =>
+                    p.UserId == paymentHistory.UserId &&
+                    p.PaymentStatus &&
                     !string.IsNullOrEmpty(p.EntityType) &&
                     !string.IsNullOrEmpty(paymentHistory.EntityType) &&
                     p.EntityType.ToLower() == paymentHistory.EntityType.ToLower() &&
                     p.ForeignKeyId > 0 &&
                     p.ForeignKeyId == paymentHistory.ForeignKeyId);
-                if (ExistPaymen)
+                if (existsCompletedPayment && paymentHistory.PaymentStatus)
                 {
                     throw new Exception("این عملیات پرداخت قبلا برای شما انجام شده است");
                 }
@@ -86,15 +88,18 @@ namespace AITechDATA.DataLayer.Services
             return result;
         }
 
-        public async Task<ListResultObject<PaymentHistory>> GetAllPaymentHistoriesAsync(long foreignkeyId = 0, string entityType = "", long UserId = 0, long DiscountId = 0, int pageIndex = 1, int pageSize = 20, string searchText = "", string sortQuery = "")
+        public async Task<ListResultObject<PaymentHistory>> GetAllPaymentHistoriesAsync(long foreignkeyId = 0, string entityType = "", long UserId = 0, long DiscountId = 0, bool? paymentStatus = null, bool? hasDiscount = null, int pageIndex = 1, int pageSize = 20, string searchText = "", string sortQuery = "")
         {
             ListResultObject<PaymentHistory> results = new ListResultObject<PaymentHistory>();
             try
             {
-                var query = _context.PaymentHistories.Include(x=> x.User).AsNoTracking();
+                var query = _context.PaymentHistories.Include(x=> x.User).Include(x => x.Discount).AsNoTracking();
 
-                if (!string.IsNullOrEmpty(entityType))
-                    query = query.Where(x => x.EntityType == entityType);
+                if (!string.IsNullOrWhiteSpace(entityType))
+                {
+                    var normalizedEntityType = entityType.Trim().ToLower();
+                    query = query.Where(x => !string.IsNullOrEmpty(x.EntityType) && x.EntityType.ToLower() == normalizedEntityType);
+                }
 
                 if (foreignkeyId > 0)
                     query = query.Where(x => x.ForeignKeyId == foreignkeyId);
@@ -108,19 +113,63 @@ namespace AITechDATA.DataLayer.Services
                     query = query.Where(x => x.DiscountId == DiscountId);
                 }
 
-                query = query.Where(x =>
+                if (paymentStatus.HasValue)
+                {
+                    query = query.Where(x => x.PaymentStatus == paymentStatus.Value);
+                }
+
+                if (hasDiscount.HasValue)
+                {
+                    query = hasDiscount.Value
+                        ? query.Where(x => x.DiscountId.HasValue)
+                        : query.Where(x => !x.DiscountId.HasValue);
+                }
+
+                if (!string.IsNullOrWhiteSpace(searchText))
+                {
+                    query = query.Where(x =>
                         (x.Amount.ToString().Contains(searchText)) ||
                        (!string.IsNullOrEmpty(x.TargetObjName) && x.TargetObjName.Contains(searchText)) ||
-                       (!string.IsNullOrEmpty(x.User.FirstName) && x.User.FirstName.Contains(searchText)) ||
-                       (!string.IsNullOrEmpty(x.User.LastName) && x.User.LastName.Contains(searchText))
+                       (x.User != null && !string.IsNullOrEmpty(x.User.FirstName) && x.User.FirstName.Contains(searchText)) ||
+                       (x.User != null && !string.IsNullOrEmpty(x.User.LastName) && x.User.LastName.Contains(searchText)) ||
+                       (x.User != null && !string.IsNullOrEmpty(x.User.Username) && x.User.Username.Contains(searchText)) ||
+                       (!string.IsNullOrEmpty(x.EntityType) && x.EntityType.Contains(searchText)) ||
+                       (x.Discount != null && !string.IsNullOrEmpty(x.Discount.DiscountCode) && x.Discount.DiscountCode.Contains(searchText))
                     );
+                }
 
                 results.TotalCount = query.Count();
                 results.PageCount = DbTools.GetPageCount(results.TotalCount, pageSize);
-                results.Results = await query.OrderByDescending(x => x.PaymentDate)
+                var rows = await query.OrderByDescending(x => x.PaymentDate)
                      .SortBy(sortQuery).ToPaging(pageIndex, pageSize)
                     .Include(x => x.User)
+                    .Include(x => x.Discount)
                     .ToListAsync();
+
+                var groupIds = rows
+                    .Where(x => !string.IsNullOrEmpty(x.EntityType) && x.EntityType.ToLower().Contains("group") && x.ForeignKeyId > 0)
+                    .Select(x => x.ForeignKeyId)
+                    .Distinct()
+                    .ToList();
+
+                if (groupIds.Any())
+                {
+                    var groupNames = await _context.Groups
+                        .AsNoTracking()
+                        .Where(x => groupIds.Contains(x.ID))
+                        .Select(x => new { x.ID, x.Name })
+                        .ToDictionaryAsync(x => x.ID, x => x.Name);
+
+                    foreach (var row in rows.Where(x => !string.IsNullOrEmpty(x.EntityType) && x.EntityType.ToLower().Contains("group")))
+                    {
+                        if (groupNames.TryGetValue(row.ForeignKeyId, out var groupName))
+                        {
+                            row.TargetObjName = groupName;
+                        }
+                    }
+                }
+
+                results.Results = rows;
             }
             catch (Exception ex)
             {
@@ -138,6 +187,7 @@ namespace AITechDATA.DataLayer.Services
                 result.Result = await _context.PaymentHistories
                     .AsNoTracking()
                     .Include(x => x.User)
+                    .Include(x => x.Discount)
                     .SingleOrDefaultAsync(x => x.ID == paymentHistoryId);
             }
             catch (Exception ex)

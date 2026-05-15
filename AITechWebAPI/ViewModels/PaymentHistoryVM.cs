@@ -14,5 +14,8 @@ namespace AITechWebAPI.ViewModels
         public string? TargetObjName { get; set; }
         public bool PaymentStatus { get; set; } // وضعیت پرداخت
         public long? DiscountId { get; set; }
+        public bool HasDiscount { get; set; }
+        public string? DiscountCode { get; set; }
+        public string? DiscountDescription { get; set; }
     }
 }

@@ -104,7 +104,10 @@ namespace AITechDATA.DataLayer.Services
 
 
                 if (!string.IsNullOrEmpty(entityName))
-                    query = query.Where(x => x.EntityName == entityName);
+                {
+                    var normalizedEntityName = entityName.ToLower();
+                    query = query.Where(x => !string.IsNullOrEmpty(x.EntityName) && x.EntityName.ToLower() == normalizedEntityName);
+                }
 
                 if (!string.IsNullOrEmpty(searchText))
                 {

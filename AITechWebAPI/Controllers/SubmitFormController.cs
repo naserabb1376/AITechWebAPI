@@ -56,6 +56,36 @@ namespace AITechWebAPI.Controllers
             return BadRequest(result);
         }
 
+        [HttpPost("GetPublicSubmitForms_Base")]
+        [AllowAnonymous]
+        public async Task<ActionResult<ListResultObject<SubmitFormVM>>> GetPublicSubmitForms_Base(GetSubmitFormListRequestBody requestBody)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(requestBody);
+            }
+
+            var result = await _SubmitFormRep.GetAllSubmitFormsAsync(
+                requestBody.EntityName,
+                0,
+                requestBody.PageIndex,
+                requestBody.PageSize,
+                requestBody.SearchText,
+                requestBody.SortQuery);
+
+            if (result.Status)
+            {
+                result.Results = result.Results.Where(x => x.IsActive).ToList();
+                result.TotalCount = result.Results.Count;
+                result.PageCount = DbTools.GetPageCount(result.TotalCount, requestBody.PageSize);
+
+                var resultVM = _mapper.Map<ListResultObject<SubmitFormVM>>(result);
+                return Ok(resultVM);
+            }
+
+            return BadRequest(result);
+        }
+
         [HttpPost("GetSubmitFormById_Base")]
         public async Task<ActionResult<RowResultObject<SubmitFormVM>>> GetSubmitFormById_Base(GetRowRequestBody requestBody)
         {

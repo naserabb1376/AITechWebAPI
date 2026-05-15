@@ -21,6 +21,8 @@ namespace AITechDATA.DataLayer.Repositories
 
         Task<BitResultObject> EditUserAsync(User user);
 
+        Task<BitResultObject> MarkInvitationRewardAppliedAsync(long userId);
+
         Task<BitResultObject> RemoveUserAsync(User user);
 
         Task<BitResultObject> RemoveUserAsync(long userId);

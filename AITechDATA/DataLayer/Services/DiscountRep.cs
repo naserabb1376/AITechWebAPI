@@ -92,7 +92,7 @@ namespace AITechDATA.DataLayer.Services
                             x.DiscountCode.ToLower() == keyValue.ToLower() &&
                            (((entityName != null && x.EntityName.ToLower() == entityName.ToLower()) && (foreignkeyId != null && x.ForeignKeyId == foreignkeyId))
                            || (string.IsNullOrEmpty(x.EntityName) && x.ForeignKeyId <= 0))
-                            && x.ExpireDate >= DateTime.Now && x.DiscountMaxUsage > (x.PaymentHistories.Count(x => x.UserId == userId)) && x.IsActive && !x.CodeRequired
+                            && x.ExpireDate >= DateTime.Now && x.DiscountMaxUsage > (x.PaymentHistories.Count(p => p.UserId == userId && p.PaymentStatus)) && x.IsActive && !x.CodeRequired
                             && (x.DiscountTargets.Any(t => (t.IsActive && (
                             (t.TargetEntityName.ToLower() == "group" && (t.TargetId <= 0 || groupIds.Contains(t.TargetId))) ||
                             (t.TargetEntityName.ToLower() == "role" && (t.TargetId <= 0 || t.TargetId == roleId)) ||

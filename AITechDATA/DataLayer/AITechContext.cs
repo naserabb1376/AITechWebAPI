@@ -15,10 +15,10 @@ namespace AITechDATA.DataLayer
 {
     public class AITechContext : DbContext
     {
-        //public AITechContext()
-        //{
+        public AITechContext()
+        {
 
-        //}
+        }
 
         public AITechContext(DbContextOptions<AITechContext> options)
             : base(options)
@@ -65,6 +65,7 @@ namespace AITechDATA.DataLayer
         public DbSet<EntityScore> EntityScores { get; set; }
         public DbSet<Article> Articles { get; set; }
         public DbSet<Book> Books { get; set; }
+        public DbSet<Software> Softwares { get; set; }
         public DbSet<JobRequest> JobRequests { get; set; }
         public DbSet<Award> Awards { get; set; }
         public DbSet<InterviewTime> InterviewTimes { get; set; }
@@ -97,14 +98,14 @@ namespace AITechDATA.DataLayer
 
 
 
-        //protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-        //{
-        //    if (!optionsBuilder.IsConfigured)
-        //    {
-        //        ConfigurationHelper configurationHelper = new ConfigurationHelper();
-        //        optionsBuilder.UseSqlServer(configurationHelper.GetConnectionString("publicdb"));
-        //    }
-        //}
+        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+        {
+            if (!optionsBuilder.IsConfigured)
+            {
+                ConfigurationHelper configurationHelper = new ConfigurationHelper();
+                optionsBuilder.UseSqlServer(configurationHelper.GetConnectionString("publicdb"));
+            }
+        }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -133,6 +134,18 @@ namespace AITechDATA.DataLayer
             modelBuilder.Entity<SubmitForm>()
          .HasIndex(x => new { x.FormKey})
          .IsUnique();
+
+            modelBuilder.Entity<User>()
+                .Property(x => x.IdentificationCode)
+                .HasMaxLength(32);
+
+            modelBuilder.Entity<User>()
+                .HasIndex(x => x.IdentificationCode)
+                .IsUnique()
+                .HasFilter("[IdentificationCode] IS NOT NULL");
+
+            modelBuilder.Entity<User>()
+                .HasIndex(x => x.InviterUserId);
 
             modelBuilder.Entity<User>()
                 .HasOne(u => u.Role)
@@ -172,6 +185,12 @@ namespace AITechDATA.DataLayer
             modelBuilder.Entity<Book>()
            .HasOne(x => x.Category)
            .WithMany(x => x.Books)
+           .HasForeignKey(x => x.CategoryId)
+           .OnDelete(DeleteBehavior.NoAction);
+
+            modelBuilder.Entity<Software>()
+           .HasOne(x => x.Category)
+           .WithMany(x => x.Softwares)
            .HasForeignKey(x => x.CategoryId)
            .OnDelete(DeleteBehavior.NoAction);
 

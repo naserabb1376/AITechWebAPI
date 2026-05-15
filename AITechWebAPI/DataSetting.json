@@ -5,5 +5,5 @@
     "schooldb": "Server=aitechac.com;Initial Catalog=aitechac_SchoolAITechDb;User ID=aitechac_school_sa;Password=Srjh552$3;MultipleActiveResultSets=True;TrustServerCertificate=True;",
     "localdb": "Data Source =.;Initial Catalog=AITechDb;Integrated Security=True;MultipleActiveResultSets=True;TrustServerCertificate=True;"
   },
-  "AppWebAdress": "https://schoolapi.aitechac.com"
+  "AppWebAdress": "https://emamsadegh.aitechac.com"
 }

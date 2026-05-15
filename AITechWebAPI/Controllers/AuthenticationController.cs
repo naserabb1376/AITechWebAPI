@@ -402,7 +402,7 @@ if (authenticationRequestBody.Password == "string")
 
                 if (!IsvalidInviteCode)
                 {
-                    result.Status = !validNationalCode.Status;
+                    result.Status = false;
                     result.ErrorMessage = "کد دعوت نامعتبر است";
                     return BadRequest(result);
                 }
@@ -441,6 +441,7 @@ if (authenticationRequestBody.Password == "string")
                     UpdateDate = DateTime.Now.ToShamsi(),
                     AddressId = (address != null && address.ID > 0) ? address.ID : null,
                     PermissionsVersion = 1,
+                    InviterUserId = IsvalidInviteCode ? validInviteCode.ID : null,
                     IsActive = true,
                 };
                 //if(user.RoleId == 1) // user is student
@@ -453,97 +454,6 @@ if (authenticationRequestBody.Password == "string")
                 user.StudentDetails = studentDetails;
                 //}
                 result = await _userRep.AddUserAsync(user);
-
-
-                if (IsvalidInviteCode)
-                {
-                    var inviterDiscountPercentRow = await _settingRep.GetSettingRowAsync(0, "inviterdiscountpercent");
-                    var invitedDiscountPercentRow = await _settingRep.GetSettingRowAsync(0, "inviteddiscountpercent");
-                    var inviteDiscountDurationRow = await _settingRep.GetSettingRowAsync(0, "invitediscountduration");
-                    var inviteDiscountEntitiesRow = await _settingRep.GetSettingRowAsync(0, "invitediscountentities");
-                    var inviteDiscountMaxUsageRow = await _settingRep.GetSettingRowAsync(0, "invitediscountmaxusage");
-                    var inviteDiscountEntities = inviteDiscountEntitiesRow.Result.Value.Split(',').ToList();
-
-                    foreach (var entity in inviteDiscountEntities)
-                    {
-                        var inviterDiscounts = await _discountRep.GetAllDiscountsAsync(creatorId: validInviteCode.ID, pageSize: 0, searchText: "invitation");
-                        Discount inviterDiscount = inviterDiscounts.Results.Where(x => x.IsActive && x.ExpireDate >= DateTime.Now).OrderByDescending(x => x.DiscountPercent).FirstOrDefault();
-
-                        if (inviterDiscount == null || inviterDiscount.ID <= 0)
-                        {
-                            inviterDiscount = new Discount()
-                            {
-                                CreateDate = DateTime.Now.ToShamsi(),
-                                UpdateDate = DateTime.Now.ToShamsi(),
-                                OtherLangs = null,
-                                IsActive = true,
-                                DiscountAmount = 0,
-                                DiscountCode = "".GenerateDiscountCode(),
-                                CodeRequired = false,
-                                Description = $"inviter in invitation of {user.FirstName} {user.LastName}",
-                                CreatorId = validInviteCode.ID,
-                                EntityName = entity,
-                                ForeignKeyId = 0,
-                                DiscountMaxUsage = int.Parse(inviteDiscountMaxUsageRow.Result.Value),
-                                ExpireDate = DateTime.Now.AddDays(int.Parse(inviteDiscountDurationRow.Result.Value)),
-                                DiscountPercent = int.Parse(inviterDiscountPercentRow.Result.Value),
-                                DiscountTargets = new List<DiscountTarget>()
-     {
-         new DiscountTarget()
-         {
-                 CreateDate = DateTime.Now.ToShamsi(),
-                 UpdateDate = DateTime.Now.ToShamsi(),
-                 OtherLangs = null,
-                 IsActive = true,
-
-                 TargetEntityName = "user",
-                 TargetId = validInviteCode.ID,
-         }
-     },
-                            };
-                        }
-
-                        else
-                        {
-                            inviterDiscount.DiscountPercent += int.Parse(inviterDiscountPercentRow.Result.Value);
-                        }     
-
-                        Discount invitedDiscount = new Discount()
-                        {
-                            CreateDate = DateTime.Now.ToShamsi(),
-                            UpdateDate = DateTime.Now.ToShamsi(),
-                            OtherLangs = null,
-                            IsActive = true,
-                            DiscountAmount = 0,
-                            DiscountCode = "".GenerateDiscountCode(),
-                            CodeRequired = false,
-                            Description = $"invited in invitation by {signupRequestBody.InvitationCode}",
-                            CreatorId = user.ID,
-                            EntityName = entity,
-                            ForeignKeyId = 0,
-                            DiscountMaxUsage = int.Parse(inviteDiscountMaxUsageRow.Result.Value),
-                            ExpireDate = DateTime.Now.AddDays(int.Parse(inviteDiscountDurationRow.Result.Value)),
-                            DiscountPercent = int.Parse(invitedDiscountPercentRow.Result.Value),
-                            DiscountTargets = new List<DiscountTarget>()
-                            {
-                                new DiscountTarget()
-                                {
-                                        CreateDate = DateTime.Now.ToShamsi(),
-                                        UpdateDate = DateTime.Now.ToShamsi(),
-                                        OtherLangs = null,
-                                        IsActive = true,
-
-                                        TargetEntityName = "user",
-                                        TargetId = user.ID,
-                                }
-                            },
-                        };
-
-                        var disresult = await _discountRep.EditDiscountAsync(inviterDiscount);
-                        disresult = await _discountRep.AddDiscountAsync(invitedDiscount);
-                    }
-
-                }
 
 
                 if (result.Status)
@@ -1124,7 +1034,7 @@ if (authenticationRequestBody.Password == "string")
 
                 if (!IsvalidInviteCode)
                 {
-                    result.Status = !validNationalCode.Status;
+                    result.Status = false;
                     result.ErrorMessage = "کد دعوت نامعتبر است";
                     return BadRequest(result);
                 }
@@ -1162,6 +1072,7 @@ if (authenticationRequestBody.Password == "string")
                     UpdateDate = DateTime.Now.ToShamsi(),
                     AddressId = (address != null && address.ID > 0) ? address.ID : null,
                     PermissionsVersion = 1,
+                    InviterUserId = IsvalidInviteCode ? validInviteCode.ID : null,
                     IsActive = true,
 
                 };
@@ -1175,96 +1086,6 @@ if (authenticationRequestBody.Password == "string")
                 //user.StudentDetails = studentDetails;
                 ////}
                 result = await _userRep.AddUserAsync(user);
-
-                if (IsvalidInviteCode)
-                {
-                    var inviterDiscountPercentRow = await _settingRep.GetSettingRowAsync(0, "inviterdiscountpercent");
-                    var invitedDiscountPercentRow = await _settingRep.GetSettingRowAsync(0, "inviteddiscountpercent");
-                    var inviteDiscountDurationRow = await _settingRep.GetSettingRowAsync(0, "invitediscountduration");
-                    var inviteDiscountEntitiesRow = await _settingRep.GetSettingRowAsync(0, "invitediscountentities");
-                    var inviteDiscountMaxUsageRow = await _settingRep.GetSettingRowAsync(0, "invitediscountmaxusage");
-                    var inviteDiscountEntities = inviteDiscountEntitiesRow.Result.Value.Split(',').ToList();
-
-                    foreach (var entity in inviteDiscountEntities)
-                    {
-                        var inviterDiscounts = await _discountRep.GetAllDiscountsAsync(creatorId: validInviteCode.ID, pageSize: 0, searchText: "invitation");
-                        Discount inviterDiscount = inviterDiscounts.Results.Where(x => x.IsActive && x.ExpireDate >= DateTime.Now).OrderByDescending(x => x.DiscountPercent).FirstOrDefault();
-                       
-                        if (inviterDiscount == null || inviterDiscount.ID <= 0)
-                        {
-                            inviterDiscount = new Discount()
-                            {
-                                CreateDate = DateTime.Now.ToShamsi(),
-                                UpdateDate = DateTime.Now.ToShamsi(),
-                                OtherLangs = null,
-                                IsActive = true,
-                                DiscountAmount = 0,
-                                DiscountCode = "".GenerateDiscountCode(),
-                                CodeRequired = false,
-                                Description = $"inviter in invitation of {user.FirstName} {user.LastName}",
-                                CreatorId = validInviteCode.ID,
-                                EntityName = entity,
-                                ForeignKeyId = 0,
-                                DiscountMaxUsage = int.Parse(inviteDiscountMaxUsageRow.Result.Value),
-                                ExpireDate = DateTime.Now.AddDays(int.Parse(inviteDiscountDurationRow.Result.Value)),
-                                DiscountPercent = int.Parse(inviterDiscountPercentRow.Result.Value),
-                                DiscountTargets = new List<DiscountTarget>()
-     {
-         new DiscountTarget()
-         {
-                 CreateDate = DateTime.Now.ToShamsi(),
-                 UpdateDate = DateTime.Now.ToShamsi(),
-                 OtherLangs = null,
-                 IsActive = true,
-
-                 TargetEntityName = "user",
-                 TargetId = validInviteCode.ID,
-         }
-     },
-                            };
-                        }
-
-                        else
-                        {
-                            inviterDiscount.DiscountPercent += int.Parse(inviterDiscountPercentRow.Result.Value);
-                        }
-
-                        Discount invitedDiscount = new Discount()
-                        {
-                            CreateDate = DateTime.Now.ToShamsi(),
-                            UpdateDate = DateTime.Now.ToShamsi(),
-                            OtherLangs = null,
-                            IsActive = true,
-                            DiscountAmount = 0,
-                            DiscountCode = "".GenerateDiscountCode(),
-                            CodeRequired = false,
-                            Description = $"invited in invitation by {signupRequestBody.InvitationCode}",
-                            CreatorId = user.ID,
-                            EntityName = entity,
-                            ForeignKeyId = 0,
-                            DiscountMaxUsage = int.Parse(inviteDiscountMaxUsageRow.Result.Value),
-                            ExpireDate = DateTime.Now.AddDays(int.Parse(inviteDiscountDurationRow.Result.Value)),
-                            DiscountPercent = int.Parse(invitedDiscountPercentRow.Result.Value),
-                            DiscountTargets = new List<DiscountTarget>()
-                            {
-                                new DiscountTarget()
-                                {
-                                        CreateDate = DateTime.Now.ToShamsi(),
-                                        UpdateDate = DateTime.Now.ToShamsi(),
-                                        OtherLangs = null,
-                                        IsActive = true,
-
-                                        TargetEntityName = "user",
-                                        TargetId = user.ID,
-                                }
-                            },
-                        };
-
-                        var disresult = await _discountRep.EditDiscountAsync(inviterDiscount);
-                        disresult = await _discountRep.AddDiscountAsync(invitedDiscount);
-                    }
-
-                }
 
                 if (result.Status)
                 {

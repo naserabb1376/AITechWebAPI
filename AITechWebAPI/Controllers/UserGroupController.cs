@@ -1,4 +1,5 @@
 ﻿using AITechDATA.DataLayer.Repositories;
+using AiTech.Domains;
 using AITechDATA.DataLayer.Services;
 using AITechDATA.Domain;
 using AITechDATA.ResultObjects;
@@ -31,13 +32,17 @@ namespace AITechWebAPI.Controllers
     public class UserGroupController : ControllerBase
     {
         IUserGroupRep _UserGroupRep;
+        IPaymentHistoryRep _PaymentHistoryRep;
+        IGroupRep _GroupRep;
         ILogRep _logRep;
         private readonly IMapper _mapper;
 
 
-        public UserGroupController(IUserGroupRep UserGroupRep,ILogRep logRep,IMapper mapper)
+        public UserGroupController(IUserGroupRep UserGroupRep, IPaymentHistoryRep paymentHistoryRep, IGroupRep groupRep, ILogRep logRep,IMapper mapper)
         {
            _UserGroupRep = UserGroupRep;
+           _PaymentHistoryRep = paymentHistoryRep;
+           _GroupRep = groupRep;
            _logRep = logRep;
             _mapper = mapper;
 
@@ -109,6 +114,58 @@ namespace AITechWebAPI.Controllers
             var result = await _UserGroupRep.AddUserGroupsAsync(UserGroups);
             if (result.Status)
             {
+                foreach (var item in requestBody.Where(x => x.RegisterManualPayment))
+                {
+                    if (!item.ManualPaymentAmount.HasValue || item.ManualPaymentAmount.Value < 0)
+                    {
+                        return BadRequest(new BitResultObject
+                        {
+                            Status = false,
+                            ID = result.ID,
+                            ErrorMessage = "برای ثبت فیش دستی، مبلغ پرداخت معتبر وارد کنید"
+                        });
+                    }
+
+                    var groupRow = await _GroupRep.GetGroupByIdAsync(item.GroupId);
+                    if (!groupRow.Status || groupRow.Result == null)
+                    {
+                        return BadRequest(new BitResultObject
+                        {
+                            Status = false,
+                            ID = result.ID,
+                            ErrorMessage = "گروه درسی انتخاب شده برای ثبت فیش دستی معتبر نیست"
+                        });
+                    }
+
+                    var paymentHistory = new PaymentHistory
+                    {
+                        CreateDate = DateTime.Now.ToShamsi(),
+                        UpdateDate = DateTime.Now.ToShamsi(),
+                        IsActive = true,
+                        ForeignKeyId = item.GroupId,
+                        EntityType = "group",
+                        TargetObjName = groupRow.Result.Name,
+                        Amount = item.ManualPaymentAmount.Value,
+                        UserId = item.UserId,
+                        PaymentDate = string.IsNullOrEmpty(item.ManualPaymentDate)
+                            ? DateTime.Now.ToShamsi()
+                            : item.ManualPaymentDate.StringToDate().Value,
+                        PaymentStatus = true,
+                        DiscountId = item.DiscountId,
+                    };
+
+                    var paymentResult = await _PaymentHistoryRep.AddPaymentHistoryAsync(paymentHistory);
+                    if (!paymentResult.Status)
+                    {
+                        return BadRequest(new BitResultObject
+                        {
+                            Status = false,
+                            ID = result.ID,
+                            ErrorMessage = paymentResult.ErrorMessage
+                        });
+                    }
+                }
+
                 #region AddLog
 
                 Log log = new Log()

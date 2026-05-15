@@ -14,6 +14,8 @@ namespace AITechDATA.DataLayer.Repositories
 
         Task<RowResultObject<GroupDto>> GetGroupByIdAsync(long groupId, long ClientUserId = 0, long ClientRoleId = 0);
 
+        Task<int> GetGroupRegistrationCountAsync(long groupId);
+
         Task<BitResultObject> AddGroupAsync(Group group);
 
         Task<BitResultObject> EditGroupAsync(Group group);

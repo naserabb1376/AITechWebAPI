@@ -27,13 +27,15 @@ namespace AITechDATA.DataLayer.Services
             {
                 var group = await _context.Groups.FirstOrDefaultAsync(g=> g.ID == UserGroups.FirstOrDefault().GroupId) ?? new Group();
 
-                if (group.GroupCapacity < UserGroups.Count + group.RegisterCount)
+                var currentRegistrationCount = await _context.GetGroupRegistrationCountAsync(group.ID);
+
+                if (group.GroupCapacity < UserGroups.Count + currentRegistrationCount)
                 {
                     throw new Exception($"تعداد ثبت نام انجام شده در این گروه بیش از {group.GroupCapacity} است");
                 }
 
                 await _context.UserGroups.AddRangeAsync(UserGroups);
-                group.RegisterCount += UserGroups.Count;
+                group.RegisterCount = currentRegistrationCount + UserGroups.Count;
                 await _context.SaveChangesAsync();
                 result.ID = UserGroups.FirstOrDefault().ID;
                 foreach (var UserGroup in UserGroups)
