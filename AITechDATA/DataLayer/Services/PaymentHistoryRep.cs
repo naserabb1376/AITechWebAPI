@@ -118,14 +118,12 @@ namespace AITechDATA.DataLayer.Services
             return result;
         }
 
-        public async Task<ListResultObject<PaymentHistory>> GetAllPaymentHistoriesAsync(long foreignkeyId = 0, string entityType = "", long UserId = 0, long DiscountId = 0, int payState = 2, int pageIndex = 1, int pageSize = 20, string searchText = "", string sortQuery = "")
-        public async Task<ListResultObject<PaymentHistory>> GetAllPaymentHistoriesAsync(long foreignkeyId = 0, string entityType = "", long UserId = 0, long DiscountId = 0, bool? paymentStatus = null, bool? hasDiscount = null, int pageIndex = 1, int pageSize = 20, string searchText = "", string sortQuery = "")
+        public async Task<ListResultObject<PaymentHistory>> GetAllPaymentHistoriesAsync(long foreignkeyId = 0, string entityType = "", long UserId = 0, long DiscountId = 0, int payState = 2, bool? hasDiscount = null, int pageIndex = 1, int pageSize = 20, string searchText = "", string sortQuery = "")
         {
             ListResultObject<PaymentHistory> results = new ListResultObject<PaymentHistory>();
             try
             {
-                var query = _context.PaymentHistories.Include(x=> x.User).Include(x => x.Discount).AsNoTracking();
-                var query = _context.PaymentHistories.Include(x=> x.PaymentInstallments).Include(x=> x.User).AsNoTracking();
+                var query = _context.PaymentHistories.Include(x=> x.User).Include(x => x.Discount).Include(x => x.PaymentInstallments).AsNoTracking();
 
                 if (!string.IsNullOrWhiteSpace(entityType))
                 {
@@ -145,10 +143,6 @@ namespace AITechDATA.DataLayer.Services
                     query = query.Where(x => x.DiscountId == DiscountId);
                 }
 
-                if (paymentStatus.HasValue)
-                {
-                    query = query.Where(x => x.PaymentStatus == paymentStatus.Value);
-                }
 
                 if (hasDiscount.HasValue)
                 {
@@ -157,9 +151,6 @@ namespace AITechDATA.DataLayer.Services
                         : query.Where(x => !x.DiscountId.HasValue);
                 }
 
-                if (!string.IsNullOrWhiteSpace(searchText))
-                {
-                    query = query.Where(x =>
                 if (payState < 2)
                 {
                     bool status = Convert.ToBoolean(payState);
@@ -182,7 +173,7 @@ namespace AITechDATA.DataLayer.Services
                        (!string.IsNullOrEmpty(x.EntityType) && x.EntityType.Contains(searchText)) ||
                        (x.Discount != null && !string.IsNullOrEmpty(x.Discount.DiscountCode) && x.Discount.DiscountCode.Contains(searchText))
                     );
-                }
+                
 
                 results.TotalCount = query.Count();
                 results.PageCount = DbTools.GetPageCount(results.TotalCount, pageSize);

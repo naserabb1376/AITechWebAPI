@@ -17,9 +17,6 @@ namespace AITechWebAPI.Models.PaymentHistory
         [Display(Name = "شناسه تخفیف")]
         public long DiscountId { get; set; } = 0;
 
-        [Display(Name = "وضعیت پرداخت")]
-        public bool? PaymentStatus { get; set; }
-
         [Display(Name = "استفاده از تخفیف")]
         public bool? HasDiscount { get; set; }
 

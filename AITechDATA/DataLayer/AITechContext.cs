@@ -14,10 +14,10 @@ namespace AITechDATA.DataLayer
 {
     public class AITechContext : DbContext
     {
-        public AITechContext()
-        {
+        //public AITechContext()
+        //{
 
-        }
+        //}
 
         public AITechContext(DbContextOptions<AITechContext> options)
             : base(options)
@@ -98,14 +98,14 @@ namespace AITechDATA.DataLayer
 
 
 
-        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-        {
-            if (!optionsBuilder.IsConfigured)
-            {
-                ConfigurationHelper configurationHelper = new ConfigurationHelper();
-                optionsBuilder.UseSqlServer(configurationHelper.GetConnectionString("publicdb"));
-            }
-        }
+        //protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+        //{
+        //    if (!optionsBuilder.IsConfigured)
+        //    {
+        //        ConfigurationHelper configurationHelper = new ConfigurationHelper();
+        //        optionsBuilder.UseSqlServer(configurationHelper.GetConnectionString("publicdb"));
+        //    }
+        //}
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

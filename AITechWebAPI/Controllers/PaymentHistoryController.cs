@@ -98,8 +98,7 @@ namespace AITechWebAPI.Controllers
             {
                 return BadRequest(requestBody);
             }
-            var result = await _PaymentHistoryRep.GetAllPaymentHistoriesAsync(requestBody.ForeignKeyId,requestBody.EntityType,requestBody.UserId,requestBody.DiscountId,requestBody.PaymentStatus,requestBody.HasDiscount,requestBody.PageIndex,requestBody.PageSize,requestBody.SearchText,requestBody.SortQuery);
-            var result = await _PaymentHistoryRep.GetAllPaymentHistoriesAsync(requestBody.ForeignKeyId,requestBody.EntityType,requestBody.UserId,requestBody.DiscountId,requestBody.PayState,requestBody.PageIndex,requestBody.PageSize,requestBody.SearchText,requestBody.SortQuery);
+            var result = await _PaymentHistoryRep.GetAllPaymentHistoriesAsync(requestBody.ForeignKeyId,requestBody.EntityType,requestBody.UserId,requestBody.DiscountId,requestBody.PayState, requestBody.HasDiscount, requestBody.PageIndex,requestBody.PageSize,requestBody.SearchText,requestBody.SortQuery);
             if (result.Status)
             {
                 var resultVM = _mapper.Map<ListResultObject<PaymentHistoryVM>>(result);
@@ -361,16 +360,6 @@ namespace AITechWebAPI.Controllers
                             result.ErrorMessage = "شما مجاز به پرداخت این افساط نیستید";
                             return BadRequest(result);
 
-            if (discountedrowAmount < rowAmount)
-            {
-                var automaticDiscount = await GetApplicableDiscountAsync(UserId, RoleId, requestBody.EntityType, requestBody.ForeignKeyId);
-                if (automaticDiscount != null)
-                {
-                    appliedDiscountId = automaticDiscount.ID;
-                    discountedrowAmount = CalculateDiscountedAmount(rowAmount, automaticDiscount);
-                }
-            }
-
                         }
                         var InstallmentFinePercentRow = await _settingRep.GetSettingRowAsync(0, "installmentfinepercent");
                         var InstallmentFinePercent = int.Parse(InstallmentFinePercentRow.Result.Value);
@@ -388,6 +377,17 @@ namespace AITechWebAPI.Controllers
                     }
                     break;
             }
+
+            if (discountedrowAmount < rowAmount)
+            {
+                var automaticDiscount = await GetApplicableDiscountAsync(UserId, RoleId, requestBody.EntityType, requestBody.ForeignKeyId);
+                if (automaticDiscount != null)
+                {
+                    appliedDiscountId = automaticDiscount.ID;
+                    discountedrowAmount = CalculateDiscountedAmount(rowAmount, automaticDiscount);
+                }
+            }
+
 
             if (discountedrowAmount == rowAmount && requestBody.DiscountId > 0)
             {
@@ -957,12 +957,6 @@ namespace AITechWebAPI.Controllers
                         var userGroupsBeforeRegister = await _UserGroupRep.GetAllUserGroupsAsync(UserId, pageSize: 0);
                         isFirstGroupRegistration = !userGroupsBeforeRegister.Results.Any(x => x.IsActive);
 
-                        UserGroup userGroup = new UserGroup()
-                        {
-                            CreateDate = DateTime.Now.ToShamsi(),
-                            UpdateDate = DateTime.Now.ToShamsi(),
-                            IsActive = true,
-                            OtherLangs = "",
                         if (paymentHistory.Result.PaymentStatus)
                         {
                             UserGroup userGroup = new UserGroup()
@@ -979,7 +973,7 @@ namespace AITechWebAPI.Controllers
                         }
                         else
                         {
-                            addResult = new BitResultObject() { Status= true };
+                            addResult = new BitResultObject() { Status = true };
                         }
                     }
                     else
@@ -1014,15 +1008,12 @@ namespace AITechWebAPI.Controllers
 
                     if (addResult.Status)
                     {
-                        if (EntityType.ToLower().Contains("group") && isFirstGroupRegistration)
+                        if (paymentHistory.Result.EntityType.ToLower().Contains("group") && isFirstGroupRegistration)
                         {
                             await ApplyInvitationRewardIfNeededAsync(userRow.Result);
                         }
                         await DeactivateInvitationDiscountIfUsedAsync(paymentHistory.Result.DiscountId);
 
-                        var targetType = EntityType.ToLower().Contains("event") ? "رویداد" : "گروه درسی";
-                        var targetName = EntityType.ToLower().Contains("event") ? targetObj.Result.Title : targetObj.Result.Name;
-                        var targetFee = EntityType.ToLower().Contains("event") ? targetObj.Result.Fee.Value : targetObj.Result.Fee;
                         var targetType = paymentHistory.Result.EntityType.ToLower().Contains("event") ? "رویداد" : "گروه درسی";
                         var targetName = paymentHistory.Result.EntityType.ToLower().Contains("event") ? targetObj.Result.Title : targetObj.Result.Name;
                         var targetFee = paymentHistory.Result.EntityType.ToLower().Contains("event") ? targetObj.Result.Fee.Value : targetObj.Result.Fee;
