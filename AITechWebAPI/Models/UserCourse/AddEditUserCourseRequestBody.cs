@@ -16,5 +16,6 @@ namespace AITechWebAPI.Models.UserCourse
 
         [Display(Name = "نوع حضور")]
         public int PeresentType { get; set; }
+
     }
 }

@@ -41,6 +41,7 @@ namespace AITechWebAPI.Controllers
         IPaymentHistoryRep _PaymentHistoryRep;
         IGroupRep _GroupRep;
         IEventRep _EventRep;
+        ICourseRep _CourseRep;
         IUserRep _UserRep;
         IUserGroupRep _UserGroupRep;
         IPreRegistrationRep _PreRegistrationRep;
@@ -50,12 +51,13 @@ namespace AITechWebAPI.Controllers
         private readonly IMapper _mapper;
 
 
-        public PaymentHistoryController(IPaymentHistoryRep PaymentHistoryRep,IGroupRep groupRep,IEventRep eventRep,IUserRep userRep,IUserGroupRep userGroupRep,IPreRegistrationRep preRegistrationRep,IDiscountRep discountRep,ISettingRep settingRep,ILogRep logRep,IMapper mapper, IOnlinePayment onlinePayment)
+        public PaymentHistoryController(IPaymentHistoryRep PaymentHistoryRep,IGroupRep groupRep,IEventRep eventRep,ICourseRep courseRep,IUserRep userRep,IUserGroupRep userGroupRep,IPreRegistrationRep preRegistrationRep,IDiscountRep discountRep,ISettingRep settingRep,ILogRep logRep,IMapper mapper, IOnlinePayment onlinePayment)
         {
             _onlinePayment = onlinePayment;
             _PaymentHistoryRep = PaymentHistoryRep;
             _GroupRep = groupRep;
             _EventRep = eventRep;
+            _CourseRep = courseRep;
             _UserRep = userRep;
             _UserGroupRep = userGroupRep;
             _PreRegistrationRep = preRegistrationRep;
@@ -63,6 +65,26 @@ namespace AITechWebAPI.Controllers
             _settingRep = settingRep;
            _logRep = logRep;
             _mapper = mapper;
+        }
+
+        private async Task<string> GetPaymentTargetNameAsync(string entityType, long foreignKeyId)
+        {
+            var normalizedEntityType = entityType?.ToLower() ?? "";
+
+            if (normalizedEntityType.Contains("event"))
+            {
+                var targetObj = await _EventRep.GetEventByIdAsync(foreignKeyId);
+                return targetObj.Result?.Title ?? "";
+            }
+
+            if (normalizedEntityType.Contains("course"))
+            {
+                var targetObj = await _CourseRep.GetCourseByIdAsync(foreignKeyId);
+                return targetObj.Result?.Title ?? "";
+            }
+
+            var groupObj = await _GroupRep.GetGroupByIdAsync(foreignKeyId);
+            return groupObj.Result?.Name ?? "";
         }
 
 
@@ -75,7 +97,7 @@ namespace AITechWebAPI.Controllers
             {
                 return BadRequest(requestBody);
             }
-            var result = await _PaymentHistoryRep.GetAllPaymentHistoriesAsync(requestBody.ForeignKeyId,requestBody.EntityType,requestBody.UserId,requestBody.DiscountId,requestBody.PageIndex,requestBody.PageSize,requestBody.SearchText,requestBody.SortQuery);
+            var result = await _PaymentHistoryRep.GetAllPaymentHistoriesAsync(requestBody.ForeignKeyId,requestBody.EntityType,requestBody.UserId,requestBody.DiscountId,requestBody.PaymentStatus,requestBody.HasDiscount,requestBody.PageIndex,requestBody.PageSize,requestBody.SearchText,requestBody.SortQuery);
             if (result.Status)
             {
                 var resultVM = _mapper.Map<ListResultObject<PaymentHistoryVM>>(result);
@@ -123,10 +145,7 @@ namespace AITechWebAPI.Controllers
                 return BadRequest(requestBody);
             }
 
-            dynamic targetObj = requestBody.EntityType.ToLower().Contains("event") ? await _EventRep.GetEventByIdAsync(requestBody.ForeignKeyId) :
-await _GroupRep.GetGroupByIdAsync(requestBody.ForeignKeyId);
-
-            string targetObjName = requestBody.EntityType.ToLower().Contains("event") ? targetObj.Result.Title : targetObj.Result.Name;
+            string targetObjName = await GetPaymentTargetNameAsync(requestBody.EntityType, requestBody.ForeignKeyId);
 
             PaymentHistory PaymentHistory = new PaymentHistory()
             {
@@ -139,7 +158,7 @@ await _GroupRep.GetGroupByIdAsync(requestBody.ForeignKeyId);
                 Amount = requestBody.Amount,
                 UserId = requestBody.UserID,
                 PaymentDate =  string.IsNullOrEmpty(requestBody.PaymentDate) ? DateTime.Now.ToShamsi() : requestBody.PaymentDate.StringToDate().Value,
-                PaymentStatus = false,
+                PaymentStatus = requestBody.PaymentStatus,
                 DiscountId = requestBody.DiscountId,
               //  Description = requestBody.Description,
             };
@@ -180,10 +199,7 @@ await _GroupRep.GetGroupByIdAsync(requestBody.ForeignKeyId);
                 result.ErrorMessage = theRow.ErrorMessage;
             }
 
-            dynamic targetObj = requestBody.EntityType.ToLower().Contains("event") ? await _EventRep.GetEventByIdAsync(requestBody.ForeignKeyId) :
-await _GroupRep.GetGroupByIdAsync(requestBody.ForeignKeyId);
-
-            string targetObjName = requestBody.EntityType.ToLower().Contains("event") ? targetObj.Result.Title : targetObj.Result.Name;
+            string targetObjName = await GetPaymentTargetNameAsync(requestBody.EntityType, requestBody.ForeignKeyId);
 
 
             PaymentHistory PaymentHistory = new PaymentHistory()
@@ -277,7 +293,7 @@ await _GroupRep.GetGroupByIdAsync(requestBody.ForeignKeyId);
                 default:
                 case "group":
                     {
-                         var theRow = await _GroupRep.GetGroupByIdAsync(requestBody.ForeignKeyId);
+                         var theRow = await _GroupRep.GetGroupByIdAsync(requestBody.ForeignKeyId, UserId, RoleId);
 
                         if (theRow.Result == null)
                         {
@@ -286,7 +302,8 @@ await _GroupRep.GetGroupByIdAsync(requestBody.ForeignKeyId);
                             result.ErrorMessage = "درخواست نامعتبر است" ;
                             return BadRequest(result);
                         }
-                        if (theRow.Result.GroupCapacity <= 0)
+                        var currentRegistrationCount = await _GroupRep.GetGroupRegistrationCountAsync(requestBody.ForeignKeyId);
+                        if (theRow.Result.GroupCapacity <= currentRegistrationCount)
                         {
                             result.Result = null;
                             result.Status = false;
@@ -304,7 +321,7 @@ await _GroupRep.GetGroupByIdAsync(requestBody.ForeignKeyId);
                     break;
                 case "event":
                     {
-                         var theRow = await _EventRep.GetEventByIdAsync(requestBody.ForeignKeyId);
+                         var theRow = await _EventRep.GetEventByIdAsync(requestBody.ForeignKeyId, UserId, RoleId);
 
                         if (theRow.Result == null)
                         {
@@ -323,6 +340,16 @@ await _GroupRep.GetGroupByIdAsync(requestBody.ForeignKeyId);
                     break;
             }
 
+            if (discountedrowAmount < rowAmount)
+            {
+                var automaticDiscount = await GetApplicableDiscountAsync(UserId, RoleId, requestBody.EntityType, requestBody.ForeignKeyId);
+                if (automaticDiscount != null)
+                {
+                    appliedDiscountId = automaticDiscount.ID;
+                    discountedrowAmount = CalculateDiscountedAmount(rowAmount, automaticDiscount);
+                }
+            }
+
             if (discountedrowAmount == rowAmount && requestBody.DiscountId > 0)
             {
                 var x = await _discountRep.GetDiscountByIdAsync(requestBody.DiscountId.Value);
@@ -338,7 +365,7 @@ await _GroupRep.GetGroupByIdAsync(requestBody.ForeignKeyId);
                 var groupIds = groups.Results.Select(x => x.GroupId).ToList();
                 var validdiscount = ((x.Result.EntityName.ToLower() == requestBody.EntityType.ToLower() && x.Result.ForeignKeyId == requestBody.ForeignKeyId)
                || (string.IsNullOrEmpty(x.Result.EntityName) && x.Result.ForeignKeyId <= 0))
-                && x.Result.ExpireDate >= DateTime.Now && x.Result.DiscountMaxUsage > (x.Result.PaymentHistories.Count(x => x.UserId == UserId)) && x.Result.IsActive
+                && x.Result.ExpireDate >= DateTime.Now && x.Result.DiscountMaxUsage > (x.Result.PaymentHistories.Count(p => p.UserId == UserId && p.PaymentStatus)) && x.Result.IsActive
                 && (x.Result.DiscountTargets.Any(t => (t.IsActive && (
                 (t.TargetEntityName.ToLower() == "group" && (t.TargetId <= 0 || groupIds.Contains(t.TargetId))) ||
                 (t.TargetEntityName.ToLower() == "role" && (t.TargetId <= 0 || t.TargetId == RoleId)) ||
@@ -347,9 +374,7 @@ await _GroupRep.GetGroupByIdAsync(requestBody.ForeignKeyId);
 
                 if (validdiscount)
                 {
-                    decimal discountAAmount = rowAmount - x.Result.DiscountAmount ;
-                    decimal discountPAmount =  rowAmount - (rowAmount * x.Result.DiscountPercent / 100m);
-                    discountedrowAmount =  decimal.Min(discountAAmount,discountPAmount);
+                    discountedrowAmount = CalculateDiscountedAmount(rowAmount, x.Result);
                     appliedDiscountId = requestBody.DiscountId;
                 }
                 else
@@ -445,9 +470,13 @@ await _GroupRep.GetGroupByIdAsync(requestBody.ForeignKeyId);
             else
             {
                 var userRow = await _UserRep.GetUserByIdAsync(UserId);
+                var isFirstGroupRegistration = false;
                 //if (groupType == "online" || groupType == "video")
                 if (groupType.Contains( "آنلاین") || groupType.Contains( "آفلاین"))
                 {
+                    var userGroupsBeforeRegister = await _UserGroupRep.GetAllUserGroupsAsync(UserId, pageSize: 0);
+                    isFirstGroupRegistration = !userGroupsBeforeRegister.Results.Any(x => x.IsActive);
+
                     UserGroup userGroup = new UserGroup()
                     {
                         CreateDate = DateTime.Now.ToShamsi(),
@@ -490,6 +519,35 @@ await _GroupRep.GetGroupByIdAsync(requestBody.ForeignKeyId);
 
                 if (addResult.Status)
                 {
+                    PaymentHistory PaymentHistory = new PaymentHistory()
+                    {
+                        CreateDate = DateTime.Now.ToShamsi(),
+                        UpdateDate = DateTime.Now.ToShamsi(),
+                        ForeignKeyId = requestBody.ForeignKeyId,
+                        EntityType = requestBody.EntityType,
+                        TargetObjName = targetObjName,
+                        Amount = 0,
+                        UserId = UserId,
+                        PaymentDate = DateTime.Now.ToShamsi(),
+                        PaymentStatus = true,
+                        DiscountId = appliedDiscountId,
+                        IsActive = true,
+                    };
+                    var paymentSaveResult = await _PaymentHistoryRep.AddPaymentHistoryAsync(PaymentHistory);
+                    if (!paymentSaveResult.Status)
+                    {
+                        result.Result = null;
+                        result.Status = false;
+                        result.ErrorMessage = paymentSaveResult.ErrorMessage;
+                        return BadRequest(result);
+                    }
+
+                    if (requestBody.EntityType.ToLower().Contains("group") && isFirstGroupRegistration)
+                    {
+                        await ApplyInvitationRewardIfNeededAsync(userRow.Result);
+                    }
+                    await DeactivateInvitationDiscountIfUsedAsync(appliedDiscountId);
+
                     var targetType = requestBody.EntityType.ToLower().Contains("event") ? "رویداد" : "گروه درسی";
                     dynamic targetObj = requestBody.EntityType.ToLower().Contains("event") ? await _EventRep.GetEventByIdAsync(requestBody.ForeignKeyId) :
                         await _GroupRep.GetGroupByIdAsync(requestBody.ForeignKeyId);
@@ -497,12 +555,13 @@ await _GroupRep.GetGroupByIdAsync(requestBody.ForeignKeyId);
                     var targetFee = requestBody.EntityType.ToLower().Contains("event") ? targetObj.Result.Fee.Value : targetObj.Result.Fee;
                     var registerDate = DateTime.Now.ToShamsiString().Split(' ')[0];
                     var registerTime = DateTime.Now.ToShamsiString().Split(' ')[1];
+                    var paymentLine = BuildPaymentSmsLine(targetFee, PaymentHistory.Amount, PaymentHistory.DiscountId);
 
                     var infoMessage =
                         $@"دانشجو {userRow.Result.FirstName} {userRow.Result.LastName}
 در تاریخ {registerDate}
 ساعت {registerTime}
-با پرداخت {targetFee} ریال در {targetType}
+{paymentLine} در {targetType}
 {targetName} ثبت نام شد";
 
                     var academyPhoneNum = await _settingRep.GetSettingRowAsync(0, "Contact_Phone_Value_EN");
@@ -544,9 +603,194 @@ await _GroupRep.GetGroupByIdAsync(requestBody.ForeignKeyId);
                 {
                     return BadRequest(addResult);
                 }
+
+                result.Status = true;
+                result.ErrorMessage = "";
+                result.Result.PayGatewayUrl = null;
+                return Ok(result);
             }
 
             return BadRequest(result);
+        }
+
+        private async Task<Discount?> GetApplicableDiscountAsync(long userId, long roleId, string entityType, long foreignKeyId)
+        {
+            var groups = await _UserGroupRep.GetAllUserGroupsAsync(userId, pageSize: 0);
+            var groupIds = groups.Results.Where(x => x.IsActive).Select(x => x.GroupId).ToList();
+            var discounts = await _discountRep.GetAllDiscountsAsync(pageSize: 0);
+
+            return discounts.Results
+                .Where(x => IsApplicableDiscount(x, userId, roleId, groupIds, entityType, foreignKeyId))
+                .OrderByDescending(x => x.DiscountPercent)
+                .ThenByDescending(x => x.DiscountAmount)
+                .FirstOrDefault();
+        }
+
+        private static bool IsApplicableDiscount(Discount discount, long userId, long roleId, List<long> groupIds, string entityType, long foreignKeyId)
+        {
+            var entityMatches =
+                (!string.IsNullOrEmpty(discount.EntityName) &&
+                 discount.EntityName.ToLower() == entityType.ToLower() &&
+                 discount.ForeignKeyId == foreignKeyId) ||
+                (string.IsNullOrEmpty(discount.EntityName) && discount.ForeignKeyId <= 0);
+
+            return entityMatches
+                   && discount.ExpireDate >= DateTime.Now
+                   && discount.DiscountMaxUsage > discount.PaymentHistories.Count(p => p.UserId == userId && p.PaymentStatus)
+                   && discount.IsActive
+                   && !discount.CodeRequired
+                   && discount.DiscountTargets.Any(t => t.IsActive && (
+                       (t.TargetEntityName.ToLower() == "group" && (t.TargetId <= 0 || groupIds.Contains(t.TargetId))) ||
+                       (t.TargetEntityName.ToLower() == "role" && (t.TargetId <= 0 || t.TargetId == roleId)) ||
+                       (t.TargetEntityName.ToLower() == "user" && (t.TargetId <= 0 || t.TargetId == userId))));
+        }
+
+        private static decimal CalculateDiscountedAmount(decimal amount, Discount discount)
+        {
+            var amountBased = discount.DiscountAmount > 0
+                ? amount - discount.DiscountAmount
+                : amount;
+            var percentBased = discount.DiscountPercent > 0
+                ? amount - (amount * discount.DiscountPercent / 100m)
+                : amount;
+
+            return Math.Max(0, decimal.Min(amountBased, percentBased));
+        }
+
+        private static string BuildPaymentSmsLine(decimal originalAmount, decimal paidAmount, long? discountId)
+        {
+            if (discountId.HasValue && discountId.Value > 0)
+            {
+                return $"با تخفیف و پرداخت {FormatSmsAmount(paidAmount)} ریال (مبلغ اصلی {FormatSmsAmount(originalAmount)} ریال)";
+            }
+
+            return $"با پرداخت {FormatSmsAmount(paidAmount)} ریال";
+        }
+
+        private static string FormatSmsAmount(decimal amount)
+        {
+            return amount.ToString("#,0");
+        }
+
+        private async Task ApplyInvitationRewardIfNeededAsync(User user)
+        {
+            if (user == null || user.InviterUserId == null || user.InvitationRewardApplied)
+            {
+                return;
+            }
+
+            var inviterDiscountPercentRow = await _settingRep.GetSettingRowAsync(0, "inviterdiscountpercent");
+            var invitedDiscountPercentRow = await _settingRep.GetSettingRowAsync(0, "inviteddiscountpercent");
+            var inviteDiscountDurationRow = await _settingRep.GetSettingRowAsync(0, "invitediscountduration");
+            var inviteDiscountEntitiesRow = await _settingRep.GetSettingRowAsync(0, "invitediscountentities");
+            var inviteDiscountMaxUsageRow = await _settingRep.GetSettingRowAsync(0, "invitediscountmaxusage");
+
+            if (!inviterDiscountPercentRow.Status || !invitedDiscountPercentRow.Status || !inviteDiscountDurationRow.Status ||
+                !inviteDiscountEntitiesRow.Status || !inviteDiscountMaxUsageRow.Status)
+            {
+                return;
+            }
+
+            var inviterDiscountPercent = int.Parse(inviterDiscountPercentRow.Result.Value);
+            var invitedDiscountPercent = int.Parse(invitedDiscountPercentRow.Result.Value);
+            var inviteDiscountDuration = int.Parse(inviteDiscountDurationRow.Result.Value);
+            var inviteDiscountMaxUsage = int.Parse(inviteDiscountMaxUsageRow.Result.Value);
+            var inviteDiscountEntities = inviteDiscountEntitiesRow.Result.Value
+                .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+                .ToList();
+
+            var rewardApplied = true;
+            foreach (var entity in inviteDiscountEntities)
+            {
+                rewardApplied &= await AddOrChargeInvitationDiscountAsync(user.InviterUserId.Value, entity, inviterDiscountPercent, inviteDiscountDuration, inviteDiscountMaxUsage, $"inviter in invitation of {user.FirstName} {user.LastName}");
+                rewardApplied &= await AddInvitationDiscountAsync(user.ID, entity, invitedDiscountPercent, inviteDiscountDuration, inviteDiscountMaxUsage, $"invited in invitation by user {user.InviterUserId}");
+            }
+
+            if (rewardApplied)
+            {
+                await _UserRep.MarkInvitationRewardAppliedAsync(user.ID);
+            }
+        }
+
+        private async Task<bool> AddOrChargeInvitationDiscountAsync(long userId, string entity, int percent, int durationDays, int maxUsage, string description)
+        {
+            var discounts = await _discountRep.GetAllDiscountsAsync(entityName: entity, creatorId: userId, pageSize: 0, searchText: "invitation");
+            var activeDiscount = discounts.Results
+                .Where(x => x.IsActive &&
+                            !x.CodeRequired &&
+                            x.ExpireDate >= DateTime.Now &&
+                            x.DiscountTargets.Any(t => t.IsActive && t.TargetEntityName.ToLower() == "user" && t.TargetId == userId) &&
+                            x.DiscountMaxUsage > x.PaymentHistories.Count(p => p.UserId == userId && p.PaymentStatus))
+                .OrderByDescending(x => x.DiscountPercent)
+                .FirstOrDefault();
+
+            if (activeDiscount == null)
+            {
+                return await AddInvitationDiscountAsync(userId, entity, percent, durationDays, maxUsage, description);
+            }
+
+            activeDiscount.DiscountPercent += percent;
+            activeDiscount.UpdateDate = DateTime.Now.ToShamsi();
+            activeDiscount.ExpireDate = DateTime.Now.AddDays(durationDays);
+            var result = await _discountRep.EditDiscountAsync(activeDiscount);
+            return result.Status;
+        }
+
+        private async Task<bool> AddInvitationDiscountAsync(long userId, string entity, int percent, int durationDays, int maxUsage, string description)
+        {
+            Discount discount = new Discount()
+            {
+                CreateDate = DateTime.Now.ToShamsi(),
+                UpdateDate = DateTime.Now.ToShamsi(),
+                OtherLangs = null,
+                IsActive = true,
+                DiscountAmount = 0,
+                DiscountCode = "".GenerateDiscountCode(),
+                CodeRequired = false,
+                Description = description,
+                CreatorId = userId,
+                EntityName = entity,
+                ForeignKeyId = 0,
+                DiscountMaxUsage = maxUsage,
+                ExpireDate = DateTime.Now.AddDays(durationDays),
+                DiscountPercent = percent,
+                DiscountTargets = new List<DiscountTarget>()
+                {
+                    new DiscountTarget()
+                    {
+                        CreateDate = DateTime.Now.ToShamsi(),
+                        UpdateDate = DateTime.Now.ToShamsi(),
+                        OtherLangs = null,
+                        IsActive = true,
+                        TargetEntityName = "user",
+                        TargetId = userId,
+                    }
+                },
+            };
+
+            var result = await _discountRep.AddDiscountAsync(discount);
+            return result.Status;
+        }
+
+        private async Task DeactivateInvitationDiscountIfUsedAsync(long? discountId)
+        {
+            if (discountId == null || discountId <= 0)
+            {
+                return;
+            }
+
+            var discountRow = await _discountRep.GetDiscountByIdAsync(discountId.Value);
+            if (!discountRow.Status || discountRow.Result == null || string.IsNullOrEmpty(discountRow.Result.Description) ||
+                !discountRow.Result.Description.Contains("invitation"))
+            {
+                return;
+            }
+
+            discountRow.Result.DiscountPercent = 0;
+            discountRow.Result.DiscountAmount = 0;
+            discountRow.Result.IsActive = false;
+            discountRow.Result.UpdateDate = DateTime.Now.ToShamsi();
+            await _discountRep.EditDiscountAsync(discountRow.Result);
         }
 
         [HttpGet("VerifyPayment")]
@@ -621,9 +865,13 @@ await _GroupRep.GetGroupByIdAsync(requestBody.ForeignKeyId);
                 if (verifyResult.Status == PaymentVerifyResultStatus.Succeed)
                 {
                     paymentHistory.Result.PaymentStatus = true;
+                    var isFirstGroupRegistration = false;
                     // if (groupType == "online" || groupType == "video")
                     if (groupType.Contains("آنلاین") || groupType.Contains("آفلاین"))
                     {
+                        var userGroupsBeforeRegister = await _UserGroupRep.GetAllUserGroupsAsync(UserId, pageSize: 0);
+                        isFirstGroupRegistration = !userGroupsBeforeRegister.Results.Any(x => x.IsActive);
+
                         UserGroup userGroup = new UserGroup()
                         {
                             CreateDate = DateTime.Now.ToShamsi(),
@@ -668,17 +916,24 @@ await _GroupRep.GetGroupByIdAsync(requestBody.ForeignKeyId);
 
                     if (addResult.Status)
                     {
+                        if (EntityType.ToLower().Contains("group") && isFirstGroupRegistration)
+                        {
+                            await ApplyInvitationRewardIfNeededAsync(userRow.Result);
+                        }
+                        await DeactivateInvitationDiscountIfUsedAsync(paymentHistory.Result.DiscountId);
+
                         var targetType = EntityType.ToLower().Contains("event") ? "رویداد" : "گروه درسی";
                         var targetName = EntityType.ToLower().Contains("event") ? targetObj.Result.Title : targetObj.Result.Name;
                         var targetFee = EntityType.ToLower().Contains("event") ? targetObj.Result.Fee.Value : targetObj.Result.Fee;
                         var registerDate = DateTime.Now.ToShamsiString().Split(' ')[0];
                         var registerTime = DateTime.Now.ToShamsiString().Split(' ')[1];
+                        var paymentLine = BuildPaymentSmsLine(targetFee, paymentHistory.Result.Amount, paymentHistory.Result.DiscountId);
 
                         var infoMessage = 
                             $@"دانشجو {userRow.Result.FirstName} {userRow.Result.LastName}
 در تاریخ {registerDate}
 ساعت {registerTime}
-با پرداخت {targetFee} در {targetType}
+{paymentLine} در {targetType}
 {targetName} ثبت نام شد";
 
                         var academyPhoneNum = await _settingRep.GetSettingRowAsync(0, "Contact_Phone_Value_EN");

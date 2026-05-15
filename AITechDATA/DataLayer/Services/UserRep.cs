@@ -27,9 +27,18 @@ namespace AITechDATA.DataLayer.Services
             BitResultObject result = new BitResultObject();
             try
             {
-                user.IdentificationCode = $"AITech{await _context.Users.MaxAsync(x=> x.ID) + 1000 }";
+                user.IdentificationCode = string.IsNullOrWhiteSpace(user.IdentificationCode)
+                    ? null
+                    : user.IdentificationCode.Trim();
                 await _context.Users.AddAsync(user);
                 await _context.SaveChangesAsync();
+
+                if (string.IsNullOrWhiteSpace(user.IdentificationCode))
+                {
+                    user.IdentificationCode = $"AITech{user.ID + 1000}";
+                    await _context.SaveChangesAsync();
+                }
+
                 result.ID = user.ID;
                 _context.Entry(user).State = EntityState.Detached;
             }
@@ -47,6 +56,34 @@ namespace AITechDATA.DataLayer.Services
             try
             {
                 _context.Users.Update(user);
+                await _context.SaveChangesAsync();
+                result.ID = user.ID;
+                _context.Entry(user).State = EntityState.Detached;
+            }
+            catch (Exception ex)
+            {
+                result.Status = false;
+                result.ErrorMessage = $"{ex.Message} - {ex.InnerException?.Message}";
+            }
+            return result;
+        }
+
+        public async Task<BitResultObject> MarkInvitationRewardAppliedAsync(long userId)
+        {
+            BitResultObject result = new BitResultObject();
+            try
+            {
+                var user = await _context.Users.SingleOrDefaultAsync(x => x.ID == userId);
+                if (user == null)
+                {
+                    result.Status = false;
+                    result.ErrorMessage = "کاربر یافت نشد";
+                    return result;
+                }
+
+                user.InvitationRewardApplied = true;
+                user.InvitationRewardAppliedDate = DateTime.Now;
+                user.UpdateDate = DateTime.Now.ToShamsi();
                 await _context.SaveChangesAsync();
                 result.ID = user.ID;
                 _context.Entry(user).State = EntityState.Detached;

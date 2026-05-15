@@ -94,10 +94,33 @@ namespace AITechDATA.DataLayer.Services
                     .Include(s => s.Attendances)
                     .Include(s => s.SessionAssignments);
 
-                // Filter: فقط Session های گروه‌هایی که کاربر در آن‌ها ثبت‌نام قطعی شده است
+                var userEmail = string.Empty;
+                var userPhone = string.Empty;
+
                 if (userId > 0)
                 {
-                    query = query.Where(s => s.Group.Students.Any(ug => ug.UserId == userId && ug.IsActive));
+                    var userContact = await _context.Users
+                        .AsNoTracking()
+                        .Where(x => x.ID == userId)
+                        .Select(x => new { x.Email, x.Username })
+                        .FirstOrDefaultAsync();
+
+                    userEmail = (userContact?.Email ?? string.Empty).Trim().ToLower();
+                    userPhone = (userContact?.Username ?? string.Empty).Trim().ToLower();
+
+                    query = query.Where(s =>
+                        _context.UserGroups.Any(ug =>
+                            ug.GroupId == s.GroupId &&
+                            ug.UserId == userId &&
+                            ug.IsActive) ||
+                        _context.PreRegistrations.Any(pr =>
+                            pr.ForeignKeyId == s.GroupId &&
+                            pr.IsActive &&
+                            pr.EntityType.ToLower() == "group" &&
+                            (
+                                (!string.IsNullOrEmpty(userEmail) && !string.IsNullOrEmpty(pr.Email) && pr.Email.ToLower() == userEmail) ||
+                                (!string.IsNullOrEmpty(userPhone) && !string.IsNullOrEmpty(pr.PhoneNumber) && pr.PhoneNumber.ToLower() == userPhone)
+                            )));
                 }
 
                 // Filter: group

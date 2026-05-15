@@ -30,11 +30,13 @@ namespace AITechDATA.DataLayer.Services
                 {
                     var group = await _context.Groups.FirstOrDefaultAsync(g => g.ID == preRegistration.ForeignKeyId) ?? new Group();
 
-                    if (group.GroupCapacity < group.RegisterCount + 1)
+                    var currentRegistrationCount = await _context.GetGroupRegistrationCountAsync(group.ID);
+
+                    if (group.GroupCapacity < currentRegistrationCount + 1)
                     {
                         throw new Exception($"تعداد ثبت نام انجام شده در این گروه بیش از {group.GroupCapacity} است");
                     }
-                    group.RegisterCount++;
+                    group.RegisterCount = currentRegistrationCount + 1;
                 }
 
                 await _context.PreRegistrations.AddAsync(preRegistration);
@@ -85,6 +87,43 @@ namespace AITechDATA.DataLayer.Services
                 result.ErrorMessage = $"{ex.Message} - {ex.InnerException?.Message}";
             }
             return result;
+        }
+
+        public async Task<bool> ExistsDuplicatePreRegistrationAsync(long foreignKeyId, string entityType, string duplicateKey, string duplicateValue, string formKey = "")
+        {
+            if (foreignKeyId <= 0 || string.IsNullOrWhiteSpace(entityType) || string.IsNullOrWhiteSpace(duplicateKey) || string.IsNullOrWhiteSpace(duplicateValue))
+            {
+                return false;
+            }
+
+            var normalizedKey = duplicateKey.Trim();
+            var normalizedValue = duplicateValue.Trim();
+            var query = _context.PreRegistrations
+                .AsNoTracking()
+                .Where(x => x.ForeignKeyId == foreignKeyId && x.EntityType == entityType);
+
+            switch (normalizedKey.ToLower())
+            {
+                case "phonenumber":
+                    return await query.AnyAsync(x => x.PhoneNumber == normalizedValue);
+                case "email":
+                    return await query.AnyAsync(x => x.Email == normalizedValue);
+                case "firstname":
+                    return await query.AnyAsync(x => x.FirstName == normalizedValue);
+                case "lastname":
+                    return await query.AnyAsync(x => x.LastName == normalizedValue);
+                case "studentfullname":
+                    return await query.AnyAsync(x => (x.FirstName + " " + x.LastName).Trim() == normalizedValue);
+            }
+
+            var candidates = await query
+                .Where(x => !string.IsNullOrEmpty(x.FormData))
+                .Select(x => x.FormData)
+                .ToListAsync();
+
+            return candidates.Any(formData =>
+                (!string.IsNullOrWhiteSpace(formKey) && formData.Contains($"\"formKey\":\"{formKey}\"")) &&
+                formData.Contains($"\"{normalizedKey}\":\"{normalizedValue}\""));
         }
 
         public async Task<ListResultObject<PreRegistration>> GetAllPreRegistrationsAsync(long foreignkeyId = 0, string entityType = "", int pageIndex = 1, int pageSize = 20, string searchText = "",string sortQuery ="")

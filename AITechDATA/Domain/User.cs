@@ -15,6 +15,9 @@ namespace AITechDATA.Domain
         public string NationalCode { get; set; }
         public string Username { get; set; }
         public string? IdentificationCode { get; set; }
+        public long? InviterUserId { get; set; }
+        public bool InvitationRewardApplied { get; set; } = false;
+        public DateTime? InvitationRewardAppliedDate { get; set; }
         public string PasswordHash { get; set; } // هش رمز عبور
         public long PermissionsVersion { get; set; } = 1;
         public long RoleId { get; set; } // کلید خارجی به Role
