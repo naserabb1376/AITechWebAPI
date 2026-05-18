@@ -27,6 +27,7 @@ namespace AITechDATA.DataLayer.Services
             BitResultObject result = new BitResultObject();
             try
             {
+
                 fileUpload.FileNumber = await GetNewRowNumber();
                 await _context.FileUploads.AddAsync(fileUpload);
                 await _context.SaveChangesAsync();
