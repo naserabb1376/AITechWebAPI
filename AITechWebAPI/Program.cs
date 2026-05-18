@@ -4,6 +4,7 @@ using AITechDATA.DataLayer.Services;
 using AITechDATA.Tools;
 using AITechWebAPI.Tools;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Logging;
@@ -120,6 +121,36 @@ namespace AITechWebAPI
                   options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore;
               })
              .AddXmlDataContractSerializerFormatters();
+
+            builder.Services.Configure<ApiBehaviorOptions>(options =>
+            {
+                options.InvalidModelStateResponseFactory = context =>
+                {
+                    var errors = context.ModelState
+                        .Where(item => item.Value?.Errors.Count > 0)
+                        .ToDictionary(
+                            item => item.Key,
+                            item => item.Value!.Errors
+                                .Select(error => string.IsNullOrWhiteSpace(error.ErrorMessage)
+                                    ? "مقدار واردشده معتبر نیست."
+                                    : error.ErrorMessage)
+                                .ToArray());
+
+                    var payload = new ApiErrorResponse
+                    {
+                        StatusCode = StatusCodes.Status400BadRequest,
+                        Title = "درخواست نامعتبر است",
+                        Message = errors.Values.SelectMany(item => item).FirstOrDefault() ?? "اطلاعات ارسال‌شده معتبر نیست.",
+                        TraceId = context.HttpContext.TraceIdentifier,
+                        Path = context.HttpContext.Request.Path,
+                        Method = context.HttpContext.Request.Method,
+                        Timestamp = DateTimeOffset.UtcNow,
+                        Errors = errors
+                    };
+
+                    return new BadRequestObjectResult(payload);
+                };
+            });
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
             builder.Services.AddEndpointsApiExplorer();
 
