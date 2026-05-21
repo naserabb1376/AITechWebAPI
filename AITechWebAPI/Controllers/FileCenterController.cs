@@ -32,7 +32,7 @@ public class FileCenterController : ControllerBase
 
     [HttpPost("uploadfile")]
     [RequestSizeLimit(2_000_000_000)]           // 2 GB
-[RequestFormLimits(MultipartBodyLengthLimit = 2_000_000_000)]
+    [RequestFormLimits(MultipartBodyLengthLimit = 2_000_000_000)]
     [AllowAnonymous]
     public async Task<IActionResult> UploadFile(IFormFile file, [FromQuery] UploadFileRequestBody requestBody)
     {
