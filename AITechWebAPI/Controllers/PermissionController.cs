@@ -355,12 +355,5 @@ namespace AITechWebAPI.Controllers
 
     }
 
-    public class ControllerActionInfo
-    {
-        public string ActionName { get; set; } = "";
-        public string PermissionKey { get; set; } = "";
-        public bool HasAuth { get; set; }
-        //public string AdminRoles { get; set; }
-
-    }
+   
 }

@@ -6,6 +6,7 @@ using AITechDATA.Tools;
 using AITechWebAPI.Models;
 using AITechWebAPI.Models.PreRegistration;
 using AITechWebAPI.Models.Public;
+using AITechWebAPI.Tools;
 using AITechWebAPI.Validations;
 using AITechWebAPI.ViewModels;
 using AutoMapper;
@@ -171,14 +172,14 @@ namespace AITechWebAPI.Controllers
             }
             catch
             {
-                return DynamicFormBadRequest("داده‌های فرم‌ساز معتبر نیست");
+                return ToolBox.DynamicFormBadRequest("داده‌های فرم‌ساز معتبر نیست");
             }
 
             using (formDataDocument)
             {
                 var root = formDataDocument.RootElement;
-                var formId = GetLong(root, "formId");
-                var formKey = GetString(root, "formKey");
+                var formId = ToolBox.GetLong(root, "formId");
+                var formKey = ToolBox.GetString(root, "formKey");
 
                 if (formId <= 0 && string.IsNullOrWhiteSpace(formKey))
                 {
@@ -187,13 +188,13 @@ namespace AITechWebAPI.Controllers
 
                 if (!root.TryGetProperty("values", out var valuesElement) || valuesElement.ValueKind != JsonValueKind.Object)
                 {
-                    return DynamicFormBadRequest("مقادیر فرم‌ساز معتبر نیست");
+                    return ToolBox.DynamicFormBadRequest("مقادیر فرم‌ساز معتبر نیست");
                 }
 
                 var submitForm = await _SubmitFormRep.GetSubmitFormObjAsync(formId, formKey);
                 if (!submitForm.Status || submitForm.Result == null || submitForm.Result.ID <= 0)
                 {
-                    return DynamicFormBadRequest("فرم پیدا نشد یا فعال نیست");
+                    return ToolBox.DynamicFormBadRequest("فرم پیدا نشد یا فعال نیست");
                 }
 
                 var allowedFields = submitForm.Result.Fields
@@ -203,7 +204,7 @@ namespace AITechWebAPI.Controllers
 
                 if (!allowedFields.Any())
                 {
-                    return DynamicFormBadRequest("برای این فرم فیلدی تعریف نشده است");
+                    return ToolBox.DynamicFormBadRequest("برای این فرم فیلدی تعریف نشده است");
                 }
 
                 var submittedValues = valuesElement.EnumerateObject()
@@ -212,13 +213,13 @@ namespace AITechWebAPI.Controllers
                 var invalidField = submittedValues.Keys.FirstOrDefault(x => !allowedFields.Contains(x));
                 if (!string.IsNullOrWhiteSpace(invalidField))
                 {
-                    return DynamicFormBadRequest($"فیلد «{invalidField}» در این فرم تعریف نشده است");
+                    return ToolBox.DynamicFormBadRequest($"فیلد «{invalidField}» در این فرم تعریف نشده است");
                 }
 
-                using var configDocument = ParseOptionalJson(submitForm.Result.FormConfig);
+                using var configDocument = ToolBox.ParseOptionalJson(submitForm.Result.FormConfig);
                 var configRoot = configDocument?.RootElement;
-                var hiddenFields = GetStringArray(configRoot, "hiddenFields").ToHashSet(StringComparer.OrdinalIgnoreCase);
-                var requiredFields = GetStringArray(configRoot, "requiredFields");
+                var hiddenFields = ToolBox.GetStringArray(configRoot, "hiddenFields").ToHashSet(StringComparer.OrdinalIgnoreCase);
+                var requiredFields = ToolBox.GetStringArray(configRoot, "requiredFields");
 
                 if (!requiredFields.Any())
                 {
@@ -226,17 +227,17 @@ namespace AITechWebAPI.Controllers
                 }
 
                 var now = DateTime.Now;
-                var startAt = GetString(configRoot, "startAt");
-                var endAt = GetString(configRoot, "endAt");
+                var startAt = ToolBox.GetString(configRoot, "startAt");
+                var endAt = ToolBox.GetString(configRoot, "endAt");
 
                 if (!string.IsNullOrWhiteSpace(startAt) && DateTime.TryParse(startAt, out var startDate) && now < startDate)
                 {
-                    return DynamicFormBadRequest("زمان ثبت این فرم هنوز شروع نشده است");
+                    return ToolBox.DynamicFormBadRequest("زمان ثبت این فرم هنوز شروع نشده است");
                 }
 
                 if (!string.IsNullOrWhiteSpace(endAt) && DateTime.TryParse(endAt, out var endDate) && now > endDate)
                 {
-                    return DynamicFormBadRequest("زمان ثبت این فرم به پایان رسیده است");
+                    return ToolBox.DynamicFormBadRequest("زمان ثبت این فرم به پایان رسیده است");
                 }
 
                 foreach (var fieldName in requiredFields.Where(x => allowedFields.Contains(x) && !hiddenFields.Contains(x)))
@@ -248,7 +249,7 @@ namespace AITechWebAPI.Controllers
 
                         if (!hasFullName)
                         {
-                            return DynamicFormBadRequest("فیلد نام و نام خانوادگی الزامی است");
+                            return ToolBox.DynamicFormBadRequest("فیلد نام و نام خانوادگی الزامی است");
                         }
 
                         continue;
@@ -257,31 +258,31 @@ namespace AITechWebAPI.Controllers
                     if (!HasValue(submittedValues, fieldName))
                     {
                         var displayName = submitForm.Result.Fields.FirstOrDefault(x => x.FieldName.Equals(fieldName, StringComparison.OrdinalIgnoreCase))?.DisplayName ?? fieldName;
-                        return DynamicFormBadRequest($"فیلد «{displayName}» الزامی است");
+                        return ToolBox.DynamicFormBadRequest($"فیلد «{displayName}» الزامی است");
                     }
                 }
 
-                var configForeignKeyId = GetLong(configRoot, "foreignKeyId");
+                var configForeignKeyId = ToolBox.GetLong(configRoot, "foreignKeyId");
                 if (configForeignKeyId > 0 && requestBody.ForeignKeyId != configForeignKeyId)
                 {
-                    return DynamicFormBadRequest("کد رکورد مقصد با تنظیمات فرم مطابقت ندارد");
+                    return ToolBox.DynamicFormBadRequest("کد رکورد مقصد با تنظیمات فرم مطابقت ندارد");
                 }
 
                 if (!string.IsNullOrWhiteSpace(submitForm.Result.EntityName) &&
                     !string.Equals(requestBody.EntityType, submitForm.Result.EntityName, StringComparison.OrdinalIgnoreCase))
                 {
-                    return DynamicFormBadRequest("نوع موجودیت با تنظیمات فرم مطابقت ندارد");
+                    return ToolBox.DynamicFormBadRequest("نوع موجودیت با تنظیمات فرم مطابقت ندارد");
                 }
 
                 if (GetBool(configRoot, "preventDuplicate"))
                 {
-                    var duplicateKey = GetString(configRoot, "duplicateKey");
+                    var duplicateKey = ToolBox.GetString(configRoot, "duplicateKey");
                     if (string.IsNullOrWhiteSpace(duplicateKey))
                     {
                         duplicateKey = "phoneNumber";
                     }
 
-                    var duplicateValue = GetDuplicateValue(duplicateKey, requestBody, submittedValues);
+                    var duplicateValue = ToolBox.GetDuplicateValue(duplicateKey, requestBody, submittedValues);
                     if (!string.IsNullOrWhiteSpace(duplicateValue))
                     {
                         var exists = await _PreRegistrationRep.ExistsDuplicatePreRegistrationAsync(
@@ -293,114 +294,13 @@ namespace AITechWebAPI.Controllers
 
                         if (exists)
                         {
-                            return DynamicFormBadRequest("این فرم قبلا با همین اطلاعات ثبت شده است");
+                            return ToolBox.DynamicFormBadRequest("این فرم قبلا با همین اطلاعات ثبت شده است");
                         }
                     }
                 }
             }
 
             return null;
-        }
-
-        private ActionResult<BitResultObject> DynamicFormBadRequest(string message)
-        {
-            return BadRequest(new BitResultObject()
-            {
-                Status = false,
-                ErrorMessage = message
-            });
-        }
-
-        private static JsonDocument? ParseOptionalJson(string? json)
-        {
-            if (string.IsNullOrWhiteSpace(json))
-            {
-                return null;
-            }
-
-            try
-            {
-                return JsonDocument.Parse(json);
-            }
-            catch
-            {
-                return null;
-            }
-        }
-
-        private static string GetString(JsonElement? element, string propertyName)
-        {
-            if (element.HasValue && element.Value.ValueKind == JsonValueKind.Object &&
-                element.Value.TryGetProperty(propertyName, out var property) &&
-                property.ValueKind != JsonValueKind.Null && property.ValueKind != JsonValueKind.Undefined)
-            {
-                return property.ValueKind == JsonValueKind.String ? property.GetString() ?? "" : property.ToString();
-            }
-
-            return "";
-        }
-
-        private static long GetLong(JsonElement? element, string propertyName)
-        {
-            var value = GetString(element, propertyName);
-            return long.TryParse(value, out var number) ? number : 0;
-        }
-
-        private static bool GetBool(JsonElement? element, string propertyName)
-        {
-            if (element.HasValue && element.Value.ValueKind == JsonValueKind.Object &&
-                element.Value.TryGetProperty(propertyName, out var property) &&
-                property.ValueKind != JsonValueKind.Null && property.ValueKind != JsonValueKind.Undefined)
-            {
-                if (property.ValueKind == JsonValueKind.True) return true;
-                if (property.ValueKind == JsonValueKind.False) return false;
-                if (property.ValueKind == JsonValueKind.String && bool.TryParse(property.GetString(), out var result)) return result;
-            }
-
-            return false;
-        }
-
-        private static List<string> GetStringArray(JsonElement? element, string propertyName)
-        {
-            if (!element.HasValue || element.Value.ValueKind != JsonValueKind.Object ||
-                !element.Value.TryGetProperty(propertyName, out var property) ||
-                property.ValueKind != JsonValueKind.Array)
-            {
-                return new List<string>();
-            }
-
-            return property.EnumerateArray()
-                .Select(x => x.ValueKind == JsonValueKind.String ? x.GetString() ?? "" : x.ToString())
-                .Where(x => !string.IsNullOrWhiteSpace(x))
-                .ToList();
-        }
-
-        private static bool HasValue(Dictionary<string, string> values, string fieldName)
-        {
-            return values.TryGetValue(fieldName, out var value) && !string.IsNullOrWhiteSpace(value);
-        }
-
-        private static string GetDuplicateValue(string duplicateKey, AddEditPreRegistrationRequestBody requestBody, Dictionary<string, string> submittedValues)
-        {
-            var key = duplicateKey?.Trim() ?? "";
-            switch (key.ToLower())
-            {
-                case "phonenumber":
-                    return requestBody.PhoneNumber ?? "";
-                case "email":
-                    return requestBody.Email ?? "";
-                case "firstname":
-                    return requestBody.FirstName ?? "";
-                case "lastname":
-                    return requestBody.LastName ?? "";
-                case "studentfullname":
-                    var submittedFullName = submittedValues.TryGetValue("studentFullName", out var fullName) ? fullName : "";
-                    return !string.IsNullOrWhiteSpace(submittedFullName)
-                        ? submittedFullName
-                        : $"{requestBody.FirstName} {requestBody.LastName}".Trim();
-                default:
-                    return submittedValues.TryGetValue(key, out var value) ? value : "";
-            }
         }
 
         [HttpPut("EditPreRegistration_Base")]
