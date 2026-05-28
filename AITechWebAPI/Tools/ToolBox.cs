@@ -1,8 +1,11 @@
 ﻿using AITechDATA.Domain;
+using AITechDATA.ResultObjects;
 using AITechDATA.Tools;
 using AITechWebAPI.Models.Authenticate;
+using AITechWebAPI.Models.PreRegistration;
 using AITechWebAPI.ViewModels;
 using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
 using Newtonsoft.Json;
 using System.IdentityModel.Tokens.Jwt;
@@ -368,8 +371,122 @@ namespace AITechWebAPI.Tools
         }
 
 
+        #region PreRegistration Form Tools
 
 
+        public static BitResultObject DynamicFormBadRequest( this string message)
+        {
+            return new BitResultObject()
+            {
+                Status = false,
+                ErrorMessage = message
+            };
+        }
+
+        public static JsonDocument? ParseOptionalJson(this string? json)
+        {
+            if (string.IsNullOrWhiteSpace(json))
+            {
+                return null;
+            }
+
+            try
+            {
+                return JsonDocument.Parse(json);
+            }
+            catch
+            {
+                return null;
+            }
+        }
+
+        public static string GetString(this JsonElement? element, string propertyName)
+        {
+            if (element.HasValue && element.Value.ValueKind == JsonValueKind.Object &&
+                element.Value.TryGetProperty(propertyName, out var property) &&
+                property.ValueKind != JsonValueKind.Null && property.ValueKind != JsonValueKind.Undefined)
+            {
+                return property.ValueKind == JsonValueKind.String ? property.GetString() ?? "" : property.ToString();
+            }
+
+            return "";
+        }
+
+        public static long GetLong(this JsonElement? element, string propertyName)
+        {
+            var value = GetString(element, propertyName);
+            return long.TryParse(value, out var number) ? number : 0;
+        }
+
+        public static bool GetBool(JsonElement? element, string propertyName)
+        {
+            if (element.HasValue && element.Value.ValueKind == JsonValueKind.Object &&
+                element.Value.TryGetProperty(propertyName, out var property) &&
+                property.ValueKind != JsonValueKind.Null && property.ValueKind != JsonValueKind.Undefined)
+            {
+                if (property.ValueKind == JsonValueKind.True) return true;
+                if (property.ValueKind == JsonValueKind.False) return false;
+                if (property.ValueKind == JsonValueKind.String && bool.TryParse(property.GetString(), out var result)) return result;
+            }
+
+            return false;
+        }
+
+        public static List<string> GetStringArray(this JsonElement? element, string propertyName)
+        {
+            if (!element.HasValue || element.Value.ValueKind != JsonValueKind.Object ||
+                !element.Value.TryGetProperty(propertyName, out var property) ||
+                property.ValueKind != JsonValueKind.Array)
+            {
+                return new List<string>();
+            }
+
+            return property.EnumerateArray()
+                .Select(x => x.ValueKind == JsonValueKind.String ? x.GetString() ?? "" : x.ToString())
+                .Where(x => !string.IsNullOrWhiteSpace(x))
+                .ToList();
+        }
+
+        public static bool HasValue(Dictionary<string, string> values, string fieldName)
+        {
+            return values.TryGetValue(fieldName, out var value) && !string.IsNullOrWhiteSpace(value);
+        }
+
+        public static string GetDuplicateValue(this string duplicateKey, AddEditPreRegistrationRequestBody requestBody, Dictionary<string, string> submittedValues)
+        {
+            var key = duplicateKey?.Trim() ?? "";
+            switch (key.ToLower())
+            {
+                case "phonenumber":
+                    return requestBody.PhoneNumber ?? "";
+                case "email":
+                    return requestBody.Email ?? "";
+                case "firstname":
+                    return requestBody.FirstName ?? "";
+                case "lastname":
+                    return requestBody.LastName ?? "";
+                case "studentfullname":
+                    var submittedFullName = submittedValues.TryGetValue("studentFullName", out var fullName) ? fullName : "";
+                    return !string.IsNullOrWhiteSpace(submittedFullName)
+                        ? submittedFullName
+                        : $"{requestBody.FirstName} {requestBody.LastName}".Trim();
+                default:
+                    return submittedValues.TryGetValue(key, out var value) ? value : "";
+            }
+        }
+
+
+        #endregion
+
+
+        public class ControllerActionInfo
+        {
+            public string ActionName { get; set; } = "";
+            public string PermissionKey { get; set; } = "";
+            public bool HasAuth { get; set; }
+            //public string AdminRoles { get; set; }
+
+        }
     }
 
 

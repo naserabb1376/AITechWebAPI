@@ -11,6 +11,7 @@ using AITechWebAPI.Models.Public;
 using AITechWebAPI.Validations;
 using AITechWebAPI.ViewModels;
 using AutoMapper;
+using Hangfire;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;

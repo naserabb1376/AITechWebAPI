@@ -45,16 +45,16 @@ namespace AITechWebAPI.Tools
         }
         public async Task<bool> SendMessage(string mobileNumber, string message)
         {
-            var formBody = $"username={PanelUserName}&password={PanelPassword}&to={mobileNumber}&from={PanelLineNumber}&text={message}&isflash=false";
             List<ReqHeader> reqHeaders = new List<ReqHeader>();
-
+            //PanelApiUrl = "https://RayganSMS.com/SendMessageWithUrl.ashx";
+            string apiUrl = $"{PanelApiUrl}?Username={PanelUserName}&Password={PanelPassword}&PhoneNumber={PanelLineNumber}&MessageBody={message}&RecNumber={mobileNumber}&Smsclass=1";
             bool send = false;
             try
             {
                 ApiCaller apiCaller = new ApiCaller();
 
-                var SendSmsMessageResponse = await apiCaller.Call<object>(PanelApiUrl, "POST", formBody, reqHeaders, Encoding.UTF8, "application/x-www-form-urlencoded");
-                if (SendSmsMessageResponse.ToString().ToLower().Contains("\"ok\"")) send = true;
+                var SendSmsMessageResponse = await apiCaller.Call<long>(apiUrl, "GET", "", reqHeaders, Encoding.UTF8);
+                if (SendSmsMessageResponse > 2000) send = true;
                 else send = false;
 
             }

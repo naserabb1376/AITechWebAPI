@@ -3,6 +3,7 @@ using AITechDATA.DataLayer.Repositories;
 using AITechDATA.DataLayer.Services;
 using AITechDATA.Tools;
 using AITechWebAPI.Tools;
+using Hangfire;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -335,6 +336,10 @@ namespace AITechWebAPI
 
             builder.Services.AddAutoMapper(cfg => { }, AppDomain.CurrentDomain.GetAssemblies());
 
+            builder.Services.AddHangfire(config =>
+  config.UseSqlServerStorage((configHelper.GetConnectionString("publicdb"))));
+            builder.Services.AddHangfireServer();
+
             var app = builder.Build();
 
             // Configure the HTTP request pipeline.
@@ -363,6 +368,8 @@ namespace AITechWebAPI
 
             app.UseSession();
 
+            app.UseHangfireDashboard("/hangfire");
+            app.UseHangfireServer();
 
 
             app.UseRouting();
