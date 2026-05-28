@@ -506,6 +506,8 @@ if (authenticationRequestBody.Password == "string")
                     LogTime = now,
                     ActionName = this.ControllerContext.RouteData.Values["action"].ToString()
                 };
+
+
                 await _schoolDb.Logs.AddAsync(log);
                 await _schoolDb.SaveChangesAsync();
                 await transaction.CommitAsync();
