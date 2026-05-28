@@ -57,7 +57,7 @@ namespace AITechWebAPI.Controllers
             {
                 return BadRequest(requestBody);
             }
-            var result = await _UserRep.GetAllUsersAsync(requestBody.GroupId,requestBody.CourseId,requestBody.SessionAssignmentId,requestBody.SessionId,requestBody.AddressId,requestBody.RoleIds,requestBody.StudyField,requestBody.EducationalGrade,requestBody.PageIndex,requestBody.PageSize,requestBody.SearchText,requestBody.SortQuery);
+            var result = await _UserRep.GetAllUsersAsync(requestBody.GroupId,requestBody.CourseId,requestBody.SessionAssignmentId,requestBody.SessionId,requestBody.AddressId,requestBody.RoleIds,requestBody.StudyField,requestBody.EducationalGrade,requestBody.PageIndex,requestBody.PageSize,requestBody.SearchText,requestBody.SortQuery, requestBody.OnlyFeaturedTeachers);
             if (result.Status)
             {
                 var resultVM = _mapper.Map<UserListCustomResponse<UserVM>>(result);
@@ -74,7 +74,7 @@ namespace AITechWebAPI.Controllers
             {
                 return BadRequest(requestBody);
             }
-            var result = await _UserRep.GetAllUsersAsync(requestBody.GroupId, requestBody.CourseId, requestBody.SessionAssignmentId, requestBody.SessionId, requestBody.AddressId,new List<long>() { (long)BaseRole.Teacher},requestBody.StudyField,requestBody.EducationalGrade, requestBody.PageIndex, requestBody.PageSize, requestBody.SearchText, requestBody.SortQuery);
+            var result = await _UserRep.GetAllUsersAsync(requestBody.GroupId, requestBody.CourseId, requestBody.SessionAssignmentId, requestBody.SessionId, requestBody.AddressId,new List<long>() { (long)BaseRole.Teacher},requestBody.StudyField,requestBody.EducationalGrade, requestBody.PageIndex, requestBody.PageSize, requestBody.SearchText, requestBody.SortQuery, requestBody.OnlyFeaturedTeachers);
             if (result.Status)
             {
                 var resultVM = _mapper.Map<UserListCustomResponse<TeacherVM>>(result);
@@ -174,6 +174,17 @@ namespace AITechWebAPI.Controllers
                 return BadRequest(result);
             }
 
+            if (!string.IsNullOrWhiteSpace(requestBody.AttendanceDeviceUserId))
+            {
+                var validAttendanceDeviceUserId = await _UserRep.ExistUserAsync(requestBody.AttendanceDeviceUserId.Trim(), "attendancedeviceuserid");
+                if (validAttendanceDeviceUserId.Status)
+                {
+                    result.Status = false;
+                    result.ErrorMessage = "شناسه کاربر در دستگاه حضور و غیاب تکراری است";
+                    return BadRequest(result);
+                }
+            }
+
             User User = new User()
             {
                 CreateDate = DateTime.Now.ToShamsi(),
@@ -185,9 +196,11 @@ namespace AITechWebAPI.Controllers
                 AddressId = (requestBody.AdressId > 0) ? requestBody.AdressId : null,
                 FirstName = requestBody.FirstName,
                 LastName = requestBody.LastName,
+                AttendanceDeviceUserId = string.IsNullOrWhiteSpace(requestBody.AttendanceDeviceUserId) ? null : requestBody.AttendanceDeviceUserId.Trim(),
                 OtherLangs = requestBody.OtherLangs ?? "",
                 PasswordHash = requestBody.Password.ToHash(),
                 RoleId = requestBody.RoleId,
+                IsFeaturedTeacher = requestBody.RoleId == (long)BaseRole.Teacher ? requestBody.IsFeaturedTeacher : false,
                 PermissionsVersion = requestBody.PermissionsVersion,
 
             };
@@ -252,6 +265,17 @@ namespace AITechWebAPI.Controllers
                 return BadRequest(result);
             }
 
+            if (!string.IsNullOrWhiteSpace(requestBody.AttendanceDeviceUserId))
+            {
+                var validAttendanceDeviceUserId = await _UserRep.ExistUserAsync(requestBody.AttendanceDeviceUserId.Trim(), "attendancedeviceuserid", requestBody.ID);
+                if (validAttendanceDeviceUserId.Status)
+                {
+                    result.Status = false;
+                    result.ErrorMessage = "شناسه کاربر در دستگاه حضور و غیاب تکراری است";
+                    return BadRequest(result);
+                }
+            }
+
             var theRow = await _UserRep.GetUserByIdAsync(requestBody.ID);
             if (!theRow.Status)
             {
@@ -271,8 +295,10 @@ namespace AITechWebAPI.Controllers
                 FirstName = requestBody.FirstName,
                 LastName = requestBody.LastName,
                 IdentificationCode = theRow.Result.IdentificationCode,
+                AttendanceDeviceUserId = string.IsNullOrWhiteSpace(requestBody.AttendanceDeviceUserId) ? null : requestBody.AttendanceDeviceUserId.Trim(),
                 PasswordHash = theRow.Result.PasswordHash,
                 RoleId = requestBody.RoleId ?? theRow.Result.RoleId,
+                IsFeaturedTeacher = (requestBody.RoleId ?? theRow.Result.RoleId) == (long)BaseRole.Teacher ? requestBody.IsFeaturedTeacher : false,
                 OtherLangs = requestBody.OtherLangs ?? "",
                 PermissionsVersion = requestBody.PermissionsVersion,
 
@@ -338,6 +364,17 @@ namespace AITechWebAPI.Controllers
                 return BadRequest(result);
             }
 
+            if (!string.IsNullOrWhiteSpace(requestBody.AttendanceDeviceUserId))
+            {
+                var validAttendanceDeviceUserId = await _UserRep.ExistUserAsync(requestBody.AttendanceDeviceUserId.Trim(), "attendancedeviceuserid");
+                if (validAttendanceDeviceUserId.Status)
+                {
+                    result.Status = false;
+                    result.ErrorMessage = "شناسه کاربر در دستگاه حضور و غیاب تکراری است";
+                    return BadRequest(result);
+                }
+            }
+
             Address address = new Address();
 
            if (requestBody.Address != null)
@@ -373,8 +410,10 @@ namespace AITechWebAPI.Controllers
                     AddressId = (address != null && address.ID > 0) ? address.ID : null,
                     FirstName = requestBody.FirstName,
                     LastName = requestBody.LastName,
+                    AttendanceDeviceUserId = string.IsNullOrWhiteSpace(requestBody.AttendanceDeviceUserId) ? null : requestBody.AttendanceDeviceUserId.Trim(),
                     PasswordHash = requestBody.Password.ToHash(),
                     RoleId = requestBody.RoleId,
+                    IsFeaturedTeacher = requestBody.RoleId == (long)BaseRole.Teacher ? requestBody.IsFeaturedTeacher : false,
                     OtherLangs = requestBody.OtherLangs ?? "",
                     PermissionsVersion = requestBody.PermissionsVersion,
 
@@ -443,6 +482,17 @@ namespace AITechWebAPI.Controllers
                 return BadRequest(result);
             }
 
+            if (!string.IsNullOrWhiteSpace(requestBody.AttendanceDeviceUserId))
+            {
+                var validAttendanceDeviceUserId = await _UserRep.ExistUserAsync(requestBody.AttendanceDeviceUserId.Trim(), "attendancedeviceuserid", requestBody.ID);
+                if (validAttendanceDeviceUserId.Status)
+                {
+                    result.Status = false;
+                    result.ErrorMessage = "شناسه کاربر در دستگاه حضور و غیاب تکراری است";
+                    return BadRequest(result);
+                }
+            }
+
             var theRow = await _UserRep.GetUserByIdAsync(requestBody.ID);
             if (theRow.Result.Address== null)
             {
@@ -491,8 +541,10 @@ namespace AITechWebAPI.Controllers
                     FirstName = requestBody.FirstName,
                     LastName = requestBody.LastName,
                     IdentificationCode = theRow.Result.IdentificationCode,
+                    AttendanceDeviceUserId = string.IsNullOrWhiteSpace(requestBody.AttendanceDeviceUserId) ? null : requestBody.AttendanceDeviceUserId.Trim(),
                     PasswordHash = theRow.Result.PasswordHash,
                     RoleId = requestBody.RoleId ?? theRow.Result.RoleId,
+                    IsFeaturedTeacher = (requestBody.RoleId ?? theRow.Result.RoleId) == (long)BaseRole.Teacher ? requestBody.IsFeaturedTeacher : false,
                     OtherLangs = requestBody.OtherLangs ?? "",
                     PermissionsVersion = requestBody.PermissionsVersion,
                 };

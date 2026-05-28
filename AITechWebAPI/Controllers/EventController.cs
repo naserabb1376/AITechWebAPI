@@ -43,6 +43,12 @@ namespace AITechWebAPI.Controllers
             _mapper = mapper;
         }
 
+        private static string? NormalizeUrlSlug(string? slug)
+        {
+            slug = slug?.Trim().ToLowerInvariant();
+            return string.IsNullOrWhiteSpace(slug) ? null : slug;
+        }
+
         [AllowAnonymous]
         [HttpPost("GetAllEvents_Base")]
         public async Task<ActionResult<EventListCustomResponse<EventVM>>> GetAllEvents_Base(GetEventListRequestBody requestBody)
@@ -113,6 +119,7 @@ namespace AITechWebAPI.Controllers
                 UserId = requestBody.UserId,
                 Description = requestBody.Description ?? "",
                 Note = requestBody.Note ?? "",
+                UrlSlug = NormalizeUrlSlug(requestBody.UrlSlug),
                 EventDate = requestBody.EventDate.StringToDate().Value,
                 Keywords = requestBody.Keywords,
                 Title = requestBody.Title,
@@ -166,6 +173,7 @@ namespace AITechWebAPI.Controllers
                 UserId = requestBody.UserId,
                 Description = requestBody.Description ?? "",
                 Note = requestBody.Note ?? "",
+                UrlSlug = NormalizeUrlSlug(requestBody.UrlSlug),
                 EventDate = requestBody.EventDate.StringToDate().Value,
                 Keywords = requestBody.Keywords,
                 Title = requestBody.Title,

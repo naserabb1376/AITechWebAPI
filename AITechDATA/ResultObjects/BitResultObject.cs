@@ -11,5 +11,7 @@ namespace AITechDATA.ResultObjects
         public bool Status { get; set; } = true;
         public string ErrorMessage { get; set; } = "";
         public long ID { get; set; } = 0;
+        public int DiscountPercent { get; set; } = 0;
+        public decimal DiscountAmount { get; set; } = 0;
     }
 }

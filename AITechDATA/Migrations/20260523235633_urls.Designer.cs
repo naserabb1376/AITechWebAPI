@@ -4,6 +4,7 @@ using AITechDATA.DataLayer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace AITechDATA.Migrations
 {
     [DbContext(typeof(AITechContext))]
-    partial class AITechContextModelSnapshot : ModelSnapshot
+    [Migration("20260523235633_urls")]
+    partial class urls
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -37,6 +40,7 @@ namespace AITechDATA.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("AddressPostalCode")
+                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("AddressStreet")
@@ -1855,13 +1859,11 @@ namespace AITechDATA.Migrations
                     b.Property<DateTime?>("CreateDate")
                         .HasColumnType("datetime2");
 
-                    b.Property<string>("Education")
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<bool>("IsActive")
                         .HasColumnType("bit");
 
                     b.Property<string>("Job")
+                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Name")
@@ -2536,21 +2538,6 @@ namespace AITechDATA.Migrations
                     b.Property<string>("OtherLangs")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<DateTime?>("SourceDeviceDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("SourceDeviceEndLogKey")
-                        .HasMaxLength(200)
-                        .HasColumnType("nvarchar(200)");
-
-                    b.Property<string>("SourceDeviceSerial")
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
-                    b.Property<string>("SourceDeviceStartLogKey")
-                        .HasMaxLength(200)
-                        .HasColumnType("nvarchar(200)");
-
                     b.Property<DateTime>("TimeFunctionEndDate")
                         .HasColumnType("datetime2");
 
@@ -2565,9 +2552,7 @@ namespace AITechDATA.Migrations
 
                     b.HasKey("ID");
 
-                    b.HasIndex("UserId", "SourceDeviceSerial", "SourceDeviceDate")
-                        .IsUnique()
-                        .HasFilter("[SourceDeviceSerial] IS NOT NULL AND [SourceDeviceDate] IS NOT NULL");
+                    b.HasIndex("UserId");
 
                     b.ToTable("TimeFunctions");
                 });
@@ -2618,10 +2603,6 @@ namespace AITechDATA.Migrations
 
                     b.Property<long?>("AddressId")
                         .HasColumnType("bigint");
-
-                    b.Property<string>("AttendanceDeviceUserId")
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
 
                     b.Property<DateTime?>("CreateDate")
                         .HasColumnType("datetime2");
@@ -2684,10 +2665,6 @@ namespace AITechDATA.Migrations
                     b.HasKey("ID");
 
                     b.HasIndex("AddressId");
-
-                    b.HasIndex("AttendanceDeviceUserId")
-                        .IsUnique()
-                        .HasFilter("[AttendanceDeviceUserId] IS NOT NULL");
 
                     b.HasIndex("IdentificationCode")
                         .IsUnique()
@@ -2850,16 +2827,13 @@ namespace AITechDATA.Migrations
                     b.Property<bool>("PaymentStatus")
                         .HasColumnType("bit");
 
-                    b.Property<long?>("PreRegistrationId")
-                        .HasColumnType("bigint");
-
                     b.Property<string>("TargetObjName")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime?>("UpdateDate")
                         .HasColumnType("datetime2");
 
-                    b.Property<long?>("UserId")
+                    b.Property<long>("UserId")
                         .HasColumnType("bigint");
 
                     b.HasKey("ID");
@@ -3636,7 +3610,8 @@ namespace AITechDATA.Migrations
                     b.HasOne("AITechDATA.Domain.User", "User")
                         .WithMany("PaymentHistories")
                         .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("Discount");
 

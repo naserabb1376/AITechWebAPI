@@ -11,8 +11,10 @@ namespace AITechWebAPI.Models.Parent
         public string Name { get; set; } 
 
         [Display(Name = "شغل ولی")]
-        [Required(ErrorMessage = "لطفا {0} را وارد کنید")]
-        public string Job { get; set; }
+        public string? Job { get; set; }
+
+        [Display(Name = "تحصیلات ولی")]
+        public string? Education { get; set; }
 
         [Display(Name = "شماره تماس ولی")]
         [Required(ErrorMessage = "لطفا {0} را وارد کنید")]

@@ -206,8 +206,7 @@ namespace AITechWebAPI.Controllers
                     return DynamicFormBadRequest("برای این فرم فیلدی تعریف نشده است");
                 }
 
-                var submittedValues = valuesElement.EnumerateObject()
-                    .ToDictionary(x => x.Name, x => x.Value.ValueKind == JsonValueKind.String ? x.Value.GetString() ?? "" : x.Value.ToString(), StringComparer.OrdinalIgnoreCase);
+                var submittedValues = BuildSubmittedValues(valuesElement);
 
                 var invalidField = submittedValues.Keys.FirstOrDefault(x => !allowedFields.Contains(x));
                 if (!string.IsNullOrWhiteSpace(invalidField))
@@ -284,16 +283,20 @@ namespace AITechWebAPI.Controllers
                     var duplicateValue = GetDuplicateValue(duplicateKey, requestBody, submittedValues);
                     if (!string.IsNullOrWhiteSpace(duplicateValue))
                     {
+                        var paymentEnabled = GetBool(configRoot, "paymentEnabled");
                         var exists = await _PreRegistrationRep.ExistsDuplicatePreRegistrationAsync(
                             requestBody.ForeignKeyId,
                             requestBody.EntityType,
                             duplicateKey,
                             duplicateValue,
-                            submitForm.Result.FormKey ?? formKey);
+                            submitForm.Result.FormKey ?? formKey,
+                            paidOnly: paymentEnabled);
 
                         if (exists)
                         {
-                            return DynamicFormBadRequest("این فرم قبلا با همین اطلاعات ثبت شده است");
+                            return DynamicFormBadRequest(paymentEnabled
+                                ? "ثبت‌نام و پرداخت شما قبلا با همین اطلاعات تکمیل شده است"
+                                : "این فرم قبلا با همین اطلاعات ثبت شده است");
                         }
                     }
                 }
@@ -378,6 +381,23 @@ namespace AITechWebAPI.Controllers
         private static bool HasValue(Dictionary<string, string> values, string fieldName)
         {
             return values.TryGetValue(fieldName, out var value) && !string.IsNullOrWhiteSpace(value);
+        }
+
+        private static Dictionary<string, string> BuildSubmittedValues(JsonElement valuesElement)
+        {
+            var values = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+
+            foreach (var item in valuesElement.EnumerateObject())
+            {
+                var value = item.Value.ValueKind == JsonValueKind.String ? item.Value.GetString() ?? "" : item.Value.ToString();
+
+                if (!values.TryGetValue(item.Name, out var existingValue) || string.IsNullOrWhiteSpace(existingValue))
+                {
+                    values[item.Name] = value;
+                }
+            }
+
+            return values;
         }
 
         private static string GetDuplicateValue(string duplicateKey, AddEditPreRegistrationRequestBody requestBody, Dictionary<string, string> submittedValues)

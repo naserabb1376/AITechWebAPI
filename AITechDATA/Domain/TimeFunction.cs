@@ -9,6 +9,10 @@ namespace AITechDATA.Domain
         public long UserId { get; set; } // کلید خارجی به User (کاربری که تیکت را ثبت کرده است)
         public User User { get; set; } // ارتباط با User
         public string? Description { get; set; }
+        public string? SourceDeviceSerial { get; set; }
+        public DateTime? SourceDeviceDate { get; set; }
+        public string? SourceDeviceStartLogKey { get; set; }
+        public string? SourceDeviceEndLogKey { get; set; }
 
         public List<TimeBreak> TimeBreaks { get; set; }
     }

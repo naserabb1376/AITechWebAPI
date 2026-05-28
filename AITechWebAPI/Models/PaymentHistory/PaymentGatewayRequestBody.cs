@@ -22,6 +22,9 @@ namespace AITechWebAPI.Models.PaymentHistory
         [Display(Name = "تعداد اقساط")]
         public int InstallmentCount { get; set; }
 
+        [Display(Name = "شناسه پیش ثبت نام")]
+        public long? PreRegistrationId { get; set; }
+
 
     }
 

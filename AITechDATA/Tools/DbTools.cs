@@ -352,7 +352,7 @@ namespace AITechDATA.Tools
 
             var groupIds = _context.UserGroups.AsNoTracking().Where(g => g.IsActive && g.UserId == userId).Select(x=> x.GroupId).ToList();
             var discount =  _context.Discounts.Include(x => x.DiscountTargets).Include(x => x.PaymentHistories).AsNoTracking().Where(x => 
-           ((x.EntityName.ToLower() == entityName.ToLower() && x.ForeignKeyId == foreignkeyId) 
+           ((x.EntityName.ToLower() == entityName.ToLower() && (x.ForeignKeyId == foreignkeyId || x.ForeignKeyId <= 0)) 
            || (string.IsNullOrEmpty(x.EntityName) && x.ForeignKeyId <= 0)) 
             && x.ExpireDate >= DateTime.Now && x.DiscountMaxUsage > (x.PaymentHistories.Count(p=> p.UserId == userId && p.PaymentStatus)) && x.IsActive && !x.CodeRequired
             && (x.DiscountTargets.Any(t=> (t.IsActive && (

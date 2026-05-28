@@ -13,8 +13,7 @@ namespace AITechWebAPI.Models.Discount
         public string DiscountValue { get; set; } = "0";
 
         [Display(Name = "کلید خارجی")]
-        [Required(ErrorMessage = "لطفا {0} را وارد کنید")]
-        [Range(1, long.MaxValue, ErrorMessage = "مقدار {0} باید بزرگتر از 0 باشد")]
+        [Range(0, long.MaxValue, ErrorMessage = "مقدار {0} نمی‌تواند منفی باشد")]
         public long ForeignKeyId { get; set; }
 
         [Display(Name = "موجودیت تخفیف دار")]

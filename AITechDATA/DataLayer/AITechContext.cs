@@ -14,12 +14,16 @@ namespace AITechDATA.DataLayer
 {
     public class AITechContext : DbContext
     {
-        //public AITechContext()
-        //{
-
-        //}
+        public AITechContext()
+        {
+        }
 
         public AITechContext(DbContextOptions<AITechContext> options)
+            : base(options)
+        {
+        }
+
+        protected AITechContext(DbContextOptions options)
             : base(options)
         {
         }
@@ -56,6 +60,7 @@ namespace AITechDATA.DataLayer
         public DbSet<SessionAssignment> SessionAssignments { get; set; }
         public DbSet<Setting> Settings { get; set; }
         public DbSet<StudentDetails> StudentDetails { get; set; }
+        public DbSet<SchoolRegistration> SchoolRegistrations { get; set; }
         public DbSet<TeacherResume> TeacherResumes { get; set; }
         public DbSet<Ticket> Tickets { get; set; }
         public DbSet<TicketMessage> TicketMessages { get; set; }
@@ -98,14 +103,14 @@ namespace AITechDATA.DataLayer
 
 
 
-        //protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-        //{
-        //    if (!optionsBuilder.IsConfigured)
-        //    {
-        //        ConfigurationHelper configurationHelper = new ConfigurationHelper();
-        //        optionsBuilder.UseSqlServer(configurationHelper.GetConnectionString("publicdb"));
-        //    }
-        //}
+        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+        {
+            if (!optionsBuilder.IsConfigured)
+            {
+                ConfigurationHelper configurationHelper = new ConfigurationHelper();
+                optionsBuilder.UseSqlServer(configurationHelper.GetConnectionString("publicdb"));
+            }
+        }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -140,9 +145,35 @@ namespace AITechDATA.DataLayer
                 .HasMaxLength(32);
 
             modelBuilder.Entity<User>()
+                .Property(x => x.AttendanceDeviceUserId)
+                .HasMaxLength(50);
+
+            modelBuilder.Entity<User>()
                 .HasIndex(x => x.IdentificationCode)
                 .IsUnique()
                 .HasFilter("[IdentificationCode] IS NOT NULL");
+
+            modelBuilder.Entity<User>()
+                .HasIndex(x => x.AttendanceDeviceUserId)
+                .IsUnique()
+                .HasFilter("[AttendanceDeviceUserId] IS NOT NULL");
+
+            modelBuilder.Entity<TimeFunction>()
+                .Property(x => x.SourceDeviceSerial)
+                .HasMaxLength(100);
+
+            modelBuilder.Entity<TimeFunction>()
+                .Property(x => x.SourceDeviceStartLogKey)
+                .HasMaxLength(200);
+
+            modelBuilder.Entity<TimeFunction>()
+                .Property(x => x.SourceDeviceEndLogKey)
+                .HasMaxLength(200);
+
+            modelBuilder.Entity<TimeFunction>()
+                .HasIndex(x => new { x.UserId, x.SourceDeviceSerial, x.SourceDeviceDate })
+                .IsUnique()
+                .HasFilter("[SourceDeviceSerial] IS NOT NULL AND [SourceDeviceDate] IS NOT NULL");
 
             modelBuilder.Entity<User>()
                 .HasIndex(x => x.InviterUserId);
@@ -157,6 +188,30 @@ namespace AITechDATA.DataLayer
                 .HasOne(sd => sd.User) // یک StudentDetails به یک User تعلق دارد
                 .WithOne(u => u.StudentDetails) // یک User می‌تواند یک StudentDetails داشته باشد
                 .HasForeignKey<StudentDetails>(sd => sd.UserId); // کلید خارجی UserId
+
+            modelBuilder.Entity<SchoolRegistration>()
+                .HasOne(x => x.User)
+                .WithMany()
+                .HasForeignKey(x => x.UserId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<SchoolRegistration>()
+                .HasOne(x => x.StudentDetails)
+                .WithMany()
+                .HasForeignKey(x => x.StudentDetailsId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<SchoolRegistration>()
+                .HasOne(x => x.FatherParent)
+                .WithMany()
+                .HasForeignKey(x => x.FatherParentId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<SchoolRegistration>()
+                .HasOne(x => x.MotherParent)
+                .WithMany()
+                .HasForeignKey(x => x.MotherParentId)
+                .OnDelete(DeleteBehavior.Restrict);
 
             modelBuilder.Entity<Group>()
                 .HasOne(g => g.Teacher)

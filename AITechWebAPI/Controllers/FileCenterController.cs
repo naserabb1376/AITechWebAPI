@@ -170,7 +170,7 @@ public class FileCenterController : ControllerBase
                 var theImage = await _imageRep.GetImageForShowAsync(rowId, foreignkeyId, entityName, userId, roleId);
                 if (theImage == null || !theImage.Status || theImage.Result == null)
                 {
-                    return BadRequest(theImage?.ErrorMessage ?? "تصویر یافت نشد.");
+                    return DefaultImageFile();
                 }
 
                 filePath = theImage.Result.FilePath;
@@ -192,12 +192,12 @@ public class FileCenterController : ControllerBase
 
             if (string.IsNullOrWhiteSpace(filePath))
             {
-                return BadRequest("مسیر فایل ثبت نشده است.");
+                return fileType == "images" ? DefaultImageFile() : BadRequest("مسیر فایل ثبت نشده است.");
             }
 
             if (!System.IO.File.Exists(filePath))
             {
-                return NotFound("فایل روی سرور پیدا نشد.");
+                return fileType == "images" ? DefaultImageFile() : NotFound("فایل روی سرور پیدا نشد.");
             }
 
             var contentType = filePath.GetContentType();
@@ -226,6 +226,18 @@ public class FileCenterController : ControllerBase
         {
             return BadRequest($"{ex.Message} - {ex.InnerException?.Message}");
         }
+    }
+
+    private FileContentResult DefaultImageFile()
+    {
+        const string svg = """
+<svg xmlns="http://www.w3.org/2000/svg" width="640" height="360" viewBox="0 0 640 360">
+  <rect width="640" height="360" fill="#f3f4f6"/>
+  <path d="M150 255h340L383 140l-78 86-43-48-112 77z" fill="#d1d5db"/>
+  <circle cx="214" cy="126" r="34" fill="#d1d5db"/>
+</svg>
+""";
+        return File(System.Text.Encoding.UTF8.GetBytes(svg), "image/svg+xml");
     }
 
     [HttpPost("GetDownloadLinks_Base")]

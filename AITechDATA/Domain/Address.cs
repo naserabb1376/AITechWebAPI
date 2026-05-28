@@ -10,9 +10,8 @@ namespace AITechDATA.Domain
         public string AddressStreet { get; set; }
 
         [Display(Name = "کد پستی")]
-        [Required(ErrorMessage = "لطفا {0} را وارد کنید")]
         [MinLength(10)]
-        public string AddressPostalCode { get; set; }
+        public string? AddressPostalCode { get; set; }
 
         [Display(Name = "مختصات افقی")]
         [MinLength(500)]

@@ -26,6 +26,8 @@ using Parbad.InvoiceBuilder;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+using System.Text.Json;
+using System.Text.Json.Nodes;
 using static AITechWebAPI.Tools.ToolBox;
 
 namespace AITechWebAPI.Controllers
@@ -86,6 +88,95 @@ namespace AITechWebAPI.Controllers
 
             var groupObj = await _GroupRep.GetGroupByIdAsync(foreignKeyId);
             return groupObj.Result?.Name ?? "";
+        }
+
+        private static long GetLinkedPreRegistrationId(PaymentHistory paymentHistory)
+        {
+            if (paymentHistory.PreRegistrationId.HasValue && paymentHistory.PreRegistrationId.Value > 0)
+            {
+                return paymentHistory.PreRegistrationId.Value;
+            }
+
+            if (string.IsNullOrWhiteSpace(paymentHistory.OtherLangs))
+            {
+                return 0;
+            }
+
+            try
+            {
+                using var document = JsonDocument.Parse(paymentHistory.OtherLangs);
+                if (document.RootElement.ValueKind == JsonValueKind.Object &&
+                    document.RootElement.TryGetProperty("preRegistrationId", out var property))
+                {
+                    if (property.ValueKind == JsonValueKind.Number && property.TryGetInt64(out var id))
+                    {
+                        return id;
+                    }
+
+                    if (property.ValueKind == JsonValueKind.String && long.TryParse(property.GetString(), out id))
+                    {
+                        return id;
+                    }
+                }
+            }
+            catch
+            {
+                return 0;
+            }
+
+            return 0;
+        }
+
+        private async Task<BitResultObject> MarkLinkedPreRegistrationPaymentAsync(long preRegistrationId, bool paymentFinished)
+        {
+            var preRegistrationRow = await _PreRegistrationRep.GetPreRegistrationByIdAsync(preRegistrationId);
+            if (!preRegistrationRow.Status || preRegistrationRow.Result == null)
+            {
+                return new BitResultObject
+                {
+                    Status = false,
+                    ID = preRegistrationId,
+                    ErrorMessage = "پیش ثبت نام مرتبط با پرداخت یافت نشد"
+                };
+            }
+
+            preRegistrationRow.Result.PaymentFinished = paymentFinished;
+            preRegistrationRow.Result.UpdateDate = DateTime.Now.ToShamsi();
+            return await _PreRegistrationRep.EditPreRegistrationAsync(preRegistrationRow.Result);
+        }
+
+        private static void AddPaymentGatewayMetadata(
+            PaymentHistory paymentHistory,
+            string? authority,
+            string? status,
+            string? transactionCode,
+            string fetchStatus,
+            string verifyStatus)
+        {
+            JsonObject root;
+
+            try
+            {
+                root = string.IsNullOrWhiteSpace(paymentHistory.OtherLangs)
+                    ? new JsonObject()
+                    : JsonNode.Parse(paymentHistory.OtherLangs)?.AsObject() ?? new JsonObject();
+            }
+            catch
+            {
+                root = new JsonObject();
+            }
+
+            root["paymentGateway"] = new JsonObject
+            {
+                ["authority"] = authority ?? "",
+                ["status"] = status ?? "",
+                ["transactionCode"] = transactionCode ?? "",
+                ["fetchStatus"] = fetchStatus,
+                ["verifyStatus"] = verifyStatus,
+                ["verifiedAt"] = DateTime.Now.ToString("O")
+            };
+
+            paymentHistory.OtherLangs = root.ToJsonString();
         }
 
 
@@ -275,6 +366,7 @@ namespace AITechWebAPI.Controllers
         }
 
         [HttpPost("RequestPayment")]
+        [AllowAnonymous]
         public async Task<ActionResult<RowResultObject<RequestPaymentResultBody>>> RequestPayment(RequestPaymentRequestBody requestBody)
         {
             RowResultObject<RequestPaymentResultBody> result = new RowResultObject<RequestPaymentResultBody>();
@@ -283,20 +375,60 @@ namespace AITechWebAPI.Controllers
             string targetObjName="",groupType="";
             long? appliedDiscountId = null;
            BitResultObject addResult;
+            PreRegistration? linkedPreRegistration = null;
             if (!ModelState.IsValid)
             {
                 return BadRequest(requestBody);
             }
 
-            var UserId = User.GetCurrentUserId();
+            var currentUserId = User.GetCurrentUserId();
+            long? UserId = currentUserId > 0 ? currentUserId : null;
             var RoleId = User.GetCurrentRoleId();
+
+            if (requestBody.PreRegistrationId.HasValue && requestBody.PreRegistrationId.Value > 0)
+            {
+                var preRegistrationRow = await _PreRegistrationRep.GetPreRegistrationByIdAsync(requestBody.PreRegistrationId.Value);
+                if (!preRegistrationRow.Status || preRegistrationRow.Result == null)
+                {
+                    result.Result = null;
+                    result.Status = false;
+                    result.ErrorMessage = "پیش ثبت نام مرتبط با پرداخت یافت نشد";
+                    return BadRequest(result);
+                }
+
+                linkedPreRegistration = preRegistrationRow.Result;
+                if (linkedPreRegistration.ForeignKeyId != requestBody.ForeignKeyId ||
+                    !string.Equals(linkedPreRegistration.EntityType, requestBody.EntityType, StringComparison.OrdinalIgnoreCase))
+                {
+                    result.Result = null;
+                    result.Status = false;
+                    result.ErrorMessage = "اطلاعات پیش ثبت نام با پرداخت درخواستی همخوانی ندارد";
+                    return BadRequest(result);
+                }
+
+                if (linkedPreRegistration.PaymentFinished)
+                {
+                    result.Result = null;
+                    result.Status = false;
+                    result.ErrorMessage = "پرداخت این پیش ثبت نام قبلا تکمیل شده است";
+                    return BadRequest(result);
+                }
+            }
+
+            if (!UserId.HasValue && linkedPreRegistration == null)
+            {
+                result.Result = null;
+                result.Status = false;
+                result.ErrorMessage = "برای پرداخت مستقیم باید ابتدا وارد حساب کاربری شوید";
+                return Unauthorized(result);
+            }
 
             switch (requestBody.EntityType.ToLower())
             {
                 default:
                 case "group":
                     {
-                         var theRow = await _GroupRep.GetGroupByIdAsync(requestBody.ForeignKeyId, UserId, RoleId);
+                         var theRow = await _GroupRep.GetGroupByIdAsync(requestBody.ForeignKeyId, UserId ?? 0, RoleId);
 
                         if (theRow.Result == null)
                         {
@@ -324,7 +456,7 @@ namespace AITechWebAPI.Controllers
                     break;
                 case "event":
                     {
-                         var theRow = await _EventRep.GetEventByIdAsync(requestBody.ForeignKeyId, UserId, RoleId);
+                         var theRow = await _EventRep.GetEventByIdAsync(requestBody.ForeignKeyId, UserId ?? 0, RoleId);
 
                         if (theRow.Result == null)
                         {
@@ -380,17 +512,28 @@ namespace AITechWebAPI.Controllers
 
             if (discountedrowAmount < rowAmount)
             {
-                var automaticDiscount = await GetApplicableDiscountAsync(UserId, RoleId, requestBody.EntityType, requestBody.ForeignKeyId);
-                if (automaticDiscount != null)
+                if (UserId.HasValue)
                 {
-                    appliedDiscountId = automaticDiscount.ID;
-                    discountedrowAmount = CalculateDiscountedAmount(rowAmount, automaticDiscount);
+                    var automaticDiscount = await GetApplicableDiscountAsync(UserId.Value, RoleId, requestBody.EntityType, requestBody.ForeignKeyId);
+                    if (automaticDiscount != null)
+                    {
+                        appliedDiscountId = automaticDiscount.ID;
+                        discountedrowAmount = CalculateDiscountedAmount(rowAmount, automaticDiscount);
+                    }
                 }
             }
 
 
             if (discountedrowAmount == rowAmount && requestBody.DiscountId > 0)
             {
+                if (!UserId.HasValue)
+                {
+                    result.Result = null;
+                    result.Status = false;
+                    result.ErrorMessage = "استفاده از کد تخفیف برای پرداخت مهمان پشتیبانی نمی شود";
+                    return BadRequest(result);
+                }
+
                 var x = await _discountRep.GetDiscountByIdAsync(requestBody.DiscountId.Value);
                 if (!x.Status || x.Result == null)
                 {
@@ -400,16 +543,16 @@ namespace AITechWebAPI.Controllers
                     return BadRequest(result);
                 }
 
-                var groups = await _UserGroupRep.GetAllUserGroupsAsync(UserId,pageSize:0);
+                var groups = await _UserGroupRep.GetAllUserGroupsAsync(UserId.Value,pageSize:0);
                 var groupIds = groups.Results.Select(x => x.GroupId).ToList();
                 bool installmentDiscount = !requestBody.IsInstallment || x.Result.EntityName.ToLower() == "paymenthistory";
-                var validdiscount = ((installmentDiscount && x.Result.EntityName.ToLower() == requestBody.EntityType.ToLower() && x.Result.ForeignKeyId == requestBody.ForeignKeyId)
+                var validdiscount = ((installmentDiscount && x.Result.EntityName.ToLower() == requestBody.EntityType.ToLower() && (x.Result.ForeignKeyId == requestBody.ForeignKeyId || x.Result.ForeignKeyId <= 0))
                || (string.IsNullOrEmpty(x.Result.EntityName) && x.Result.ForeignKeyId <= 0))
-                && x.Result.ExpireDate >= DateTime.Now && x.Result.DiscountMaxUsage > (x.Result.PaymentHistories.Count(p => p.UserId == UserId && p.PaymentStatus)) && x.Result.IsActive
+                && x.Result.ExpireDate >= DateTime.Now && x.Result.DiscountMaxUsage > (x.Result.PaymentHistories.Count(p => p.UserId == UserId.Value && p.PaymentStatus)) && x.Result.IsActive
                 && (x.Result.DiscountTargets.Any(t => (t.IsActive && (
                 (t.TargetEntityName.ToLower() == "group" && (t.TargetId <= 0 || groupIds.Contains(t.TargetId))) ||
                 (t.TargetEntityName.ToLower() == "role" && (t.TargetId <= 0 || t.TargetId == RoleId)) ||
-                (t.TargetEntityName.ToLower() == "user" && (t.TargetId <= 0 || t.TargetId == UserId))
+                (t.TargetEntityName.ToLower() == "user" && (t.TargetId <= 0 || t.TargetId == UserId.Value))
                 ))));
 
                 if (validdiscount)
@@ -446,6 +589,7 @@ namespace AITechWebAPI.Controllers
                         DiscountId = appliedDiscountId,
                         IsActive = true,
                         IsInstallment = requestBody.IsInstallment,
+                        PreRegistrationId = requestBody.PreRegistrationId,
                         //  Description = requestBody.Description,
                     };
                     addResult = await _PaymentHistoryRep.AddPaymentHistoryAsync(PaymentHistory);
@@ -457,7 +601,7 @@ namespace AITechWebAPI.Controllers
                         foreach (var item in addedPayment.Result.PaymentInstallments)
                         {
                             BackgroundJob.Schedule<JobManager>(
-                              job => job.SendInstallmentRemindMessage(addResult.ID,UserId),
+                              job => job.SendInstallmentRemindMessage(addResult.ID,UserId ?? 0),
                               item.DueDate
                           );
                         }
@@ -532,12 +676,29 @@ namespace AITechWebAPI.Controllers
 
             else
             {
-                var userRow = await _UserRep.GetUserByIdAsync(UserId);
-                var isFirstGroupRegistration = false;
-                //if (groupType == "online" || groupType == "video")
-                if (groupType.Contains( "آنلاین") || groupType.Contains( "آفلاین"))
+                RowResultObject<User>? userRow = null;
+                if (UserId.HasValue)
                 {
-                    var userGroupsBeforeRegister = await _UserGroupRep.GetAllUserGroupsAsync(UserId, pageSize: 0);
+                    userRow = await _UserRep.GetUserByIdAsync(UserId.Value);
+                }
+                var isFirstGroupRegistration = false;
+                var linkedPreRegistrationId = requestBody.PreRegistrationId.GetValueOrDefault();
+                //if (groupType == "online" || groupType == "video")
+                if (linkedPreRegistrationId > 0 && !groupType.Contains("آنلاین") && !groupType.Contains("آفلاین"))
+                {
+                    addResult = await MarkLinkedPreRegistrationPaymentAsync(linkedPreRegistrationId, true);
+                }
+                else if (groupType.Contains( "آنلاین") || groupType.Contains( "آفلاین"))
+                {
+                    if (!UserId.HasValue)
+                    {
+                        result.Result = null;
+                        result.Status = false;
+                        result.ErrorMessage = "ثبت نام این گروه نیاز به حساب کاربری دارد";
+                        return BadRequest(result);
+                    }
+
+                    var userGroupsBeforeRegister = await _UserGroupRep.GetAllUserGroupsAsync(UserId.Value, pageSize: 0);
                     isFirstGroupRegistration = !userGroupsBeforeRegister.Results.Any(x => x.IsActive);
 
                     UserGroup userGroup = new UserGroup()
@@ -548,7 +709,7 @@ namespace AITechWebAPI.Controllers
                         OtherLangs="",
 
                         GroupId = requestBody.ForeignKeyId,
-                        UserId = UserId,
+                        UserId = UserId.Value,
                     };
                     addResult = await _UserGroupRep.AddUserGroupsAsync(new List<UserGroup>() { userGroup});
                 }
@@ -559,10 +720,10 @@ namespace AITechWebAPI.Controllers
                     {
                         CreateDate = DateTime.Now.ToShamsi(),
                         UpdateDate = DateTime.Now.ToShamsi(),
-                        Email = userRow.Result.Email,
-                        FirstName = userRow.Result.FirstName,
-                        LastName = userRow.Result.LastName,
-                        PhoneNumber = userRow.Result.Username,
+                        Email = userRow?.Result?.Email ?? linkedPreRegistration?.Email ?? "",
+                        FirstName = userRow?.Result?.FirstName ?? linkedPreRegistration?.FirstName ?? "",
+                        LastName = userRow?.Result?.LastName ?? linkedPreRegistration?.LastName ?? "",
+                        PhoneNumber = userRow?.Result?.Username ?? linkedPreRegistration?.PhoneNumber ?? "",
                         PaymentFinished = true,
                         IsActive = true,
 
@@ -597,6 +758,7 @@ namespace AITechWebAPI.Controllers
                         PaymentStatus = true,
                         DiscountId = appliedDiscountId,
                         IsActive = true,
+                        PreRegistrationId = requestBody.PreRegistrationId,
                     };
                     var paymentSaveResult = await _PaymentHistoryRep.AddPaymentHistoryAsync(PaymentHistory);
                     if (!paymentSaveResult.Status)
@@ -607,9 +769,9 @@ namespace AITechWebAPI.Controllers
                         return BadRequest(result);
                     }
 
-                    if (requestBody.EntityType.ToLower().Contains("group") && isFirstGroupRegistration)
+                    if (userRow?.Result != null)
                     {
-                        await ApplyInvitationRewardIfNeededAsync(userRow.Result);
+                        await ApplyInviterRewardIfInvitedDiscountUsedAsync(userRow.Result, appliedDiscountId);
                     }
                     await DeactivateInvitationDiscountIfUsedAsync(appliedDiscountId);
 
@@ -617,13 +779,13 @@ namespace AITechWebAPI.Controllers
                     dynamic targetObj = requestBody.EntityType.ToLower().Contains("event") ? await _EventRep.GetEventByIdAsync(requestBody.ForeignKeyId) :
                         await _GroupRep.GetGroupByIdAsync(requestBody.ForeignKeyId);
                     var targetName = requestBody.EntityType.ToLower().Contains("event") ? targetObj.Result.Title : targetObj.Result.Name;
-                    var targetFee = requestBody.EntityType.ToLower().Contains("event") ? targetObj.Result.Fee.Value : targetObj.Result.Fee;
+                    var targetFee = ToPaymentAmount(targetObj.Result.Fee);
                     var registerDate = DateTime.Now.ToShamsiString().Split(' ')[0];
                     var registerTime = DateTime.Now.ToShamsiString().Split(' ')[1];
                     var paymentLine = BuildPaymentSmsLine(targetFee, PaymentHistory.Amount, PaymentHistory.DiscountId);
 
                     var infoMessage =
-                        $@"دانشجو {userRow.Result.FirstName} {userRow.Result.LastName}
+                        $@"دانشجو {userRow?.Result?.FirstName ?? linkedPreRegistration?.FirstName} {userRow?.Result?.LastName ?? linkedPreRegistration?.LastName}
 در تاریخ {registerDate}
 ساعت {registerTime}
 {paymentLine} در {targetType}
@@ -696,7 +858,7 @@ namespace AITechWebAPI.Controllers
             var entityMatches =
                 (!string.IsNullOrEmpty(discount.EntityName) &&
                  discount.EntityName.ToLower() == entityType.ToLower() &&
-                 discount.ForeignKeyId == foreignKeyId) ||
+                 (discount.ForeignKeyId == foreignKeyId || discount.ForeignKeyId <= 0)) ||
                 (string.IsNullOrEmpty(discount.EntityName) && discount.ForeignKeyId <= 0);
 
             return entityMatches
@@ -737,44 +899,77 @@ namespace AITechWebAPI.Controllers
             return amount.ToString("#,0");
         }
 
-        private async Task ApplyInvitationRewardIfNeededAsync(User user)
+        private static decimal ToPaymentAmount(object? amount)
         {
-            if (user == null || user.InviterUserId == null || user.InvitationRewardApplied)
+            return amount == null ? 0 : Convert.ToDecimal(amount);
+        }
+
+        private async Task ApplyInviterRewardIfInvitedDiscountUsedAsync(User user, long? usedDiscountId)
+        {
+            if (user == null || user.InviterUserId == null || user.InvitationRewardApplied || usedDiscountId == null || usedDiscountId <= 0)
             {
                 return;
             }
+
+            var usedDiscountRow = await _discountRep.GetDiscountByIdAsync(usedDiscountId.Value);
+            var usedDiscount = usedDiscountRow.Result;
+
+            if (!usedDiscountRow.Status || usedDiscount == null ||
+                usedDiscount.CreatorId != user.ID ||
+                string.IsNullOrEmpty(usedDiscount.Description) ||
+                !usedDiscount.Description.Contains("invitation invited reward"))
+            {
+                return;
+            }
+
+            var inviterUserRow = await _UserRep.GetUserByIdAsync(user.InviterUserId.Value);
+            var invitedUserName = GetUserDisplayName(user, user.ID);
+            var inviterUserName = GetUserDisplayName(inviterUserRow.Result, user.InviterUserId.Value);
 
             var inviterDiscountPercentRow = await _settingRep.GetSettingRowAsync(0, "inviterdiscountpercent");
-            var invitedDiscountPercentRow = await _settingRep.GetSettingRowAsync(0, "inviteddiscountpercent");
             var inviteDiscountDurationRow = await _settingRep.GetSettingRowAsync(0, "invitediscountduration");
-            var inviteDiscountEntitiesRow = await _settingRep.GetSettingRowAsync(0, "invitediscountentities");
             var inviteDiscountMaxUsageRow = await _settingRep.GetSettingRowAsync(0, "invitediscountmaxusage");
 
-            if (!inviterDiscountPercentRow.Status || !invitedDiscountPercentRow.Status || !inviteDiscountDurationRow.Status ||
-                !inviteDiscountEntitiesRow.Status || !inviteDiscountMaxUsageRow.Status)
+            if (!inviterDiscountPercentRow.Status || inviterDiscountPercentRow.Result == null ||
+                !inviteDiscountDurationRow.Status || inviteDiscountDurationRow.Result == null ||
+                !inviteDiscountMaxUsageRow.Status || inviteDiscountMaxUsageRow.Result == null)
             {
                 return;
             }
 
-            var inviterDiscountPercent = int.Parse(inviterDiscountPercentRow.Result.Value);
-            var invitedDiscountPercent = int.Parse(invitedDiscountPercentRow.Result.Value);
-            var inviteDiscountDuration = int.Parse(inviteDiscountDurationRow.Result.Value);
-            var inviteDiscountMaxUsage = int.Parse(inviteDiscountMaxUsageRow.Result.Value);
-            var inviteDiscountEntities = inviteDiscountEntitiesRow.Result.Value
-                .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
-                .ToList();
-
-            var rewardApplied = true;
-            foreach (var entity in inviteDiscountEntities)
+            if (!int.TryParse(inviterDiscountPercentRow.Result.Value, out var inviterDiscountPercent) ||
+                !int.TryParse(inviteDiscountDurationRow.Result.Value, out var inviteDiscountDuration) ||
+                !int.TryParse(inviteDiscountMaxUsageRow.Result.Value, out var inviteDiscountMaxUsage))
             {
-                rewardApplied &= await AddOrChargeInvitationDiscountAsync(user.InviterUserId.Value, entity, inviterDiscountPercent, inviteDiscountDuration, inviteDiscountMaxUsage, $"inviter in invitation of {user.FirstName} {user.LastName}");
-                rewardApplied &= await AddInvitationDiscountAsync(user.ID, entity, invitedDiscountPercent, inviteDiscountDuration, inviteDiscountMaxUsage, $"invited in invitation by user {user.InviterUserId}");
+                return;
             }
+
+            var rewardApplied = await AddOrChargeInvitationDiscountAsync(
+                user.InviterUserId.Value,
+                usedDiscount.EntityName,
+                inviterDiscountPercent,
+                inviteDiscountDuration,
+                inviteDiscountMaxUsage,
+                $"[invitation inviter reward] این تخفیف بابت اینکه {inviterUserName}، {invitedUserName} را دعوت کرده و {invitedUserName} از تخفیف دعوت خود استفاده کرده، برای {inviterUserName} اعمال می‌شود."
+            );
 
             if (rewardApplied)
             {
                 await _UserRep.MarkInvitationRewardAppliedAsync(user.ID);
             }
+        }
+
+        private static string GetUserDisplayName(User? user, long fallbackId)
+        {
+            if (user == null)
+            {
+                return $"کاربر {fallbackId}";
+            }
+
+            var fullName = $"{user.FirstName} {user.LastName}".Trim();
+            return string.IsNullOrWhiteSpace(fullName)
+                ? (!string.IsNullOrWhiteSpace(user.Username) ? user.Username : $"کاربر {fallbackId}")
+                : fullName;
         }
 
         private async Task<bool> AddOrChargeInvitationDiscountAsync(long userId, string entity, int percent, int durationDays, int maxUsage, string description)
@@ -795,10 +990,23 @@ namespace AITechWebAPI.Controllers
             }
 
             activeDiscount.DiscountPercent += percent;
+            activeDiscount.Description = AppendInvitationDescription(activeDiscount.Description, description);
             activeDiscount.UpdateDate = DateTime.Now.ToShamsi();
             activeDiscount.ExpireDate = DateTime.Now.AddDays(durationDays);
             var result = await _discountRep.EditDiscountAsync(activeDiscount);
             return result.Status;
+        }
+
+        private static string AppendInvitationDescription(string? currentDescription, string newDescription)
+        {
+            if (string.IsNullOrWhiteSpace(currentDescription))
+            {
+                return newDescription;
+            }
+
+            return currentDescription.Contains(newDescription)
+                ? currentDescription
+                : $"{currentDescription}{Environment.NewLine}{newDescription}";
         }
 
         private async Task<bool> AddInvitationDiscountAsync(long userId, string entity, int percent, int durationDays, int maxUsage, string description)
@@ -859,6 +1067,7 @@ namespace AITechWebAPI.Controllers
         }
 
         [HttpGet("VerifyPayment")]
+        [AllowAnonymous]
         public async Task<ActionResult<BitResultObject>> VerifyPayment(long PayId = 0,int InstallmentCount = 0, string? paymentToken = "",string? Authority ="", string? Status = "")
         {
             BitResultObject result = new BitResultObject();
@@ -868,9 +1077,39 @@ namespace AITechWebAPI.Controllers
                 BitResultObject addResult;
 
                 var paymentHistory = await _PaymentHistoryRep.GetPaymentHistoryByIdAsync(PayId);
-                var UserId = User.GetCurrentUserId();
+                if (!paymentHistory.Status || paymentHistory.Result == null)
+                {
+                    result.Status = false;
+                    result.ErrorMessage = "پرداخت یافت نشد";
+                    return BadRequest(result);
+                }
 
-                var userRow = await _UserRep.GetUserByIdAsync(UserId);
+                var UserId = paymentHistory.Result.UserId;
+                RowResultObject<User>? userRow = null;
+                PreRegistration? linkedPreRegistration = null;
+
+                if (UserId.HasValue)
+                {
+                    userRow = await _UserRep.GetUserByIdAsync(UserId.Value);
+                }
+
+                var linkedPreRegistrationIdForDisplay = GetLinkedPreRegistrationId(paymentHistory.Result);
+                if (linkedPreRegistrationIdForDisplay > 0)
+                {
+                    var preRegistrationRow = await _PreRegistrationRep.GetPreRegistrationByIdAsync(linkedPreRegistrationIdForDisplay);
+                    if (preRegistrationRow.Status && preRegistrationRow.Result != null)
+                    {
+                        linkedPreRegistration = preRegistrationRow.Result;
+                    }
+                }
+
+                if (!paymentHistory.Result.IsInstallment && paymentHistory.Result.PaymentStatus)
+                {
+                    result.Status = true;
+                    result.ErrorMessage = "پرداخت قبلا با موفقیت تایید شده است";
+                    result.ID = paymentHistory.Result.ID;
+                    return Ok(result);
+                }
 
                 var invoice = await _onlinePayment.FetchAsync();
 
@@ -916,8 +1155,8 @@ namespace AITechWebAPI.Controllers
                 }
 
 
-                        // Check if the invoice is new or it's already processed before.
-                        if (invoice.Status != PaymentFetchResultStatus.ReadyForVerifying)
+                // Check if the invoice is new or it's already processed before.
+                if (invoice.Status != PaymentFetchResultStatus.ReadyForVerifying)
                 {
                     // You can also see if the invoice is already verified before.
                     paymentHistory.Result.PaymentStatus = false;
@@ -932,6 +1171,27 @@ namespace AITechWebAPI.Controllers
                 if (verifyResult.Status == PaymentVerifyResultStatus.Succeed)
                 {
                     paymentHistory.Result.PaymentStatus = true;
+
+                    AddPaymentGatewayMetadata(
+                        paymentHistory.Result,
+                        Authority,
+                        Status,
+                        Convert.ToString(verifyResult.TransactionCode),
+                        invoice.Status.ToString(),
+                        verifyResult.Status.ToString());
+
+                    if (!paymentHistory.Result.IsInstallment)
+                    {
+                        var paidSaveResult = await _PaymentHistoryRep.EditPaymentHistoryAsync(paymentHistory.Result);
+                        if (!paidSaveResult.Status)
+                        {
+                            result.Status = false;
+                            result.ErrorMessage = $"پرداخت تایید شد اما ذخیره وضعیت پرداخت انجام نشد: {paidSaveResult.ErrorMessage}";
+                            result.ID = paymentHistory.Result.ID;
+                            return BadRequest(result);
+                        }
+                    }
+
                     if (paymentHistory.Result.IsInstallment)
                     {
                         var installments = paymentHistory.Result.PaymentInstallments.Where(i => !i.IsPaid).OrderBy(x => x.InstallmentNumber).Take(InstallmentCount).ToList();
@@ -951,10 +1211,23 @@ namespace AITechWebAPI.Controllers
 
 
                     var isFirstGroupRegistration = false;
+                    var linkedPreRegistrationId = GetLinkedPreRegistrationId(paymentHistory.Result);
                     // if (groupType == "online" || groupType == "video")
-                    if (groupType.Contains("آنلاین") || groupType.Contains("آفلاین"))
+                    if (linkedPreRegistrationId > 0 && !groupType.Contains("آنلاین") && !groupType.Contains("آفلاین"))
                     {
-                        var userGroupsBeforeRegister = await _UserGroupRep.GetAllUserGroupsAsync(UserId, pageSize: 0);
+                        addResult = await MarkLinkedPreRegistrationPaymentAsync(linkedPreRegistrationId, paymentHistory.Result.PaymentStatus);
+                    }
+                    else if (groupType.Contains("آنلاین") || groupType.Contains("آفلاین"))
+                    {
+                        if (!UserId.HasValue)
+                        {
+                            result.Status = false;
+                            result.ErrorMessage = "ثبت نام این گروه نیاز به حساب کاربری دارد";
+                            result.ID = paymentHistory.Result.ID;
+                            return BadRequest(result);
+                        }
+
+                        var userGroupsBeforeRegister = await _UserGroupRep.GetAllUserGroupsAsync(UserId.Value, pageSize: 0);
                         isFirstGroupRegistration = !userGroupsBeforeRegister.Results.Any(x => x.IsActive);
 
                         if (paymentHistory.Result.PaymentStatus)
@@ -967,7 +1240,7 @@ namespace AITechWebAPI.Controllers
                                 OtherLangs = "",
 
                                 GroupId = paymentHistory.Result.ForeignKeyId,
-                                UserId = UserId,
+                                UserId = UserId.Value,
                             };
                             addResult = await _UserGroupRep.AddUserGroupsAsync(new List<UserGroup>() { userGroup });
                         }
@@ -982,10 +1255,10 @@ namespace AITechWebAPI.Controllers
                         {
                             CreateDate = DateTime.Now.ToShamsi(),
                             UpdateDate = DateTime.Now.ToShamsi(),
-                            Email = userRow.Result.Email,
-                            FirstName = userRow.Result.FirstName,
-                            LastName = userRow.Result.LastName,
-                            PhoneNumber = userRow.Result.Username,
+                            Email = userRow?.Result?.Email ?? linkedPreRegistration?.Email ?? "",
+                            FirstName = userRow?.Result?.FirstName ?? linkedPreRegistration?.FirstName ?? "",
+                            LastName = userRow?.Result?.LastName ?? linkedPreRegistration?.LastName ?? "",
+                            PhoneNumber = userRow?.Result?.Username ?? linkedPreRegistration?.PhoneNumber ?? "",
                             PaymentFinished = paymentHistory.Result.PaymentStatus,
                             EducationalClass = null,
                             SchoolName = null,
@@ -1008,21 +1281,21 @@ namespace AITechWebAPI.Controllers
 
                     if (addResult.Status)
                     {
-                        if (paymentHistory.Result.EntityType.ToLower().Contains("group") && isFirstGroupRegistration)
+                        if (userRow?.Result != null)
                         {
-                            await ApplyInvitationRewardIfNeededAsync(userRow.Result);
+                            await ApplyInviterRewardIfInvitedDiscountUsedAsync(userRow.Result, paymentHistory.Result.DiscountId);
                         }
                         await DeactivateInvitationDiscountIfUsedAsync(paymentHistory.Result.DiscountId);
 
                         var targetType = paymentHistory.Result.EntityType.ToLower().Contains("event") ? "رویداد" : "گروه درسی";
                         var targetName = paymentHistory.Result.EntityType.ToLower().Contains("event") ? targetObj.Result.Title : targetObj.Result.Name;
-                        var targetFee = paymentHistory.Result.EntityType.ToLower().Contains("event") ? targetObj.Result.Fee.Value : targetObj.Result.Fee;
+                        var targetFee = ToPaymentAmount(targetObj.Result.Fee);
                         var registerDate = DateTime.Now.ToShamsiString().Split(' ')[0];
                         var registerTime = DateTime.Now.ToShamsiString().Split(' ')[1];
                         var paymentLine = BuildPaymentSmsLine(targetFee, paymentHistory.Result.Amount, paymentHistory.Result.DiscountId);
 
                         var infoMessage = 
-                            $@"دانشجو {userRow.Result.FirstName} {userRow.Result.LastName}
+                            $@"دانشجو {userRow?.Result?.FirstName ?? linkedPreRegistration?.FirstName} {userRow?.Result?.LastName ?? linkedPreRegistration?.LastName}
 در تاریخ {registerDate}
 ساعت {registerTime}
 {paymentLine} در {targetType}
@@ -1047,6 +1320,19 @@ namespace AITechWebAPI.Controllers
                             bool sent = await ToolBox.SendSMSMessage(item, infoMessage);
                         }
 
+                        var registrantPhoneNumber = userRow?.Result?.Username ?? linkedPreRegistration?.PhoneNumber ?? "";
+                        if (!string.IsNullOrWhiteSpace(registrantPhoneNumber))
+                        {
+                            var registrantMessage =
+                                $@"ثبت نام شما در {targetType}
+{targetName}
+با موفقیت انجام شد.
+{paymentLine}
+مجموعه آموزش هوش مصنوعی آیتک";
+
+                            bool sent = await ToolBox.SendSMSMessage(registrantPhoneNumber, registrantMessage);
+                        }
+
                         #region AddLog
 
                         Log log = new Log()
@@ -1062,14 +1348,36 @@ namespace AITechWebAPI.Controllers
                         #endregion
 
                     }
+                    else
+                    {
+                        result.Status = false;
+                        result.ErrorMessage = $"پرداخت تایید شد اما ثبت نام نهایی نشد: {addResult.ErrorMessage}";
+                        result.ID = paymentHistory.Result.ID;
+                        return BadRequest(result);
+                    }
                 }
 
                 else
                 {
                     paymentHistory.Result.PaymentStatus = false;
+                    AddPaymentGatewayMetadata(
+                        paymentHistory.Result,
+                        Authority,
+                        Status,
+                        Convert.ToString(verifyResult.TransactionCode),
+                        invoice.Status.ToString(),
+                        verifyResult.Status.ToString());
                 }
 
                 var saveResult = await _PaymentHistoryRep.EditPaymentHistoryAsync(paymentHistory.Result);
+
+                if (!saveResult.Status)
+                {
+                    result.Status = false;
+                    result.ErrorMessage = $"خطا در ذخیره وضعیت پرداخت: {saveResult.ErrorMessage}";
+                    result.ID = paymentHistory.Result.ID;
+                    return BadRequest(result);
+                }
 
                 if (saveResult.Status)
                 {

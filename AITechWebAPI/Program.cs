@@ -195,6 +195,9 @@ namespace AITechWebAPI
             builder.Services.AddDbContext<AITechContext>(options =>
                 options.UseSqlServer(configHelper.GetConnectionString("publicdb")));
 
+            builder.Services.AddDbContext<SchoolAITechContext>(options =>
+                options.UseSqlServer(configHelper.GetConnectionString("schooldb")));
+
             // MTPermissionCenter (AspNetCore)
             builder.Services.AddMTPermissionCenter();
 

@@ -29,13 +29,16 @@ namespace AITechDATA.DataLayer.Services
             try
             {
                 bool existsCompletedPayment = await _context.PaymentHistories.AnyAsync(p =>
-                    p.UserId == paymentHistory.UserId &&
                     p.PaymentStatus &&
                     !string.IsNullOrEmpty(p.EntityType) &&
                     !string.IsNullOrEmpty(paymentHistory.EntityType) &&
                     p.EntityType.ToLower() == paymentHistory.EntityType.ToLower() &&
                     p.ForeignKeyId > 0 &&
-                    p.ForeignKeyId == paymentHistory.ForeignKeyId);
+                    p.ForeignKeyId == paymentHistory.ForeignKeyId &&
+                    (
+                        (paymentHistory.UserId.HasValue && p.UserId == paymentHistory.UserId) ||
+                        (paymentHistory.PreRegistrationId.HasValue && p.PreRegistrationId == paymentHistory.PreRegistrationId)
+                    ));
                 if (existsCompletedPayment && paymentHistory.PaymentStatus)
                 {
                     throw new Exception("این عملیات پرداخت قبلا برای شما انجام شده است");
