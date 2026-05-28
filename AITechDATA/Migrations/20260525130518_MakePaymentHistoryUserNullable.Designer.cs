@@ -4,6 +4,7 @@ using AITechDATA.DataLayer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace AITechDATA.Migrations
 {
     [DbContext(typeof(AITechContext))]
-    partial class AITechContextModelSnapshot : ModelSnapshot
+    [Migration("20260525130518_MakePaymentHistoryUserNullable")]
+    partial class MakePaymentHistoryUserNullable
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -37,6 +40,7 @@ namespace AITechDATA.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("AddressPostalCode")
+                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("AddressStreet")
@@ -1855,13 +1859,11 @@ namespace AITechDATA.Migrations
                     b.Property<DateTime?>("CreateDate")
                         .HasColumnType("datetime2");
 
-                    b.Property<string>("Education")
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<bool>("IsActive")
                         .HasColumnType("bit");
 
                     b.Property<string>("Job")
+                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Name")

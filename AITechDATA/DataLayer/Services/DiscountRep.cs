@@ -27,7 +27,7 @@ namespace AITechDATA.DataLayer.Services
             RowResultObject<Discount> result = new RowResultObject<Discount>();
             try
             {
-                bool exists = await _context.Discounts.AnyAsync(x=> x.DiscountCode.ToLower() == Discount.DiscountCode.ToLower() && x.IsActive && DateTime.Now >= x.ExpireDate );
+                bool exists = await _context.Discounts.AnyAsync(x=> x.DiscountCode.ToLower() == Discount.DiscountCode.ToLower() && x.IsActive && x.ExpireDate >= DateTime.Now);
                 if (exists)
                 {
                     throw new Exception("این کد تخفیف در سیستم فعال است");
@@ -50,7 +50,7 @@ namespace AITechDATA.DataLayer.Services
             RowResultObject<Discount> result = new RowResultObject<Discount>();
             try
             {
-                bool exists = await _context.Discounts.AnyAsync(x => x.DiscountCode.ToLower() == Discount.DiscountCode.ToLower() && x.ID != Discount.ID && x.IsActive && DateTime.Now >= x.ExpireDate);
+                bool exists = await _context.Discounts.AnyAsync(x => x.DiscountCode.ToLower() == Discount.DiscountCode.ToLower() && x.ID != Discount.ID && x.IsActive && x.ExpireDate >= DateTime.Now);
                 if (exists)
                 {
                     throw new Exception("این کلید فرم در سیستم فعال است");
@@ -73,6 +73,8 @@ namespace AITechDATA.DataLayer.Services
             BitResultObject result = new BitResultObject();
          
                 long discountId = 0;
+                int discountPercent = 0;
+                decimal discountAmount = 0;
                 try
                 {
                     switch (existType.ToLower().Trim())
@@ -90,21 +92,25 @@ namespace AITechDATA.DataLayer.Services
                             var groupIds = await _context.UserGroups.AsNoTracking().Where(g => g.IsActive && g.UserId == userId).Select(x => x.GroupId).ToListAsync();
                             var theDiscount = await _context.Discounts.Include(x => x.DiscountTargets).Include(x => x.PaymentHistories).AsNoTracking().FirstOrDefaultAsync(x =>
                             x.DiscountCode.ToLower() == keyValue.ToLower() &&
-                           (((entityName != null && x.EntityName.ToLower() == entityName.ToLower()) && (foreignkeyId != null && x.ForeignKeyId == foreignkeyId))
+                           (((string.IsNullOrEmpty(entityName) || x.EntityName.ToLower() == entityName.ToLower()) && (x.ForeignKeyId <= 0 || (foreignkeyId != null && x.ForeignKeyId == foreignkeyId)))
                            || (string.IsNullOrEmpty(x.EntityName) && x.ForeignKeyId <= 0))
-                            && x.ExpireDate >= DateTime.Now && x.DiscountMaxUsage > (x.PaymentHistories.Count(p => p.UserId == userId && p.PaymentStatus)) && x.IsActive && !x.CodeRequired
+                            && x.ExpireDate >= DateTime.Now && x.DiscountMaxUsage > (x.PaymentHistories.Count(p => p.UserId == userId && p.PaymentStatus)) && x.IsActive && x.CodeRequired
                             && (x.DiscountTargets.Any(t => (t.IsActive && (
                             (t.TargetEntityName.ToLower() == "group" && (t.TargetId <= 0 || groupIds.Contains(t.TargetId))) ||
                             (t.TargetEntityName.ToLower() == "role" && (t.TargetId <= 0 || t.TargetId == roleId)) ||
                             (t.TargetEntityName.ToLower() == "user" && (t.TargetId <= 0 || t.TargetId == userId))
                             ))))) ?? new Discount();
                                 discountId = theDiscount.ID;
+                                discountPercent = theDiscount.DiscountPercent;
+                                discountAmount = theDiscount.DiscountAmount;
                                 break;
                             }
                        
                     }
                     result.ID = discountId;
                     result.Status = discountId > 0;
+                    result.DiscountPercent = discountPercent;
+                    result.DiscountAmount = discountAmount;
                  
             }
             catch (Exception ex)

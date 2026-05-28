@@ -29,6 +29,7 @@ namespace AITechWebAPI.Tools
             var paymentHistory = await _paymentHistoryRep.GetPaymentHistoryByIdAsync(paymentHistoryId);
 
             if (paymentHistory.Result == null) return;
+            if (paymentHistory.Result.User == null || !paymentHistory.Result.UserId.HasValue) return;
 
 
             string message = @$"
@@ -78,33 +79,36 @@ namespace AITechWebAPI.Tools
 
             #region SendNotification
 
-            Notification Notification = new Notification()
+            if (paymentHistory.Result.UserId.HasValue)
             {
-                CreateDate = DateTime.Now.ToShamsi(),
-                UpdateDate = DateTime.Now.ToShamsi(),
-                UserId = paymentHistory.Result.UserId,
-                IsActive = true,
-                IsRead = false,
-                SenderUserId = userId,
-                NotificationPassLevel = 1,
-                Message = message,
-            };
-            var notifresult = await _notificationRep.AddNotificationAsync(Notification);
-            if (notifresult.Status)
-            {
-                #region AddLog
-
-                Log log = new Log()
+                Notification Notification = new Notification()
                 {
                     CreateDate = DateTime.Now.ToShamsi(),
                     UpdateDate = DateTime.Now.ToShamsi(),
-                    LogTime = DateTime.Now.ToShamsi(),
-                    ActionName = "SendBookingRemindMessage",
-
+                    UserId = paymentHistory.Result.UserId.Value,
+                    IsActive = true,
+                    IsRead = false,
+                    SenderUserId = userId,
+                    NotificationPassLevel = 1,
+                    Message = message,
                 };
-                await _logRep.AddLogAsync(log);
+                var notifresult = await _notificationRep.AddNotificationAsync(Notification);
+                if (notifresult.Status)
+                {
+                    #region AddLog
 
-                #endregion
+                    Log log = new Log()
+                    {
+                        CreateDate = DateTime.Now.ToShamsi(),
+                        UpdateDate = DateTime.Now.ToShamsi(),
+                        LogTime = DateTime.Now.ToShamsi(),
+                        ActionName = "SendBookingRemindMessage",
+
+                    };
+                    await _logRep.AddLogAsync(log);
+
+                    #endregion
+                }
             }
 
             #endregion

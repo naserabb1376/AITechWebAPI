@@ -24,7 +24,7 @@ namespace AITechDATA.DataLayer.Repositories
 
         Task<BitResultObject> ExistPreRegistrationAsync(long preRegistrationId);
 
-        Task<bool> ExistsDuplicatePreRegistrationAsync(long foreignKeyId, string entityType, string duplicateKey, string duplicateValue, string formKey = "");
+        Task<bool> ExistsDuplicatePreRegistrationAsync(long foreignKeyId, string entityType, string duplicateKey, string duplicateValue, string formKey = "", bool paidOnly = false);
 
         Task<ListResultObject<string>> GetRegistrationTypesAsync(int pageIndex = 1, int pageSize = 20, string searchText = "");
     }

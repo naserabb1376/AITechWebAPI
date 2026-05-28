@@ -139,6 +139,12 @@ namespace AITechDATA.DataLayer.Services
                             userId = theUser.ID;
                             break;
                         }
+                    case "attendancedeviceuserid":
+                        {
+                            var theUser = await query.FirstOrDefaultAsync(x => x.AttendanceDeviceUserId == fieldValue) ?? new User();
+                            userId = theUser.ID;
+                            break;
+                        }
                 }
                 result.ID = userId;
                 result.Status = userId > 0;
@@ -255,7 +261,7 @@ namespace AITechDATA.DataLayer.Services
             return result;
         }
 
-        public async Task<UserListCustomResponse<User>> GetAllUsersAsync(long groupId = 0, long courseId = 0, long sessionAssignmentId = 0, long sessionId = 0, long AddressId = 0, List<long>? RoleIds = null, string StudyField = "", string EducationalGrade = "", int pageIndex = 1, int pageSize = 20, string searchText = "", string sortQuery = "")
+        public async Task<UserListCustomResponse<User>> GetAllUsersAsync(long groupId = 0, long courseId = 0, long sessionAssignmentId = 0, long sessionId = 0, long AddressId = 0, List<long>? RoleIds = null, string StudyField = "", string EducationalGrade = "", int pageIndex = 1, int pageSize = 20, string searchText = "", string sortQuery = "", bool onlyFeaturedTeachers = false)
         {
             UserListCustomResponse<User> results = new UserListCustomResponse<User>();
             try
@@ -270,7 +276,8 @@ namespace AITechDATA.DataLayer.Services
                       ) &&
                        ((!string.IsNullOrEmpty(x.FirstName) && x.FirstName.Contains(searchText)) ||
                        (!string.IsNullOrEmpty(x.LastName) && x.LastName.Contains(searchText)) ||
-                       (!string.IsNullOrEmpty(x.IdentificationCode) && x.IdentificationCode.Contains(searchText)) ||
+                        (!string.IsNullOrEmpty(x.IdentificationCode) && x.IdentificationCode.Contains(searchText)) ||
+                       (!string.IsNullOrEmpty(x.AttendanceDeviceUserId) && x.AttendanceDeviceUserId.Contains(searchText)) ||
                        (!string.IsNullOrEmpty(x.Email) && x.Email.Contains(searchText)) ||
                        (!string.IsNullOrEmpty(x.EducationalBackground.StudyField) && x.EducationalBackground.StudyField.Contains(searchText)) ||
                        (!string.IsNullOrEmpty(x.EducationalBackground.EducationalGrade) && x.EducationalBackground.EducationalGrade.Contains(searchText)) ||
@@ -288,6 +295,7 @@ namespace AITechDATA.DataLayer.Services
                        ((!string.IsNullOrEmpty(x.FirstName) && x.FirstName.Contains(searchText)) ||
                        (!string.IsNullOrEmpty(x.LastName) && x.LastName.Contains(searchText)) ||
                        (!string.IsNullOrEmpty(x.IdentificationCode) && x.IdentificationCode.Contains(searchText)) ||
+                       (!string.IsNullOrEmpty(x.AttendanceDeviceUserId) && x.AttendanceDeviceUserId.Contains(searchText)) ||
                        (!string.IsNullOrEmpty(x.Email) && x.Email.Contains(searchText)) ||
                        (!string.IsNullOrEmpty(x.EducationalBackground.StudyField) && x.EducationalBackground.StudyField.Contains(searchText)) ||
                        (!string.IsNullOrEmpty(x.EducationalBackground.EducationalGrade) && x.EducationalBackground.EducationalGrade.Contains(searchText)) ||
@@ -304,6 +312,7 @@ namespace AITechDATA.DataLayer.Services
                        ((!string.IsNullOrEmpty(x.FirstName) && x.FirstName.Contains(searchText)) ||
                        (!string.IsNullOrEmpty(x.LastName) && x.LastName.Contains(searchText)) ||
                        (!string.IsNullOrEmpty(x.IdentificationCode) && x.IdentificationCode.Contains(searchText)) ||
+                       (!string.IsNullOrEmpty(x.AttendanceDeviceUserId) && x.AttendanceDeviceUserId.Contains(searchText)) ||
                        (!string.IsNullOrEmpty(x.Email) && x.Email.Contains(searchText)) ||
                        (!string.IsNullOrEmpty(x.EducationalBackground.StudyField) && x.EducationalBackground.StudyField.Contains(searchText)) ||
                        (!string.IsNullOrEmpty(x.EducationalBackground.EducationalGrade) && x.EducationalBackground.EducationalGrade.Contains(searchText)) ||
@@ -321,6 +330,7 @@ namespace AITechDATA.DataLayer.Services
                        (!string.IsNullOrEmpty(x.LastName) && x.LastName.Contains(searchText)) ||
                        (!string.IsNullOrEmpty(x.Email) && x.Email.Contains(searchText)) ||
                        (!string.IsNullOrEmpty(x.IdentificationCode) && x.IdentificationCode.Contains(searchText)) ||
+                       (!string.IsNullOrEmpty(x.AttendanceDeviceUserId) && x.AttendanceDeviceUserId.Contains(searchText)) ||
                        (!string.IsNullOrEmpty(x.EducationalBackground.StudyField) && x.EducationalBackground.StudyField.Contains(searchText)) ||
                        (!string.IsNullOrEmpty(x.EducationalBackground.EducationalGrade) && x.EducationalBackground.EducationalGrade.Contains(searchText)) ||
                        (!string.IsNullOrEmpty(x.Username) && x.Username.Contains(searchText)))
@@ -336,6 +346,7 @@ namespace AITechDATA.DataLayer.Services
                        ((!string.IsNullOrEmpty(x.FirstName) && x.FirstName.Contains(searchText)) ||
                        (!string.IsNullOrEmpty(x.LastName) && x.LastName.Contains(searchText)) ||
                        (!string.IsNullOrEmpty(x.IdentificationCode) && x.IdentificationCode.Contains(searchText)) ||
+                       (!string.IsNullOrEmpty(x.AttendanceDeviceUserId) && x.AttendanceDeviceUserId.Contains(searchText)) ||
                        (!string.IsNullOrEmpty(x.Email) && x.Email.Contains(searchText)) ||
                        (!string.IsNullOrEmpty(x.EducationalBackground.StudyField) && x.EducationalBackground.StudyField.Contains(searchText)) ||
                        (!string.IsNullOrEmpty(x.EducationalBackground.EducationalGrade) && x.EducationalBackground.EducationalGrade.Contains(searchText)) ||
@@ -346,6 +357,11 @@ namespace AITechDATA.DataLayer.Services
                 if (RoleIds != null)
                 {
                     query = query.Where(x => RoleIds.Contains(x.RoleId));
+                }
+
+                if (onlyFeaturedTeachers)
+                {
+                    query = query.Where(x => x.IsFeaturedTeacher == true);
                 }
 
                 if (!string.IsNullOrEmpty(StudyField))
@@ -360,7 +376,8 @@ namespace AITechDATA.DataLayer.Services
 
                 results.TotalCount = query.Count();
                 results.PageCount = DbTools.GetPageCount(results.TotalCount, pageSize);
-                results.Results = await query.OrderByDescending(x => x.CreateDate)
+                results.Results = await query.OrderByDescending(x => x.IsFeaturedTeacher == true)
+                     .ThenByDescending(x => x.CreateDate)
                      .SortBy(sortQuery).ToPaging(pageIndex, pageSize)
                     .Include(x => x.Role)
                     .Include(x => x.TeacherResume)

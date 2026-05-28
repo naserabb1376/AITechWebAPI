@@ -64,6 +64,13 @@ namespace AITechWebAPI.Models.User
         [Display(Name = "زبان های دیگر")]
         public string? OtherLangs { get; set; } = "";
 
+        [Display(Name = "شناسه کاربر در دستگاه حضور و غیاب")]
+        [MaxLength(50)]
+        public string? AttendanceDeviceUserId { get; set; }
+
+        [Display(Name = "استاد منتخب")]
+        public bool? IsFeaturedTeacher { get; set; } = false;
+
         public long PermissionsVersion { get; set; } = 1;
     }
 
@@ -128,6 +135,13 @@ namespace AITechWebAPI.Models.User
         [Display(Name = "زبان های دیگر")]
         public string? OtherLangs { get; set; } = "";
 
+        [Display(Name = "شناسه کاربر در دستگاه حضور و غیاب")]
+        [MaxLength(50)]
+        public string? AttendanceDeviceUserId { get; set; }
+
+        [Display(Name = "استاد منتخب")]
+        public bool? IsFeaturedTeacher { get; set; } = false;
+
         public long PermissionsVersion { get; set; } = 1;
 
     }
@@ -179,6 +193,13 @@ namespace AITechWebAPI.Models.User
         [Display(Name = "زبان های دیگر")]
         public string? OtherLangs { get; set; } = "";
 
+        [Display(Name = "شناسه کاربر در دستگاه حضور و غیاب")]
+        [MaxLength(50)]
+        public string? AttendanceDeviceUserId { get; set; }
+
+        [Display(Name = "استاد منتخب")]
+        public bool? IsFeaturedTeacher { get; set; } = false;
+
         public long PermissionsVersion { get; set; } = 1;
 
     }
@@ -227,6 +248,13 @@ namespace AITechWebAPI.Models.User
 
         [Display(Name = "زبان های دیگر")]
         public string? OtherLangs { get; set; } = "";
+
+        [Display(Name = "شناسه کاربر در دستگاه حضور و غیاب")]
+        [MaxLength(50)]
+        public string? AttendanceDeviceUserId { get; set; }
+
+        [Display(Name = "استاد منتخب")]
+        public bool? IsFeaturedTeacher { get; set; } = false;
 
         public long PermissionsVersion { get; set; } = 1;
 

@@ -64,9 +64,10 @@ namespace AITechWebAPI.Tools
             CreateMap<Role, RoleVM>();
             CreateMap<SessionAssignment, SessionAssignmentVM>();
             CreateMap<Setting, SettingVM>();
-            CreateMap<User, UserVM>();
             CreateMap<PreRegistration, PreRegistrationVM>();
-            CreateMap<User, TeacherVM>();
+            CreateMap<User, TeacherVM>()
+                .ForMember(dest => dest.FullName, opt => opt.MapFrom(src => $"{src.FirstName} {src.LastName}"))
+                .ForMember(dest => dest.RoleName, opt => opt.MapFrom(src => src.Role.Name));
             CreateMap<Meeting, MeetingVM>();
             CreateMap<SubmitForm, SubmitFormVM>();
             CreateMap<Discount, DiscountVM>();
@@ -158,13 +159,13 @@ namespace AITechWebAPI.Tools
 .ForMember(dest => dest.StudentName, opt => opt.MapFrom(src => $"{src.StudentDetails.User.FirstName} {src.StudentDetails.User.LastName}"));
 
             CreateMap<PaymentHistory, PaymentHistoryVM>()
-.ForMember(dest => dest.UserName, opt => opt.MapFrom(src => $"{src.User.FirstName} {src.User.LastName}"))
+.ForMember(dest => dest.UserName, opt => opt.MapFrom(src => src.User != null ? $"{src.User.FirstName} {src.User.LastName}" : "ثبت نام مهمان"))
 .ForMember(dest => dest.HasDiscount, opt => opt.MapFrom(src => src.DiscountId.HasValue))
 .ForMember(dest => dest.DiscountCode, opt => opt.MapFrom(src => src.Discount != null ? src.Discount.DiscountCode : null))
 .ForMember(dest => dest.DiscountDescription, opt => opt.MapFrom(src => src.Discount != null ? src.Discount.Description : null));
 
             CreateMap<PaymentInstallment, PaymentInstallmentVM>()
-.ForMember(dest => dest.UserName, opt => opt.MapFrom(src => $"{src.PaymentHistory.User.FirstName} {src.PaymentHistory.User.LastName}"))
+.ForMember(dest => dest.UserName, opt => opt.MapFrom(src => src.PaymentHistory.User != null ? $"{src.PaymentHistory.User.FirstName} {src.PaymentHistory.User.LastName}" : "ثبت نام مهمان"))
 .ForMember(dest => dest.PaymentHistoryAmount, opt => opt.MapFrom(src => src.PaymentHistory.Amount))
 .ForMember(dest => dest.PaymentHistoryDate, opt => opt.MapFrom(src => src.PaymentHistory.PaymentDate))
 .ForMember(dest => dest.PaymentHistoryStatus, opt => opt.MapFrom(src => src.PaymentHistory.PaymentStatus))
@@ -250,6 +251,7 @@ namespace AITechWebAPI.Tools
 ;
 
             CreateMap<User, UserVM>()
+.ForMember(dest => dest.FullName, opt => opt.MapFrom(src => $"{src.FirstName} {src.LastName}"))
 .ForMember(dest => dest.RoleName, opt => opt.MapFrom(src => src.Role.Name))
 .ForMember(dest => dest.StudentDetailsId, opt => opt.MapFrom(src => src.StudentDetails.ID))
 .ForMember(dest => dest.EducationalGrade, opt => opt.MapFrom(src => src.EducationalBackground.EducationalGrade))

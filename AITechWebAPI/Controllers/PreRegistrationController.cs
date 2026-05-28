@@ -207,8 +207,7 @@ namespace AITechWebAPI.Controllers
                     return ToolBox.DynamicFormBadRequest("برای این فرم فیلدی تعریف نشده است");
                 }
 
-                var submittedValues = valuesElement.EnumerateObject()
-                    .ToDictionary(x => x.Name, x => x.Value.ValueKind == JsonValueKind.String ? x.Value.GetString() ?? "" : x.Value.ToString(), StringComparer.OrdinalIgnoreCase);
+                var submittedValues = BuildSubmittedValues(valuesElement);
 
                 var invalidField = submittedValues.Keys.FirstOrDefault(x => !allowedFields.Contains(x));
                 if (!string.IsNullOrWhiteSpace(invalidField))
@@ -285,22 +284,144 @@ namespace AITechWebAPI.Controllers
                     var duplicateValue = ToolBox.GetDuplicateValue(duplicateKey, requestBody, submittedValues);
                     if (!string.IsNullOrWhiteSpace(duplicateValue))
                     {
+                        var paymentEnabled = GetBool(configRoot, "paymentEnabled");
                         var exists = await _PreRegistrationRep.ExistsDuplicatePreRegistrationAsync(
                             requestBody.ForeignKeyId,
                             requestBody.EntityType,
                             duplicateKey,
                             duplicateValue,
-                            submitForm.Result.FormKey ?? formKey);
+                            submitForm.Result.FormKey ?? formKey,
+                            paidOnly: paymentEnabled);
 
                         if (exists)
                         {
-                            return ToolBox.DynamicFormBadRequest("این فرم قبلا با همین اطلاعات ثبت شده است");
+                            return DynamicFormBadRequest(paymentEnabled
+                                ? "ثبت‌نام و پرداخت شما قبلا با همین اطلاعات تکمیل شده است"
+                                : "این فرم قبلا با همین اطلاعات ثبت شده است");
                         }
                     }
                 }
             }
 
             return null;
+        }
+
+        private ActionResult<BitResultObject> DynamicFormBadRequest(string message)
+        {
+            return BadRequest(new BitResultObject()
+            {
+                Status = false,
+                ErrorMessage = message
+            });
+        }
+
+        private static JsonDocument? ParseOptionalJson(string? json)
+        {
+            if (string.IsNullOrWhiteSpace(json))
+            {
+                return null;
+            }
+
+            try
+            {
+                return JsonDocument.Parse(json);
+            }
+            catch
+            {
+                return null;
+            }
+        }
+
+        private static string GetString(JsonElement? element, string propertyName)
+        {
+            if (element.HasValue && element.Value.ValueKind == JsonValueKind.Object &&
+                element.Value.TryGetProperty(propertyName, out var property) &&
+                property.ValueKind != JsonValueKind.Null && property.ValueKind != JsonValueKind.Undefined)
+            {
+                return property.ValueKind == JsonValueKind.String ? property.GetString() ?? "" : property.ToString();
+            }
+
+            return "";
+        }
+
+        private static long GetLong(JsonElement? element, string propertyName)
+        {
+            var value = GetString(element, propertyName);
+            return long.TryParse(value, out var number) ? number : 0;
+        }
+
+        private static bool GetBool(JsonElement? element, string propertyName)
+        {
+            if (element.HasValue && element.Value.ValueKind == JsonValueKind.Object &&
+                element.Value.TryGetProperty(propertyName, out var property) &&
+                property.ValueKind != JsonValueKind.Null && property.ValueKind != JsonValueKind.Undefined)
+            {
+                if (property.ValueKind == JsonValueKind.True) return true;
+                if (property.ValueKind == JsonValueKind.False) return false;
+                if (property.ValueKind == JsonValueKind.String && bool.TryParse(property.GetString(), out var result)) return result;
+            }
+
+            return false;
+        }
+
+        private static List<string> GetStringArray(JsonElement? element, string propertyName)
+        {
+            if (!element.HasValue || element.Value.ValueKind != JsonValueKind.Object ||
+                !element.Value.TryGetProperty(propertyName, out var property) ||
+                property.ValueKind != JsonValueKind.Array)
+            {
+                return new List<string>();
+            }
+
+            return property.EnumerateArray()
+                .Select(x => x.ValueKind == JsonValueKind.String ? x.GetString() ?? "" : x.ToString())
+                .Where(x => !string.IsNullOrWhiteSpace(x))
+                .ToList();
+        }
+
+        private static bool HasValue(Dictionary<string, string> values, string fieldName)
+        {
+            return values.TryGetValue(fieldName, out var value) && !string.IsNullOrWhiteSpace(value);
+        }
+
+        private static Dictionary<string, string> BuildSubmittedValues(JsonElement valuesElement)
+        {
+            var values = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+
+            foreach (var item in valuesElement.EnumerateObject())
+            {
+                var value = item.Value.ValueKind == JsonValueKind.String ? item.Value.GetString() ?? "" : item.Value.ToString();
+
+                if (!values.TryGetValue(item.Name, out var existingValue) || string.IsNullOrWhiteSpace(existingValue))
+                {
+                    values[item.Name] = value;
+                }
+            }
+
+            return values;
+        }
+
+        private static string GetDuplicateValue(string duplicateKey, AddEditPreRegistrationRequestBody requestBody, Dictionary<string, string> submittedValues)
+        {
+            var key = duplicateKey?.Trim() ?? "";
+            switch (key.ToLower())
+            {
+                case "phonenumber":
+                    return requestBody.PhoneNumber ?? "";
+                case "email":
+                    return requestBody.Email ?? "";
+                case "firstname":
+                    return requestBody.FirstName ?? "";
+                case "lastname":
+                    return requestBody.LastName ?? "";
+                case "studentfullname":
+                    var submittedFullName = submittedValues.TryGetValue("studentFullName", out var fullName) ? fullName : "";
+                    return !string.IsNullOrWhiteSpace(submittedFullName)
+                        ? submittedFullName
+                        : $"{requestBody.FirstName} {requestBody.LastName}".Trim();
+                default:
+                    return submittedValues.TryGetValue(key, out var value) ? value : "";
+            }
         }
 
         [HttpPut("EditPreRegistration_Base")]

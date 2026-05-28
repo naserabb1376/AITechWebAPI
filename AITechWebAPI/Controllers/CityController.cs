@@ -43,6 +43,7 @@ namespace AITechWebAPI.Controllers
         }
 
         [HttpPost("GetAllCities_Base")]
+        [AllowAnonymous]
         public async Task<ActionResult<ListResultObject<CityVM>>> GetAllCities_Base(GetCityListRequestBody requestBody)
         {
             if (!ModelState.IsValid)

@@ -1,4 +1,5 @@
 ﻿using AITechDATA.DataLayer.Repositories;
+using AITechDATA.DataLayer;
 using AITechDATA.DataLayer.Services;
 using AITechDATA.Domain;
 using AITechDATA.ResultObjects;
@@ -12,6 +13,7 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Newtonsoft.Json;
 using Repositories;
@@ -38,9 +40,11 @@ namespace AITechWebAPI.Controllers
         private readonly IParentRep _parentRep;
         private readonly ISettingRep _settingRep;
         private readonly IDiscountRep _discountRep;
+        private readonly AITechContext _db;
+        private readonly SchoolAITechContext _schoolDb;
         private readonly IMapper _mapper;
 
-        public AuthenticationController(IConfiguration configuration, ILoginMethodRep loginRep, IUserRep userRep, IAddressRep addressRep, ILogRep logRep, ITokenRep tokenRep, IPermissionRep permissionRep, IPermissionRoleRep permissionRole, IStudentDetailsRep studentDetailsRep, IParentRep parentRep, ISettingRep settingRep, IDiscountRep discountRep, IMapper mapper)
+        public AuthenticationController(IConfiguration configuration, ILoginMethodRep loginRep, IUserRep userRep, IAddressRep addressRep, ILogRep logRep, ITokenRep tokenRep, IPermissionRep permissionRep, IPermissionRoleRep permissionRole, IStudentDetailsRep studentDetailsRep, IParentRep parentRep, ISettingRep settingRep, IDiscountRep discountRep, AITechContext db, SchoolAITechContext schoolDb, IMapper mapper)
         {
             _configuration = configuration;
             _loginRep = loginRep;
@@ -54,6 +58,8 @@ namespace AITechWebAPI.Controllers
             _parentRep = parentRep;
             _settingRep = settingRep;
             _discountRep = discountRep;
+            _db = db;
+            _schoolDb = schoolDb;
             _mapper = mapper;
         }
 
@@ -352,12 +358,245 @@ if (authenticationRequestBody.Password == "string")
             return BadRequest(result);
         }
 
+        [HttpPost("TakinSchoolRegistration")]
+        public async Task<ActionResult<object>> TakinSchoolRegistration(TakinSchoolRegistrationRequestBody requestBody)
+        {
+            if (!ModelState.IsValid)
+            {
+                return ValidationProblem(ModelState);
+            }
+
+            var result = new BitResultObject();
+            var phoneNumber = OnlyDigits(requestBody.PhoneNumber);
+            var nationalCode = OnlyDigits(requestBody.NationalCode);
+            var addressPostalCode = OnlyDigits(requestBody.AddressPostalCode);
+            var email = string.IsNullOrWhiteSpace(requestBody.Email)
+                ? $"takinschool-{nationalCode}@takinschool.local"
+                : requestBody.Email.Trim();
+            var password = string.IsNullOrWhiteSpace(requestBody.Password)
+                ? $"Takin@{Guid.NewGuid():N}"
+                : requestBody.Password.Trim();
+
+            var userNameExists = await _schoolDb.Users.AsNoTracking().AnyAsync(x => x.Username == phoneNumber);
+            if (userNameExists)
+            {
+                result.Status = false;
+                result.ErrorMessage = "این شماره موبایل قبلا در سیستم ثبت شده است";
+                return BadRequest(result);
+            }
+
+            var emailExists = await _schoolDb.Users.AsNoTracking().AnyAsync(x => x.Email == email);
+            if (emailExists)
+            {
+                result.Status = false;
+                result.ErrorMessage = "پست الکترونیک تکراری است";
+                return BadRequest(result);
+            }
+
+            var nationalCodeExists = await _schoolDb.Users.AsNoTracking().AnyAsync(x => x.NationalCode == nationalCode);
+            if (nationalCodeExists)
+            {
+                result.Status = false;
+                result.ErrorMessage = "کد ملی تکراری است";
+                return BadRequest(result);
+            }
+
+            var cityId = requestBody.CityID;
+            if (cityId <= 0)
+            {
+                var defaultCity = await _schoolDb.Cities
+                    .AsNoTracking()
+                    .OrderByDescending(x => x.DefaultCity)
+                    .ThenBy(x => x.ID)
+                    .FirstOrDefaultAsync();
+
+                if (defaultCity == null)
+                {
+                    result.Status = false;
+                    result.ErrorMessage = "شهر پیش‌فرض برای ثبت آدرس پیدا نشد";
+                    return BadRequest(result);
+                }
+
+                cityId = defaultCity.ID;
+            }
+            else
+            {
+                var cityExists = await _schoolDb.Cities.AsNoTracking().AnyAsync(x => x.ID == cityId);
+                if (!cityExists)
+                {
+                    result.Status = false;
+                    result.ErrorMessage = "شهر انتخاب‌شده معتبر نیست";
+                    return BadRequest(result);
+                }
+            }
+
+            await using var transaction = await _schoolDb.Database.BeginTransactionAsync();
+            try
+            {
+                var now = DateTime.Now.ToShamsi();
+                var address = new Address
+                {
+                    CreateDate = now,
+                    UpdateDate = now,
+                    CityID = cityId,
+                    AddressStreet = requestBody.AddressStreet.Trim(),
+                    AddressPostalCode = string.IsNullOrWhiteSpace(addressPostalCode) ? null : addressPostalCode,
+                    AddressLocationHorizentalPoint = "",
+                    AddressLocationVerticalPoint = ""
+                };
+
+                var studentDetails = new StudentDetails
+                {
+                    CreateDate = now,
+                    UpdateDate = now
+                };
+
+                var user = new User
+                {
+                    CreateDate = now,
+                    UpdateDate = now,
+                    FirstName = requestBody.FirstName.Trim(),
+                    LastName = requestBody.LastName.Trim(),
+                    Username = phoneNumber,
+                    Email = email,
+                    NationalCode = nationalCode,
+                    PasswordHash = password.ToHash(),
+                    RoleId = (long)BaseRole.Student,
+                    Address = address,
+                    StudentDetails = studentDetails,
+                    PermissionsVersion = 1,
+                    IsActive = true
+                };
+
+                var fatherParent = CreateParent(requestBody.FatherName, requestBody.FatherPhone, requestBody.FatherJob, requestBody.FatherEducation, now);
+                var motherParent = CreateParent(requestBody.MotherName, requestBody.MotherPhone, requestBody.MotherJob, requestBody.MotherEducation, now);
+                studentDetails.Parents.Add(fatherParent);
+                studentDetails.Parents.Add(motherParent);
+
+                await _schoolDb.Users.AddAsync(user);
+                await _schoolDb.SaveChangesAsync();
+
+                if (string.IsNullOrWhiteSpace(user.IdentificationCode))
+                {
+                    user.IdentificationCode = $"AITech{user.ID + 1000}";
+                    await _schoolDb.SaveChangesAsync();
+                }
+
+                var schoolRegistration = new SchoolRegistration
+                {
+                    CreateDate = now,
+                    UpdateDate = now,
+                    UserId = user.ID,
+                    StudentDetailsId = studentDetails.ID,
+                    FatherParentId = fatherParent.ID,
+                    MotherParentId = motherParent.ID,
+                    TenantKey = "takinschool",
+                    FormType = "elementary-school-registration",
+                    CurrentSchoolName = requestBody.CurrentSchoolName.Trim(),
+                    TargetGrade = requestBody.TargetGrade.Trim(),
+                    RegistrationStatus = "Submitted"
+                };
+                await _schoolDb.SchoolRegistrations.AddAsync(schoolRegistration);
+                await _schoolDb.SaveChangesAsync();
+
+                var log = new Log
+                {
+                    CreateDate = now,
+                    UpdateDate = now,
+                    LogTime = now,
+                    ActionName = this.ControllerContext.RouteData.Values["action"].ToString()
+                };
+
+
+                await _schoolDb.Logs.AddAsync(log);
+                await _schoolDb.SaveChangesAsync();
+                await transaction.CommitAsync();
+
+                var studentFullName = $"{user.FirstName} {user.LastName}".Trim();
+                var registrantMessage = BuildTakinSchoolRegistrantSms(studentFullName);
+                var adminMessage = BuildTakinSchoolAdminSms(
+                    studentFullName,
+                    phoneNumber,
+                    requestBody.CurrentSchoolName.Trim(),
+                    requestBody.TargetGrade.Trim(),
+                    fatherParent.Name,
+                    fatherParent.ContactNumber,
+                    motherParent.Name);
+
+                try
+                {
+                    await ToolBox.SendSMSMessage(phoneNumber, registrantMessage);
+                    await ToolBox.SendSMSMessage("09133049819", adminMessage);
+                }
+                catch
+                {
+                }
+
+                return Ok(new
+                {
+                    status = true,
+                    id = user.ID,
+                    userId = user.ID,
+                    studentDetailsId = studentDetails.ID,
+                    schoolRegistrationId = schoolRegistration.ID,
+                    addressId = address.ID,
+                    errorMessage = ""
+                });
+            }
+            catch (Exception ex)
+            {
+                await transaction.RollbackAsync();
+                result.Status = false;
+                result.ErrorMessage = $"{ex.Message} - {ex.InnerException?.Message}";
+                return BadRequest(result);
+            }
+
+            static Parent CreateParent(string name, string phone, string? job, string? education, DateTime now)
+            {
+                return new Parent
+                {
+                    CreateDate = now,
+                    UpdateDate = now,
+                    Name = name.Trim(),
+                    ContactNumber = OnlyDigits(phone),
+                    Job = string.IsNullOrWhiteSpace(job) ? null : job.Trim(),
+                    Education = string.IsNullOrWhiteSpace(education) ? null : education.Trim()
+                };
+            }
+
+            static string OnlyDigits(string value)
+            {
+                return new string((value ?? "").Where(char.IsDigit).ToArray());
+            }
+
+            static string BuildTakinSchoolRegistrantSms(string studentFullName)
+            {
+                return $@"ولی گرامی دانش آموز {studentFullName}
+از اعتماد و انتخاب شما برای پیش ثبت نام در دبستان دخترانه تکین صمیمانه سپاسگزاریم.
+اطلاعات ثبت شده شما با موفقیت دریافت شد و کارشناسان مجموعه در اولین فرصت جهت هماهنگی و ارائه مشاوره با شما تماس خواهند گرفت.
+با تقدیم احترام
+دبستان دخترانه تکین؛ جایی برای رشد دخترانی که متفاوت می اندیشند، یاد می گیرند و آینده سازند.";
+            }
+
+            static string BuildTakinSchoolAdminSms(string studentFullName, string phoneNumber, string currentSchoolName, string targetGrade, string fatherName, string fatherPhone, string motherName)
+            {
+                return $@"ثبت نام جدید دبستان دخترانه تکین
+دانش آموز: {studentFullName}
+شماره تماس: {phoneNumber}
+مدرسه قبلی: {currentSchoolName}
+پایه ثبت نامی: {targetGrade}
+نام پدر: {fatherName}
+شماره پدر: {fatherPhone}
+نام مادر: {motherName}";
+            }
+        }
+
         [HttpPost("Signup")]
         public async Task<ActionResult<BitResultObject>> Signup(SignupRequestBody signupRequestBody)
         {
             if (!ModelState.IsValid)
             {
-                return BadRequest(signupRequestBody);
+                return ValidationProblem(ModelState);
             }
 
             BitResultObject result = new BitResultObject();
@@ -458,6 +697,11 @@ if (authenticationRequestBody.Password == "string")
 
                 if (result.Status)
                 {
+                    if (IsvalidInviteCode)
+                    {
+                        await AddInvitedUserDiscountsAsync(result.ID, validInviteCode.ID);
+                    }
+
                     #region AddLog
 
                     Log log = new Log()
@@ -476,6 +720,160 @@ if (authenticationRequestBody.Password == "string")
                 }
             }
             return BadRequest(result);
+        }
+
+        private async Task AddInvitedUserDiscountsAsync(long invitedUserId, long inviterUserId)
+        {
+            var invitedUserRow = await _userRep.GetUserByIdAsync(invitedUserId);
+            var inviterUserRow = await _userRep.GetUserByIdAsync(inviterUserId);
+            var invitedUserName = GetUserDisplayName(invitedUserRow.Result, invitedUserId);
+            var inviterUserName = GetUserDisplayName(inviterUserRow.Result, inviterUserId);
+
+            var invitedDiscountPercentRow = await _settingRep.GetSettingRowAsync(0, "inviteddiscountpercent");
+            var inviteDiscountDurationRow = await _settingRep.GetSettingRowAsync(0, "invitediscountduration");
+            var inviteDiscountMaxUsageRow = await _settingRep.GetSettingRowAsync(0, "invitediscountmaxusage");
+
+            if (!invitedDiscountPercentRow.Status || invitedDiscountPercentRow.Result == null ||
+                !inviteDiscountDurationRow.Status || inviteDiscountDurationRow.Result == null ||
+                !inviteDiscountMaxUsageRow.Status || inviteDiscountMaxUsageRow.Result == null)
+            {
+                return;
+            }
+
+            if (!int.TryParse(invitedDiscountPercentRow.Result.Value, out var invitedDiscountPercent) ||
+                !int.TryParse(inviteDiscountDurationRow.Result.Value, out var inviteDiscountDuration) ||
+                !int.TryParse(inviteDiscountMaxUsageRow.Result.Value, out var inviteDiscountMaxUsage))
+            {
+                return;
+            }
+
+            var discountCode = $"INVITED-GROUP-{invitedUserId}";
+            var existingInvitedDiscounts = await _discountRep.GetAllDiscountsAsync(
+                entityName: "group",
+                creatorId: invitedUserId,
+                pageSize: 0,
+                searchText: "");
+
+            if (existingInvitedDiscounts.Results.Any(x =>
+                    x.IsActive &&
+                    (string.Equals(x.DiscountCode, discountCode, StringComparison.OrdinalIgnoreCase) ||
+                     (!string.IsNullOrWhiteSpace(x.Description) &&
+                      x.Description.Contains("invitation invited reward", StringComparison.OrdinalIgnoreCase))) &&
+                    x.DiscountTargets.Any(t => t.IsActive &&
+                                               string.Equals(t.TargetEntityName, "user", StringComparison.OrdinalIgnoreCase) &&
+                                               t.TargetId == invitedUserId)))
+            {
+                return;
+            }
+
+            await AddInvitationDiscountAsync(
+                invitedUserId,
+                "group",
+                invitedDiscountPercent,
+                inviteDiscountDuration,
+                inviteDiscountMaxUsage,
+                $"[invitation invited reward] این تخفیف بابت اینکه {invitedUserName} از طرف {inviterUserName} دعوت شده، برای ثبت‌نام گروه درسی {invitedUserName} اعمال می‌شود.",
+                discountCode
+            );
+        }
+
+        private static string GetUserDisplayName(User? user, long fallbackId)
+        {
+            if (user == null)
+            {
+                return $"کاربر {fallbackId}";
+            }
+
+            var fullName = $"{user.FirstName} {user.LastName}".Trim();
+            return string.IsNullOrWhiteSpace(fullName)
+                ? (!string.IsNullOrWhiteSpace(user.Username) ? user.Username : $"کاربر {fallbackId}")
+                : fullName;
+        }
+
+        private async Task<bool> AddOrChargeInvitationDiscountAsync(
+            long userId,
+            string entity,
+            int percent,
+            int durationDays,
+            int maxUsage,
+            string description,
+            bool chargeExisting = true,
+            string? discountCode = null)
+        {
+            var discounts = await _discountRep.GetAllDiscountsAsync(entityName: entity, creatorId: userId, pageSize: 0, searchText: "invitation");
+            var activeDiscount = discounts.Results
+                .Where(x => x.IsActive &&
+                            !x.CodeRequired &&
+                            x.ExpireDate >= DateTime.Now &&
+                            x.DiscountTargets.Any(t => t.IsActive && t.TargetEntityName.ToLower() == "user" && t.TargetId == userId) &&
+                            (!chargeExisting || x.DiscountMaxUsage > x.PaymentHistories.Count(p => p.UserId == userId && p.PaymentStatus)))
+                .OrderByDescending(x => x.DiscountPercent)
+                .FirstOrDefault();
+
+            if (activeDiscount == null)
+            {
+                return await AddInvitationDiscountAsync(userId, entity, percent, durationDays, maxUsage, description, discountCode);
+            }
+
+            if (!chargeExisting)
+            {
+                return true;
+            }
+
+            activeDiscount.DiscountPercent += percent;
+            activeDiscount.Description = AppendInvitationDescription(activeDiscount.Description, description);
+            activeDiscount.UpdateDate = DateTime.Now.ToShamsi();
+            activeDiscount.ExpireDate = DateTime.Now.AddDays(durationDays);
+            var result = await _discountRep.EditDiscountAsync(activeDiscount);
+            return result.Status;
+        }
+
+        private static string AppendInvitationDescription(string? currentDescription, string newDescription)
+        {
+            if (string.IsNullOrWhiteSpace(currentDescription))
+            {
+                return newDescription;
+            }
+
+            return currentDescription.Contains(newDescription)
+                ? currentDescription
+                : $"{currentDescription}{Environment.NewLine}{newDescription}";
+        }
+
+        private async Task<bool> AddInvitationDiscountAsync(long userId, string entity, int percent, int durationDays, int maxUsage, string description, string? discountCode = null)
+        {
+            Discount discount = new Discount()
+            {
+                CreateDate = DateTime.Now.ToShamsi(),
+                UpdateDate = DateTime.Now.ToShamsi(),
+                OtherLangs = null,
+                IsActive = true,
+                DiscountAmount = 0,
+                DiscountCode = string.IsNullOrWhiteSpace(discountCode) ? "".GenerateDiscountCode() : discountCode,
+                CodeRequired = false,
+                Description = description,
+                CreatorId = userId,
+                EntityName = entity,
+                ForeignKeyId = 0,
+                DiscountMaxUsage = maxUsage,
+                ExpireDate = DateTime.Now.AddDays(durationDays),
+                DiscountPercent = percent,
+                DiscountTargets = new List<DiscountTarget>()
+                {
+                    new DiscountTarget()
+                    {
+                        CreateDate = DateTime.Now.ToShamsi(),
+                        UpdateDate = DateTime.Now.ToShamsi(),
+                        OtherLangs = null,
+                        IsActive = true,
+                        TargetEntityName = "user",
+                        TargetId = userId,
+                    }
+                },
+            };
+
+            var result = await _discountRep.AddDiscountAsync(discount);
+            return result.Status;
         }
 
         [HttpPost("SendSMSCode")]
@@ -990,7 +1388,7 @@ if (authenticationRequestBody.Password == "string")
         {
             if (!ModelState.IsValid)
             {
-                return BadRequest(signupRequestBody);
+                return ValidationProblem(ModelState);
             }
 
             BitResultObject result = new BitResultObject();
@@ -1089,6 +1487,11 @@ if (authenticationRequestBody.Password == "string")
 
                 if (result.Status)
                 {
+                    if (IsvalidInviteCode)
+                    {
+                        await AddInvitedUserDiscountsAsync(result.ID, validInviteCode.ID);
+                    }
+
                     #region AddLog
 
                     Log log = new Log()

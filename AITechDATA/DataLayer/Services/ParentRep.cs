@@ -109,9 +109,10 @@ namespace AITechDATA.DataLayer.Services
                 }
                 query = query.Where(x =>
                         (!string.IsNullOrEmpty(x.Name) && x.Name.Contains(searchText)) ||
-                       (!string.IsNullOrEmpty(x.StudentDetails.User.FirstName) && x.StudentDetails.User.FirstName.Contains(searchText)) ||
+                        (!string.IsNullOrEmpty(x.StudentDetails.User.FirstName) && x.StudentDetails.User.FirstName.Contains(searchText)) ||
                        (!string.IsNullOrEmpty(x.StudentDetails.User.LastName) &&  x.StudentDetails.User.LastName.Contains(searchText)) ||
                         (!string.IsNullOrEmpty(x.Job) && x.Job.Contains(searchText)) ||
+                        (!string.IsNullOrEmpty(x.Education) && x.Education.Contains(searchText)) ||
                         (!string.IsNullOrEmpty(x.ContactNumber) && x.ContactNumber.Contains(searchText))
                     );
 

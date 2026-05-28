@@ -89,7 +89,7 @@ namespace AITechDATA.DataLayer.Services
             return result;
         }
 
-        public async Task<bool> ExistsDuplicatePreRegistrationAsync(long foreignKeyId, string entityType, string duplicateKey, string duplicateValue, string formKey = "")
+        public async Task<bool> ExistsDuplicatePreRegistrationAsync(long foreignKeyId, string entityType, string duplicateKey, string duplicateValue, string formKey = "", bool paidOnly = false)
         {
             if (foreignKeyId <= 0 || string.IsNullOrWhiteSpace(entityType) || string.IsNullOrWhiteSpace(duplicateKey) || string.IsNullOrWhiteSpace(duplicateValue))
             {
@@ -101,6 +101,11 @@ namespace AITechDATA.DataLayer.Services
             var query = _context.PreRegistrations
                 .AsNoTracking()
                 .Where(x => x.ForeignKeyId == foreignKeyId && x.EntityType == entityType);
+
+            if (paidOnly)
+            {
+                query = query.Where(x => x.PaymentFinished);
+            }
 
             switch (normalizedKey.ToLower())
             {

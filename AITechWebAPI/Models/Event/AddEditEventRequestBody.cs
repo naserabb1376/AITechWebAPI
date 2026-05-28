@@ -10,6 +10,10 @@ namespace AITechWebAPI.Models.Event
         [Required(ErrorMessage = "لطفا {0} را وارد کنید")]
         public string Title { get; set; } // عنوان رویداد
 
+        [Display(Name = "لینک انگلیسی رویداد")]
+        [RegularExpression(@"^[A-Za-z0-9]+(?:-[A-Za-z0-9]+)*$", ErrorMessage = "لینک انگلیسی فقط می‌تواند شامل حروف انگلیسی، عدد و خط تیره باشد")]
+        public string? UrlSlug { get; set; }
+
         [Display(Name = "شرح رویداد")]
         [Required(ErrorMessage = "لطفا {0} را وارد کنید")]
         public string Description { get; set; } // شرح رویداد
