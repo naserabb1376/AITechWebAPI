@@ -33,14 +33,16 @@ namespace AITechWebAPI.Controllers
     {
         IPreRegistrationRep _PreRegistrationRep;
         ISubmitFormRep _SubmitFormRep;
+        ISMSMessageRep _SMSMessageRep;
         ILogRep _logRep;
         private readonly IMapper _mapper;
 
 
-        public PreRegistrationController(IPreRegistrationRep PreRegistrationRep, ISubmitFormRep SubmitFormRep, ILogRep logRep,IMapper mapper)
+        public PreRegistrationController(IPreRegistrationRep PreRegistrationRep, ISubmitFormRep SubmitFormRep, ISMSMessageRep SMSMessageRep, ILogRep logRep,IMapper mapper)
         {
            _PreRegistrationRep = PreRegistrationRep;
            _SubmitFormRep = SubmitFormRep;
+           _SMSMessageRep = SMSMessageRep;
            _logRep = logRep;
             _mapper = mapper;
         }
@@ -138,6 +140,8 @@ namespace AITechWebAPI.Controllers
             var result = await _PreRegistrationRep.AddPreRegistrationAsync(PreRegistration);
             if (result.Status)
             {
+                await SendTakinSchoolExamRegistrationSmsAsync(requestBody);
+
                 #region AddLog
 
                 Log log = new Log()
@@ -156,6 +160,86 @@ namespace AITechWebAPI.Controllers
                 return Ok(result);
             }
             return BadRequest(result);
+        }
+
+        private async Task SendTakinSchoolExamRegistrationSmsAsync(AddEditPreRegistrationRequestBody requestBody)
+        {
+            if (!IsTakinSchoolExamRegistration(requestBody))
+            {
+                return;
+            }
+
+            var phoneNumber = OnlyDigits(requestBody.PhoneNumber);
+            if (phoneNumber.Length != 11)
+            {
+                return;
+            }
+
+            var studentFullName = $"{requestBody.FirstName} {requestBody.LastName}".Trim();
+            var greeting = string.IsNullOrWhiteSpace(studentFullName)
+                ? "دانش آموز گرامی"
+                : $"{studentFullName} عزیز";
+            var message = $@"{greeting}
+ثبت نام شما برای آزمون ورودی دبستان دخترانه تکین با موفقیت انجام شد.
+با آرزوی موفقیت
+دبستان دخترانه تکین
+لغو 11";
+
+            var sentStatus = false;
+            try
+            {
+                sentStatus = await ToolBox.SendSMSMessage(phoneNumber, message);
+            }
+            catch
+            {
+                sentStatus = false;
+            }
+
+            var smsMessage = new SMSMessage()
+            {
+                CreateDate = DateTime.Now.ToShamsi(),
+                UpdateDate = DateTime.Now.ToShamsi(),
+                PhoneNumber = phoneNumber,
+                UserID = null,
+                Message = message,
+                SentDate = DateTime.Now.ToShamsi(),
+                SentStatus = sentStatus,
+                OtherLangs = "",
+            };
+
+            await _SMSMessageRep.AddSMSMessageAsync(smsMessage);
+        }
+
+        private static bool IsTakinSchoolExamRegistration(AddEditPreRegistrationRequestBody requestBody)
+        {
+            if (!string.Equals(requestBody.EntityType, "TakinSchoolExam", StringComparison.OrdinalIgnoreCase))
+            {
+                return false;
+            }
+
+            if (string.IsNullOrWhiteSpace(requestBody.FormData))
+            {
+                return false;
+            }
+
+            try
+            {
+                using var formDataDocument = JsonDocument.Parse(requestBody.FormData);
+                var root = formDataDocument.RootElement;
+
+                return root.ValueKind == JsonValueKind.Object &&
+                    string.Equals(GetString(root, "formKey"), "takinschool-exam-registration", StringComparison.OrdinalIgnoreCase) &&
+                    GetBool(root, "customPage");
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
+        private static string OnlyDigits(string? value)
+        {
+            return new string((value ?? "").Where(char.IsDigit).ToArray());
         }
 
         private async Task<ActionResult<BitResultObject>?> ValidateDynamicSubmitFormAsync(AddEditPreRegistrationRequestBody requestBody)
@@ -178,6 +262,11 @@ namespace AITechWebAPI.Controllers
             using (formDataDocument)
             {
                 var root = formDataDocument.RootElement;
+                if (GetBool(root, "skipSubmitFormValidation") || GetBool(root, "customPage"))
+                {
+                    return null;
+                }
+
                 var formId = ToolBox.GetLong(root, "formId");
                 var formKey = ToolBox.GetString(root, "formKey");
 

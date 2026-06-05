@@ -18,5 +18,7 @@ namespace AITechWebAPI.ViewModels
         public string? DiscountCode { get; set; }
         public string? DiscountDescription { get; set; }
         public long? PreRegistrationId { get; set; }
+        public string? PaymentAuthority { get; set; }
+        public string? TransactionCode { get; set; }
     }
 }
