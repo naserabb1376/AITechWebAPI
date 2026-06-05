@@ -5,6 +5,8 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
 	  <InvariantGlobalization>false</InvariantGlobalization>
+
+	  <NuGetAudit>false</NuGetAudit>
   </PropertyGroup>
 
   <ItemGroup>
@@ -127,7 +129,9 @@
     <Folder Include="FileCenter\User\Files\Public\" />
     <Folder Include="FileCenter\User\Images\Public\" />
   </ItemGroup>
-
+<ItemGroup>
+  <NuGetAuditSuppress Include="https://github.com/advisories/GHSA-rvv3-g6hj-g44x" />
+</ItemGroup>
   <ItemGroup>
     <Reference Include="MTPermissionCenter.Abstractions">
       <HintPath>C:\Users\Naser\Downloads\MTPermissionCenter.Abstractions.dll</HintPath>

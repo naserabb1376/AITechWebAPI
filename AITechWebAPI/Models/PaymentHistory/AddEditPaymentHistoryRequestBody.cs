@@ -38,6 +38,12 @@ namespace AITechWebAPI.Models.PaymentHistory
         [Display(Name = "وضعیت پرداخت")]
         public bool PaymentStatus { get; set; } // وضعیت پرداخت
 
+        [Display(Name = "شناسه Authority درگاه")]
+        public string? PaymentAuthority { get; set; }
+
+        [Display(Name = "شناسه ارجاع")]
+        public string? TransactionCode { get; set; }
+
         [Display(Name = "وضعیت فعال")]
         public bool IsActive { get; set; } = true;
 

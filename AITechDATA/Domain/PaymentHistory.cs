@@ -16,6 +16,8 @@ namespace AiTech.Domains
         public bool IsInstallment { get; set; } = false; // آیا این پرداخت قسطی است؟
         public ICollection<PaymentInstallment>? PaymentInstallments { get; set; }
         public long? PreRegistrationId { get; set; }
+        public string? PaymentAuthority { get; set; } // کد Authority درگاه برای بررسی مجدد پرداخت
+        public string? TransactionCode { get; set; } // شناسه ارجاع درگاه پرداخت
 
         public long? DiscountId { get; set; } 
         public Discount? Discount { get; set; }

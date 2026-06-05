@@ -24,6 +24,7 @@ using Parbad.Abstraction;
 using Parbad.Gateway.ZarinPal;
 using Parbad.InvoiceBuilder;
 using System.IdentityModel.Tokens.Jwt;
+using System.Net;
 using System.Security.Claims;
 using System.Text;
 using System.Text.Json;
@@ -166,17 +167,81 @@ namespace AITechWebAPI.Controllers
                 root = new JsonObject();
             }
 
+            var effectiveAuthority = !string.IsNullOrWhiteSpace(authority)
+                ? authority
+                : paymentHistory.PaymentAuthority;
+
             root["paymentGateway"] = new JsonObject
             {
-                ["authority"] = authority ?? "",
+                ["authority"] = effectiveAuthority ?? "",
                 ["status"] = status ?? "",
-                ["transactionCode"] = transactionCode ?? "",
                 ["fetchStatus"] = fetchStatus,
                 ["verifyStatus"] = verifyStatus,
                 ["verifiedAt"] = DateTime.Now.ToString("O")
             };
 
+            paymentHistory.PaymentAuthority = effectiveAuthority;
+            paymentHistory.TransactionCode = transactionCode;
             paymentHistory.OtherLangs = root.ToJsonString();
+        }
+
+        private static void AddPaymentGatewayRequestMetadata(
+            PaymentHistory paymentHistory,
+            string? authority,
+            string requestStatus,
+            string? gatewayUrl)
+        {
+            JsonObject root;
+
+            try
+            {
+                root = string.IsNullOrWhiteSpace(paymentHistory.OtherLangs)
+                    ? new JsonObject()
+                    : JsonNode.Parse(paymentHistory.OtherLangs)?.AsObject() ?? new JsonObject();
+            }
+            catch
+            {
+                root = new JsonObject();
+            }
+
+            root["paymentGateway"] = new JsonObject
+            {
+                ["authority"] = authority ?? "",
+                ["requestStatus"] = requestStatus,
+                ["gatewayUrl"] = gatewayUrl ?? "",
+                ["requestedAt"] = DateTime.Now.ToString("O")
+            };
+
+            paymentHistory.PaymentAuthority = authority;
+            paymentHistory.OtherLangs = root.ToJsonString();
+        }
+
+        private static string ExtractQueryValue(string? url, string key)
+        {
+            if (string.IsNullOrWhiteSpace(url) || !Uri.TryCreate(url, UriKind.Absolute, out var uri))
+            {
+                return "";
+            }
+
+            var query = uri.Query.TrimStart('?');
+            if (string.IsNullOrWhiteSpace(query))
+            {
+                return "";
+            }
+
+            foreach (var part in query.Split('&', StringSplitOptions.RemoveEmptyEntries))
+            {
+                var pieces = part.Split('=', 2);
+                var name = WebUtility.UrlDecode(pieces[0]);
+                if (!string.Equals(name, key, StringComparison.OrdinalIgnoreCase))
+                {
+                    continue;
+                }
+
+                return pieces.Length > 1 ? WebUtility.UrlDecode(pieces[1]) : "";
+            }
+
+            return "";
         }
 
 
@@ -253,6 +318,8 @@ namespace AITechWebAPI.Controllers
                 PaymentStatus = requestBody.PaymentStatus,
                 IsInstallment = requestBody.IsInstallment,
                 DiscountId = requestBody.DiscountId,
+                PaymentAuthority = requestBody.PaymentAuthority,
+                TransactionCode = requestBody.TransactionCode,
               //  Description = requestBody.Description,
             };
             var result = await _PaymentHistoryRep.AddPaymentHistoryAsync(PaymentHistory);
@@ -310,6 +377,10 @@ namespace AITechWebAPI.Controllers
                 PaymentStatus = requestBody.PaymentStatus,
                 IsInstallment = requestBody.IsInstallment,
                 DiscountId = requestBody.DiscountId,
+                PaymentAuthority = requestBody.PaymentAuthority ?? theRow.Result.PaymentAuthority,
+                TransactionCode = requestBody.TransactionCode ?? theRow.Result.TransactionCode,
+                PreRegistrationId = theRow.Result.PreRegistrationId,
+                OtherLangs = theRow.Result.OtherLangs,
                // Description = requestBody.Description,
             };
             result = await _PaymentHistoryRep.EditPaymentHistoryAsync(PaymentHistory);
@@ -649,8 +720,23 @@ namespace AITechWebAPI.Controllers
 
                     if (invoice.IsSucceed)
                     {
-                        result.Result.PayGatewayUrl = invoice.GatewayTransporter.Descriptor.Url;
+                        var gatewayUrl = invoice.GatewayTransporter.Descriptor.Url;
+                        result.Result.PayGatewayUrl = gatewayUrl;
                         result.ErrorMessage = "";
+
+                        if (addResult.ID > 0)
+                        {
+                            var addedPayment = await _PaymentHistoryRep.GetPaymentHistoryByIdAsync(addResult.ID);
+                            if (addedPayment.Status && addedPayment.Result != null)
+                            {
+                                AddPaymentGatewayRequestMetadata(
+                                    addedPayment.Result,
+                                    ExtractQueryValue(gatewayUrl, "Authority"),
+                                    invoice.Status.ToString(),
+                                    gatewayUrl);
+                                await _PaymentHistoryRep.EditPaymentHistoryAsync(addedPayment.Result);
+                            }
+                        }
                     }
 
 
@@ -1111,7 +1197,9 @@ namespace AITechWebAPI.Controllers
                     return Ok(result);
                 }
 
-                var invoice = await _onlinePayment.FetchAsync();
+                var invoice = string.IsNullOrWhiteSpace(Authority)
+                    ? await _onlinePayment.FetchAsync(PayId)
+                    : await _onlinePayment.FetchAsync();
 
                 dynamic targetObj;
 
@@ -1422,6 +1510,38 @@ namespace AITechWebAPI.Controllers
                 return BadRequest(result);
             }
           
+        }
+
+        [HttpPost("RecheckPayment")]
+        public async Task<ActionResult<BitResultObject>> RecheckPayment(GetRowRequestBody requestBody)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(requestBody);
+            }
+
+            var paymentHistory = await _PaymentHistoryRep.GetPaymentHistoryByIdAsync(requestBody.ID);
+            if (!paymentHistory.Status || paymentHistory.Result == null)
+            {
+                return BadRequest(new BitResultObject
+                {
+                    Status = false,
+                    ID = requestBody.ID,
+                    ErrorMessage = "پرداخت یافت نشد"
+                });
+            }
+
+            if (paymentHistory.Result.PaymentStatus)
+            {
+                return Ok(new BitResultObject
+                {
+                    Status = true,
+                    ID = paymentHistory.Result.ID,
+                    ErrorMessage = "این پرداخت قبلا تایید شده است"
+                });
+            }
+
+            return await VerifyPayment(paymentHistory.Result.ID);
         }
     }
 }

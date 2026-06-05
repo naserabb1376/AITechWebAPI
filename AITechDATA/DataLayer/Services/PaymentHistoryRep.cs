@@ -174,6 +174,8 @@ namespace AITechDATA.DataLayer.Services
                        (x.User != null && !string.IsNullOrEmpty(x.User.LastName) && x.User.LastName.Contains(searchText)) ||
                        (x.User != null && !string.IsNullOrEmpty(x.User.Username) && x.User.Username.Contains(searchText)) ||
                        (!string.IsNullOrEmpty(x.EntityType) && x.EntityType.Contains(searchText)) ||
+                       (!string.IsNullOrEmpty(x.PaymentAuthority) && x.PaymentAuthority.Contains(searchText)) ||
+                       (!string.IsNullOrEmpty(x.TransactionCode) && x.TransactionCode.Contains(searchText)) ||
                        (x.Discount != null && !string.IsNullOrEmpty(x.Discount.DiscountCode) && x.Discount.DiscountCode.Contains(searchText))
                     );
                 

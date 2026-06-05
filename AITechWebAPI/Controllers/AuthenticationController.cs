@@ -9,6 +9,7 @@ using AITechWebAPI.Tools;
 using AITechWebAPI.ViewModels;
 using AutoMapper;
 using Azure.Core;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.HttpResults;
@@ -589,6 +590,62 @@ if (authenticationRequestBody.Password == "string")
 شماره پدر: {fatherPhone}
 نام مادر: {motherName}";
             }
+        }
+
+        [HttpPost("TakinSchoolExamRegistrationLookup")]
+        [AllowAnonymous]
+        public async Task<ActionResult<object>> TakinSchoolExamRegistrationLookup(TakinSchoolExamRegistrationLookupRequestBody requestBody)
+        {
+            if (!ModelState.IsValid)
+            {
+                return ValidationProblem(ModelState);
+            }
+
+            var phoneNumber = new string((requestBody.PhoneNumber ?? "").Where(char.IsDigit).ToArray());
+            var user = await _schoolDb.Users
+                .AsNoTracking()
+                .Include(x => x.Address)
+                .Include(x => x.StudentDetails)
+                    .ThenInclude(x => x.Parents)
+                .FirstOrDefaultAsync(x => x.Username == phoneNumber);
+
+            if (user == null)
+            {
+                return Ok(new
+                {
+                    status = true,
+                    exists = false,
+                    errorMessage = ""
+                });
+            }
+
+            var registration = await _schoolDb.SchoolRegistrations
+                .AsNoTracking()
+                .Where(x => x.UserId == user.ID)
+                .OrderByDescending(x => x.ID)
+                .FirstOrDefaultAsync();
+
+            var parents = user.StudentDetails?.Parents?.ToList() ?? new List<Parent>();
+            var father = parents.FirstOrDefault(x => (x.Name ?? "").Contains("پدر")) ?? parents.FirstOrDefault();
+            var mother = parents.FirstOrDefault(x => x.ID != father?.ID) ?? parents.Skip(1).FirstOrDefault();
+
+            return Ok(new
+            {
+                status = true,
+                exists = true,
+                userId = user.ID,
+                firstName = user.FirstName ?? "",
+                lastName = user.LastName ?? "",
+                nationalCode = user.NationalCode ?? "",
+                phoneNumber = user.Username ?? phoneNumber,
+                fatherPhone = father?.ContactNumber ?? "",
+                motherPhone = mother?.ContactNumber ?? "",
+                targetGrade = registration?.TargetGrade ?? "",
+                currentSchoolName = registration?.CurrentSchoolName ?? "",
+                addressStreet = user.Address?.AddressStreet ?? "",
+                addressPostalCode = user.Address?.AddressPostalCode ?? "",
+                errorMessage = ""
+            });
         }
 
         [HttpPost("Signup")]
