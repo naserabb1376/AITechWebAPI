@@ -4,6 +4,7 @@ using AITechDATA.DataLayer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace AITechDATA.Migrations
 {
     [DbContext(typeof(AITechContext))]
-    partial class AITechContextModelSnapshot : ModelSnapshot
+    [Migration("20260613231827_AddSecurePlayerDeviceLock")]
+    partial class AddSecurePlayerDeviceLock
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -2786,29 +2789,14 @@ namespace AITechDATA.Migrations
                     b.Property<DateTime>("CreatedDate")
                         .HasColumnType("datetime2");
 
-                    b.Property<long?>("EffectiveRoleId")
-                        .HasColumnType("bigint");
-
                     b.Property<DateTime>("ExpiryDate")
                         .HasColumnType("datetime2");
-
-                    b.Property<string>("LoginType")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<long?>("ParentId")
-                        .HasColumnType("bigint");
 
                     b.Property<DateTime?>("RevokedDate")
                         .HasColumnType("datetime2");
 
-                    b.Property<long?>("SelectedStudentDetailsId")
-                        .HasColumnType("bigint");
-
                     b.Property<bool>("Status")
                         .HasColumnType("bit");
-
-                    b.Property<long?>("StudentUserId")
-                        .HasColumnType("bigint");
 
                     b.Property<string>("TokenValue")
                         .IsRequired()

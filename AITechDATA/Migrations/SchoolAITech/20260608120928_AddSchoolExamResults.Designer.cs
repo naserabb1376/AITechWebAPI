@@ -4,20 +4,24 @@ using AITechDATA.DataLayer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
 
-namespace AITechDATA.Migrations
+namespace AITechDATA.Migrations.SchoolAITech
 {
-    [DbContext(typeof(AITechContext))]
-    partial class AITechContextModelSnapshot : ModelSnapshot
+    [DbContext(typeof(SchoolAITechContext))]
+    [Migration("20260608120928_AddSchoolExamResults")]
+    partial class AddSchoolExamResults
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
                 .HasAnnotation("ProductVersion", "10.0.3")
+                .HasAnnotation("Relational:DefaultSchema", "dbo")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
@@ -2077,11 +2081,6 @@ namespace AITechDATA.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
-                    b.Property<string>("FinalAcceptanceStatus")
-                        .IsRequired()
-                        .HasMaxLength(24)
-                        .HasColumnType("nvarchar(24)");
-
                     b.Property<string>("Grade")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -2090,9 +2089,6 @@ namespace AITechDATA.Migrations
                         .HasColumnType("bit");
 
                     b.Property<bool>("IsActive")
-                        .HasColumnType("bit");
-
-                    b.Property<bool?>("IsFinalAccepted")
                         .HasColumnType("bit");
 
                     b.Property<decimal?>("OmrConfidence")
@@ -2206,104 +2202,6 @@ namespace AITechDATA.Migrations
                     b.HasIndex("UserId");
 
                     b.ToTable("SchoolRegistrations");
-                });
-
-            modelBuilder.Entity("AITechDATA.Domain.SecurePlayerDevice", b =>
-                {
-                    b.Property<long>("ID")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("ID"));
-
-                    b.Property<DateTime?>("CreateDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("DeviceFingerprint")
-                        .IsRequired()
-                        .HasMaxLength(128)
-                        .HasColumnType("nvarchar(128)");
-
-                    b.Property<string>("DeviceName")
-                        .IsRequired()
-                        .HasMaxLength(160)
-                        .HasColumnType("nvarchar(160)");
-
-                    b.Property<DateTime>("FirstActivatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<bool>("IsActive")
-                        .HasColumnType("bit");
-
-                    b.Property<DateTime>("LastSeenAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("OtherLangs")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime?>("RevokedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTime?>("UpdateDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<long>("UserId")
-                        .HasColumnType("bigint");
-
-                    b.HasKey("ID");
-
-                    b.HasIndex("UserId", "DeviceFingerprint")
-                        .IsUnique();
-
-                    b.ToTable("SecurePlayerDevices");
-                });
-
-            modelBuilder.Entity("AITechDATA.Domain.SecurePlayerViewLog", b =>
-                {
-                    b.Property<long>("ID")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("ID"));
-
-                    b.Property<string>("Action")
-                        .IsRequired()
-                        .HasMaxLength(40)
-                        .HasColumnType("nvarchar(40)");
-
-                    b.Property<DateTime?>("CreateDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("DeviceFingerprint")
-                        .IsRequired()
-                        .HasMaxLength(128)
-                        .HasColumnType("nvarchar(128)");
-
-                    b.Property<bool>("IsActive")
-                        .HasColumnType("bit");
-
-                    b.Property<DateTime>("LoggedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("OtherLangs")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<long>("SessionId")
-                        .HasColumnType("bigint");
-
-                    b.Property<DateTime?>("UpdateDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<long>("UserId")
-                        .HasColumnType("bigint");
-
-                    b.HasKey("ID");
-
-                    b.HasIndex("SessionId");
-
-                    b.HasIndex("UserId", "SessionId", "LoggedAt");
-
-                    b.ToTable("SecurePlayerViewLogs");
                 });
 
             modelBuilder.Entity("AITechDATA.Domain.Session", b =>
@@ -2786,29 +2684,14 @@ namespace AITechDATA.Migrations
                     b.Property<DateTime>("CreatedDate")
                         .HasColumnType("datetime2");
 
-                    b.Property<long?>("EffectiveRoleId")
-                        .HasColumnType("bigint");
-
                     b.Property<DateTime>("ExpiryDate")
                         .HasColumnType("datetime2");
-
-                    b.Property<string>("LoginType")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<long?>("ParentId")
-                        .HasColumnType("bigint");
 
                     b.Property<DateTime?>("RevokedDate")
                         .HasColumnType("datetime2");
 
-                    b.Property<long?>("SelectedStudentDetailsId")
-                        .HasColumnType("bigint");
-
                     b.Property<bool>("Status")
                         .HasColumnType("bit");
-
-                    b.Property<long?>("StudentUserId")
-                        .HasColumnType("bigint");
 
                     b.Property<string>("TokenValue")
                         .IsRequired()
@@ -3659,36 +3542,6 @@ namespace AITechDATA.Migrations
                     b.Navigation("MotherParent");
 
                     b.Navigation("StudentDetails");
-
-                    b.Navigation("User");
-                });
-
-            modelBuilder.Entity("AITechDATA.Domain.SecurePlayerDevice", b =>
-                {
-                    b.HasOne("AITechDATA.Domain.User", "User")
-                        .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("User");
-                });
-
-            modelBuilder.Entity("AITechDATA.Domain.SecurePlayerViewLog", b =>
-                {
-                    b.HasOne("AITechDATA.Domain.Session", "Session")
-                        .WithMany()
-                        .HasForeignKey("SessionId")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .IsRequired();
-
-                    b.HasOne("AITechDATA.Domain.User", "User")
-                        .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Session");
 
                     b.Navigation("User");
                 });

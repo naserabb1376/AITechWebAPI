@@ -8,6 +8,7 @@ namespace AITechWebAPI.ViewModels
         public string Title { get; set; }
         public string Description { get; set; }
         public string? Note { get; set; }
+        public bool IsSelected { get; set; }
         public long CategoryId { get; set; } // کلید خارجی به Category
         public string CategoryName { get; set; } // ارتباط با Category
         public ICollection<CourseGroupDto> Groups { get; set; } // گروه‌های مرتبط با دوره

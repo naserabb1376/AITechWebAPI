@@ -8,5 +8,11 @@ namespace AITechDATA.DataLayer
             : base(options)
         {
         }
+
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            modelBuilder.HasDefaultSchema("dbo");
+            base.OnModelCreating(modelBuilder);
+        }
     }
 }

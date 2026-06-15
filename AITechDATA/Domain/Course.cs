@@ -8,6 +8,7 @@ namespace AITechDATA.Domain
         public string Title { get; set; }
         public string Description { get; set; }
         public string? Note { get; set; }
+        public bool IsSelected { get; set; } = false;
         public long CategoryId { get; set; } // کلید خارجی به Category
         public Category Category { get; set; } // ارتباط با Category
         public ICollection<UserCourse> UserCourses { get; set; } // دوره‌هایی که شرکت یا تدریس کرده است
@@ -21,6 +22,7 @@ namespace AITechDATA.Domain
         public string Title { get; set; }
         public string Description { get; set; }
         public string? Note { get; set; }
+        public bool IsSelected { get; set; }
         public long CategoryId { get; set; } // کلید خارجی به Category
         public Category Category { get; set; } // ارتباط با Category
         public ICollection<CourseGroupDto> Groups { get; set; } // گروه‌های مرتبط با دوره

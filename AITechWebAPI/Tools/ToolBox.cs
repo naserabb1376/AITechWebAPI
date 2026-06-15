@@ -142,6 +142,36 @@ namespace AITechWebAPI.Tools
             return tokenString;
         }
 
+        public static string GenerateParentAccessToken(User studentUser, Parent parent, long parentRoleId, long selectedStudentDetailsId)
+        {
+            var key = Configuration["Jwt:Key"];
+            var issuer = Configuration["Jwt:Issuer"];
+            var audience = Configuration["Jwt:Audience"];
+
+            var securityKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(key));
+            var signingCredentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
+            var claims = SetClaims(studentUser);
+
+            claims.RemoveAll(x => x.Type == "Role" || x.Type == "StudentId" || x.Type == "FullName");
+            claims.Add(new Claim("Role", parentRoleId.ToString()));
+            claims.Add(new Claim("FullName", parent.Name ?? ""));
+            claims.Add(new Claim("LoginType", "Parent"));
+            claims.Add(new Claim("ParentId", parent.ID.ToString()));
+            claims.Add(new Claim("ParentPhone", parent.ContactNumber ?? ""));
+            claims.Add(new Claim("SelectedStudentDetailsId", selectedStudentDetailsId.ToString()));
+            claims.Add(new Claim("StudentId", selectedStudentDetailsId.ToString()));
+            claims.Add(new Claim("StudentUserId", studentUser.ID.ToString()));
+
+            var token = new JwtSecurityToken(
+                issuer,
+                audience,
+                claims,
+                expires: DateTime.UtcNow.AddHours(1),
+                signingCredentials: signingCredentials);
+
+            return new JwtSecurityTokenHandler().WriteToken(token);
+        }
+
         private static List<Claim> SetClaims(User login)
         {
             return new List<Claim>

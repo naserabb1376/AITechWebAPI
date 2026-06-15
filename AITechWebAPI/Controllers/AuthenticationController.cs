@@ -17,6 +17,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using Repositories;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
@@ -67,8 +68,11 @@ namespace AITechWebAPI.Controllers
         [HttpPost("Authenticate")]
         public async Task<ActionResult<RowResultObject<AuthenticationResultBody>>> Authenticate(AuthenticationRequestBody authenticationRequestBody)
         {
+            const long parentRoleId = 11;
             RowResultObject<AuthenticationResultBody> result = new RowResultObject<AuthenticationResultBody>();
             RowResultObject<User> authenticateResult = new RowResultObject<User>();
+            Parent? authenticatedParent = null;
+            long selectedParentStudentDetailsId = 0;
 
 #if DEBUG
 if (authenticationRequestBody.Password == "string")
@@ -139,6 +143,8 @@ if (authenticationRequestBody.Password == "string")
                                         if (parent != null)
                                         {
                                             authenticateResult = await _userRep.AuthenticateAsync(authenticationRequestBody.StudentDetailsId.Value.ToString(), authenticationRequestBody.Password, authenticationRequestBody.LoginType);
+                                            authenticatedParent = parent;
+                                            selectedParentStudentDetailsId = authenticationRequestBody.StudentDetailsId.Value;
 
                                             authenticateResult.Result.LastName = $"({authenticateResult.Result.FirstName} {authenticateResult.Result.LastName})";
                                             authenticateResult.Result.FirstName = $"{parent.Name}";
@@ -196,7 +202,11 @@ if (authenticationRequestBody.Password == "string")
                     var refreshToken = ToolBox.GenerateToken(); // تولید رفرش توکن
                     //var permissionObj = await _permissionRep.GetAllPermissionsAsync(authenticateResult.Result.RoleId, "action", 1, 0);
                     //var permissionsJson = JsonConvert.SerializeObject(permissionObj.Results.Select(x => x.Routename).ToList()).ToHash();
-                    var accessToken = ToolBox.GenerateAccessToken(authenticateResult.Result); // تولید رفرش توکن
+                    var isParentLogin = authenticationRequestBody.LoginType == 3 && authenticatedParent != null && selectedParentStudentDetailsId > 0;
+                    var effectiveRoleId = isParentLogin ? parentRoleId : authenticateResult.Result.RoleId;
+                    var accessToken = isParentLogin
+                        ? ToolBox.GenerateParentAccessToken(authenticateResult.Result, authenticatedParent!, parentRoleId, selectedParentStudentDetailsId)
+                        : ToolBox.GenerateAccessToken(authenticateResult.Result); // تولید رفرش توکن
                     var refreshTokenExpiryDate = DateTime.Now.ToShamsi().AddDays(30); // تنظیم تاریخ انقضای رفرش توکن برای 30 روز
 
 
@@ -207,20 +217,37 @@ if (authenticationRequestBody.Password == "string")
                         Type = "RefreshToken", // نوع: RefreshToken
                         Status = true,
                         CreatedDate = DateTime.Now.ToShamsi(),
-                        ExpiryDate = refreshTokenExpiryDate // تاریخ انقضا
+                        ExpiryDate = refreshTokenExpiryDate, // تاریخ انقضا
+                        LoginType = isParentLogin ? "Parent" : "User",
+                        ParentId = isParentLogin ? authenticatedParent!.ID : null,
+                        SelectedStudentDetailsId = isParentLogin ? selectedParentStudentDetailsId : null,
+                        StudentUserId = isParentLogin ? authenticateResult.Result.ID : null,
+                        EffectiveRoleId = effectiveRoleId
                     };
 
                     var saverefreshToken = await _tokenRep.AddTokenAsync(refreshTokenRecord);
-                    var permissionRoles = await _permissionRoleRep.GetAllPermissionRolesAsync(authenticateResult.Result.RoleId, 0, "menu", 1, 0);
+                    var permissionRoles = await _permissionRoleRep.GetAllPermissionRolesAsync(effectiveRoleId, 0, "menu", 1, 0);
                     if (saverefreshToken.Status)
                     {
+                        var userVm = _mapper.Map<UserVM>(authenticateResult.Result);
+                        if (isParentLogin)
+                        {
+                            userVm.FirstName = authenticatedParent!.Name;
+                            userVm.LastName = "";
+                            userVm.FullName = authenticatedParent.Name;
+                            userVm.Username = authenticatedParent.ContactNumber;
+                            userVm.RoleId = parentRoleId;
+                            userVm.RoleName = "Parent";
+                            userVm.StudentDetailsId = selectedParentStudentDetailsId;
+                        }
+
                         result.Status = authenticateResult.Status;
                         result.ErrorMessage = authenticateResult.ErrorMessage;
                         result.Result = new AuthenticationResultBody()
                         {
                             RefreshToken = refreshToken, // بازگرداندن رفرش توکن
                             AccessToken = accessToken, // بازگرداندن اکسس توکن
-                            User = _mapper.Map<UserVM>(authenticateResult.Result),
+                            User = userVm,
                             routename = permissionRoles.Results.Select(x => x.Permission.Routename).ToList(),
 
                         };
@@ -295,7 +322,7 @@ if (authenticationRequestBody.Password == "string")
 
             var refreshTokenRecord = await _tokenRep.FindTokenAsync(requestBody.RefreshToken, "RefreshToken");
 
-            if (!refreshTokenRecord.Status && refreshTokenRecord.Result == null)
+            if (!refreshTokenRecord.Status || refreshTokenRecord.Result == null)
             {
                 result.ErrorMessage = "رفرش توکن نامعتبر است";
                 result.Status = false;
@@ -307,10 +334,55 @@ if (authenticationRequestBody.Password == "string")
             if (expireTokenResult.Status)
             {
                 var user = await _userRep.GetUserByIdAsync(refreshTokenRecord.Result.UserId);
+                if (!user.Status || user.Result == null)
+                {
+                    result.Status = false;
+                    result.ErrorMessage = "کاربر مربوط به رفرش توکن یافت نشد";
+                    return BadRequest(result);
+                }
+
                 var refreshToken = ToolBox.GenerateToken(); // تولید رفرش توکن
-                var permissionObj = await _permissionRep.GetAllPermissionsAsync(user.Result.RoleId, user.Result.ID, "action", 0, "", 1, 0);
-                var permissionsJson = JsonConvert.SerializeObject(permissionObj.Results.Select(x => x.Routename).ToList()).ToHash();
-                var accessToken = ToolBox.GenerateAccessToken(user.Result); // تولید رفرش توکن
+                var tokenContext = refreshTokenRecord.Result;
+                var isParentSession = string.Equals(tokenContext.LoginType, "Parent", StringComparison.OrdinalIgnoreCase);
+                var effectiveRoleId = tokenContext.EffectiveRoleId ?? user.Result.RoleId;
+                string accessToken;
+
+                if (isParentSession)
+                {
+                    if (!tokenContext.ParentId.HasValue || !tokenContext.SelectedStudentDetailsId.HasValue)
+                    {
+                        result.Status = false;
+                        result.ErrorMessage = "اطلاعات نشست والد ناقص است";
+                        return BadRequest(result);
+                    }
+
+                    var parent = await _db.Parents
+                        .AsNoTracking()
+                        .Include(x => x.StudentDetails)
+                            .ThenInclude(x => x.User)
+                        .FirstOrDefaultAsync(x =>
+                            x.ID == tokenContext.ParentId.Value &&
+                            x.StudentDetailsId == tokenContext.SelectedStudentDetailsId.Value &&
+                            x.StudentDetails.UserId == user.Result.ID);
+
+                    if (parent == null || parent.StudentDetails?.User == null)
+                    {
+                        result.Status = false;
+                        result.ErrorMessage = "دسترسی والد به دانش‌آموز معتبر نیست";
+                        return BadRequest(result);
+                    }
+
+                    accessToken = ToolBox.GenerateParentAccessToken(
+                        parent.StudentDetails.User,
+                        parent,
+                        effectiveRoleId,
+                        tokenContext.SelectedStudentDetailsId.Value);
+                }
+                else
+                {
+                    accessToken = ToolBox.GenerateAccessToken(user.Result); // تولید اکسس توکن
+                }
+
                 var refreshTokenExpiryDate = DateTime.Now.ToShamsi().AddDays(30); // تنظیم تاریخ انقضای رفرش توکن برای 30 روز
 
 
@@ -321,7 +393,12 @@ if (authenticationRequestBody.Password == "string")
                     Type = "RefreshToken", // نوع: RefreshToken
                     Status = true,
                     CreatedDate = DateTime.Now.ToShamsi(),
-                    ExpiryDate = refreshTokenExpiryDate // تاریخ انقضا
+                    ExpiryDate = refreshTokenExpiryDate, // تاریخ انقضا
+                    LoginType = isParentSession ? "Parent" : "User",
+                    ParentId = isParentSession ? tokenContext.ParentId : null,
+                    SelectedStudentDetailsId = isParentSession ? tokenContext.SelectedStudentDetailsId : null,
+                    StudentUserId = isParentSession ? user.Result.ID : null,
+                    EffectiveRoleId = effectiveRoleId
                 };
 
                 var saverefreshToken = await _tokenRep.AddTokenAsync(newrefreshTokenRecord);
@@ -646,6 +723,124 @@ if (authenticationRequestBody.Password == "string")
                 addressPostalCode = user.Address?.AddressPostalCode ?? "",
                 errorMessage = ""
             });
+        }
+
+        [HttpPost("TakinSchoolExamAdmitCard")]
+        [AllowAnonymous]
+        public async Task<ActionResult<object>> TakinSchoolExamAdmitCard(TakinSchoolExamAdmitCardRequestBody requestBody)
+        {
+            if (!ModelState.IsValid)
+            {
+                return ValidationProblem(ModelState);
+            }
+
+            var phoneNumber = OnlyDigits(requestBody.PhoneNumber);
+            var nationalCode = OnlyDigits(requestBody.NationalCode);
+
+            var examRows = await _db.PreRegistrations
+                .AsNoTracking()
+                .Where(x => x.EntityType == "TakinSchoolExam" && x.PhoneNumber == phoneNumber && x.IsActive)
+                .OrderByDescending(x => x.ID)
+                .ToListAsync();
+
+            foreach (var exam in examRows)
+            {
+                var values = ParseExamFormValues(exam.FormData);
+                var rowNationalCode = OnlyDigits(GetValue(values, "nationalCode"));
+                if (rowNationalCode != nationalCode)
+                {
+                    continue;
+                }
+
+                var targetGrade = exam.EducationalClass;
+                if (string.IsNullOrWhiteSpace(targetGrade))
+                {
+                    targetGrade = GetValue(values, "targetGrade");
+                }
+
+                var schoolRegistration = await _schoolDb.SchoolRegistrations
+                    .AsNoTracking()
+                    .Include(x => x.User)
+                    .Where(x =>
+                        x.TenantKey == "takinschool" &&
+                        x.User != null &&
+                        x.User.Username == phoneNumber &&
+                        x.User.NationalCode == nationalCode)
+                    .OrderByDescending(x => x.ID)
+                    .FirstOrDefaultAsync();
+
+                var seatNumber = schoolRegistration?.SeatNumber?.ToString()
+                    ?? BuildTakinSchoolSeatNumber(exam.ID);
+
+                return Ok(new
+                {
+                    status = true,
+                    exists = true,
+                    examRegistrationId = exam.ID,
+                    seatNumber,
+                    firstName = exam.FirstName ?? "",
+                    lastName = exam.LastName ?? "",
+                    fullName = $"{exam.FirstName} {exam.LastName}".Trim(),
+                    nationalCode = rowNationalCode,
+                    phoneNumber = exam.PhoneNumber ?? "",
+                    fatherName = GetValue(values, "fatherName"),
+                    fatherPhone = OnlyDigits(GetValue(values, "fatherPhone")),
+                    targetGrade = targetGrade ?? "",
+                    schoolName = exam.SchoolName ?? "دبستان دخترانه تکین",
+                    registrationDate = exam.RegistrationDate,
+                    errorMessage = ""
+                });
+            }
+
+            return Ok(new
+            {
+                status = true,
+                exists = false,
+                errorMessage = "کارت ورود به جلسه‌ای با این شماره موبایل و کد ملی پیدا نشد"
+            });
+        }
+
+        private static string BuildTakinSchoolSeatNumber(long fallbackId)
+        {
+            return $"TK-{fallbackId.ToString().PadLeft(4, '0')}";
+        }
+
+        private static Dictionary<string, string> ParseExamFormValues(string? formData)
+        {
+            if (string.IsNullOrWhiteSpace(formData))
+            {
+                return new Dictionary<string, string>();
+            }
+
+            try
+            {
+                var root = JObject.Parse(formData);
+                var values = root["values"] as JObject;
+                if (values == null)
+                {
+                    return new Dictionary<string, string>();
+                }
+
+                return values.Properties()
+                    .ToDictionary(
+                        x => x.Name,
+                        x => x.Value.Type == JTokenType.Null ? "" : x.Value.ToString(),
+                        StringComparer.OrdinalIgnoreCase);
+            }
+            catch
+            {
+                return new Dictionary<string, string>();
+            }
+        }
+
+        private static string GetValue(Dictionary<string, string> values, string key)
+        {
+            return values.TryGetValue(key, out var value) ? value ?? "" : "";
+        }
+
+        private static string OnlyDigits(string? value)
+        {
+            return new string((value ?? "").Where(char.IsDigit).ToArray());
         }
 
         [HttpPost("Signup")]

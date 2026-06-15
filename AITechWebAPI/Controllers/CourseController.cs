@@ -56,7 +56,7 @@ namespace AITechWebAPI.Controllers
             var clientRoleId = User.GetCurrentRoleId();
             var clientUserId = User.GetCurrentUserId();
 
-            var result = await _CourseRep.GetAllCoursesAsync(requestBody.CategoryId,requestBody.PageIndex,requestBody.PageSize,requestBody.SearchText,requestBody.SortQuery,clientUserId,clientRoleId);
+            var result = await _CourseRep.GetAllCoursesAsync(requestBody.CategoryId,requestBody.PageIndex,requestBody.PageSize,requestBody.SearchText,requestBody.SortQuery,clientUserId,clientRoleId,requestBody.IsSelected);
             if (result.Status)
             {
                 var resultVM = _mapper.Map<CourseListCustomResponse<CourseVM>>(result);
@@ -113,6 +113,7 @@ namespace AITechWebAPI.Controllers
                 UpdateDate = DateTime.Now.ToShamsi(),
                 Description = requestBody.Description ?? "",
                 Note = requestBody.Note ?? "",
+                IsSelected = requestBody.IsSelected,
                 CategoryId = requestBody.CategoryId,
                 Title = requestBody.Title,
                 OtherLangs = requestBody.OtherLangs ?? "",
@@ -163,6 +164,7 @@ namespace AITechWebAPI.Controllers
                 ID = requestBody.ID,
                 Description = requestBody.Description ?? "",
                 Note = requestBody.Note ?? "",
+                IsSelected = requestBody.IsSelected,
                 CategoryId = requestBody.CategoryId,
                 Title = requestBody.Title,
                 OtherLangs = requestBody.OtherLangs ?? "",

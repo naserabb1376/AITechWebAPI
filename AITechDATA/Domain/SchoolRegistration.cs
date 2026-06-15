@@ -23,6 +23,7 @@ namespace AITechDATA.Domain
         public string FormType { get; set; }
         public string CurrentSchoolName { get; set; }
         public string TargetGrade { get; set; }
+        public int? SeatNumber { get; set; }
         public string RegistrationStatus { get; set; } = "Submitted";
     }
 }

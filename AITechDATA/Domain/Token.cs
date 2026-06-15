@@ -16,5 +16,10 @@ namespace AITechDATA.Domain
         public DateTime ExpiryDate { get; set; } // تاریخ انقضا
         public DateTime CreatedDate { get; set; } = DateTime.Now; // تاریخ ایجاد
         public DateTime? RevokedDate { get; set; } // تاریخ لغو
+        public string? LoginType { get; set; } // User | Parent
+        public long? ParentId { get; set; }
+        public long? SelectedStudentDetailsId { get; set; }
+        public long? StudentUserId { get; set; }
+        public long? EffectiveRoleId { get; set; }
     }
 }

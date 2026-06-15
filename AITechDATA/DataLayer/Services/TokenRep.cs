@@ -90,11 +90,23 @@ namespace Services
                 .AsNoTracking()
                 .SingleOrDefaultAsync(x => x.TokenValue == Token && x.Type.ToLower() == type.ToLower() && x.Status == status);
 
+                if (tokenrow == null)
+                {
+                    result.Status = false;
+                    result.ErrorMessage = "Token not found.";
+                    return result;
+                }
+
                 var timeDiddrence = tokenrow.ExpiryDate - nowDate;
 
                 if (timeDiddrence.TotalMinutes > 0)
                 {
                     result.Result = tokenrow;
+                }
+                else
+                {
+                    result.Status = false;
+                    result.ErrorMessage = "Token expired.";
                 }
             }
             catch (Exception ex)

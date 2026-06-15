@@ -7,5 +7,8 @@ namespace AITechWebAPI.Models.Course
     {
         [Display(Name = "کد دسته بندی")]
         public long CategoryId { get; set; } = 0;
+
+        [Display(Name = "دوره منتخب")]
+        public bool? IsSelected { get; set; } = null;
     }
 }

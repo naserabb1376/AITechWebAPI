@@ -61,6 +61,7 @@ namespace AITechDATA.DataLayer
         public DbSet<Setting> Settings { get; set; }
         public DbSet<StudentDetails> StudentDetails { get; set; }
         public DbSet<SchoolRegistration> SchoolRegistrations { get; set; }
+        public DbSet<SchoolExamResult> SchoolExamResults { get; set; }
         public DbSet<TeacherResume> TeacherResumes { get; set; }
         public DbSet<Ticket> Tickets { get; set; }
         public DbSet<TicketMessage> TicketMessages { get; set; }
@@ -87,6 +88,8 @@ namespace AITechDATA.DataLayer
         public DbSet<DiscountTarget> DiscountTargets { get; set; }
         public DbSet<TimeFunction> TimeFunctions { get; set; }
         public DbSet<TimeBreak> TimeBreaks { get; set; }
+        public DbSet<SecurePlayerDevice> SecurePlayerDevices { get; set; }
+        public DbSet<SecurePlayerViewLog> SecurePlayerViewLogs { get; set; }
 
 
         // Manual
@@ -212,6 +215,28 @@ namespace AITechDATA.DataLayer
                 .WithMany()
                 .HasForeignKey(x => x.MotherParentId)
                 .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<SchoolExamResult>()
+                .HasOne(x => x.SchoolRegistration)
+                .WithMany()
+                .HasForeignKey(x => x.SchoolRegistrationId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<SchoolExamResult>()
+                .HasIndex(x => new { x.SchoolRegistrationId, x.ExamKey })
+                .IsUnique();
+
+            modelBuilder.Entity<SchoolExamResult>()
+                .Property(x => x.ScorePercent)
+                .HasPrecision(5, 2);
+
+            modelBuilder.Entity<SchoolExamResult>()
+                .Property(x => x.OmrConfidence)
+                .HasPrecision(5, 3);
+
+            modelBuilder.Entity<SchoolExamResult>()
+                .Property(x => x.FinalAcceptanceStatus)
+                .HasMaxLength(24);
 
             modelBuilder.Entity<Group>()
                 .HasOne(g => g.Teacher)
@@ -435,6 +460,32 @@ namespace AITechDATA.DataLayer
 .WithMany(x => x.TimeBreaks)
 .HasForeignKey(x => x.TimeFunctionId)
 .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<SecurePlayerDevice>(e =>
+            {
+                e.Property(x => x.DeviceFingerprint).HasMaxLength(128);
+                e.Property(x => x.DeviceName).HasMaxLength(160);
+                e.HasIndex(x => new { x.UserId, x.DeviceFingerprint }).IsUnique();
+                e.HasOne(x => x.User)
+                    .WithMany()
+                    .HasForeignKey(x => x.UserId)
+                    .OnDelete(DeleteBehavior.Cascade);
+            });
+
+            modelBuilder.Entity<SecurePlayerViewLog>(e =>
+            {
+                e.Property(x => x.DeviceFingerprint).HasMaxLength(128);
+                e.Property(x => x.Action).HasMaxLength(40);
+                e.HasIndex(x => new { x.UserId, x.SessionId, x.LoggedAt });
+                e.HasOne(x => x.User)
+                    .WithMany()
+                    .HasForeignKey(x => x.UserId)
+                    .OnDelete(DeleteBehavior.Cascade);
+                e.HasOne(x => x.Session)
+                    .WithMany()
+                    .HasForeignKey(x => x.SessionId)
+                    .OnDelete(DeleteBehavior.NoAction);
+            });
 
             // رابطه با Group
             modelBuilder.Entity<GroupChatMessage>().HasOne(x => x.Group)

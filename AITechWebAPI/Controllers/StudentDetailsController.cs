@@ -66,15 +66,15 @@ namespace AITechWebAPI.Controllers
 
         [HttpPost("GetParentStudents")]
         [AllowAnonymous]
-        public async Task<ActionResult<ListResultObject<StudentDetailsVM>>> GetParentStudents(CheckCodeRequestBody requestBody)
+        public async Task<ActionResult<ListResultObject<ParentStudentSelectionVM>>> GetParentStudents(CheckCodeRequestBody requestBody)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(requestBody);
             }
 
-            ListResultObject<StudentDetails> result = new ListResultObject<StudentDetails>();
-            result.Results = new List<StudentDetails>();
+            ListResultObject<ParentStudentSelectionVM> result = new ListResultObject<ParentStudentSelectionVM>();
+            result.Results = new List<ParentStudentSelectionVM>();
 
             var checkCode = await CheckSMSCodeInternal(requestBody.PhoneNumber, true, requestBody.VerifyCode);
             if (!checkCode.Status)
@@ -84,13 +84,54 @@ namespace AITechWebAPI.Controllers
                 return BadRequest(result);
             }
             var parents = await _parentRep.GetAllParentsAsync(pageIndex: 1, pageSize: 0, searchText: requestBody.PhoneNumber);
-            result.Results = parents.Results.Select(x => x.StudentDetails).ToList();
             result.Status = parents.Status;
+            result.ErrorMessage = parents.ErrorMessage;
+            result.TotalCount = parents.TotalCount;
+            result.PageCount = parents.PageCount;
+
+            if (!parents.Status)
+            {
+                return BadRequest(result);
+            }
+
+            result.Results = parents.Results
+                .Where(x => x.ContactNumber == requestBody.PhoneNumber && x.StudentDetails?.User != null)
+                .GroupBy(x => x.StudentDetailsId)
+                .Select(group =>
+                {
+                    var parent = group.First();
+                    var student = parent.StudentDetails;
+                    var user = student.User;
+
+                    return new ParentStudentSelectionVM
+                    {
+                        ParentId = parent.ID,
+                        ParentName = parent.Name,
+                        ParentContactNumber = parent.ContactNumber,
+                        StudentDetailsId = student.ID,
+                        StudentUserId = student.UserId,
+                        StudentFullName = $"{user.FirstName} {user.LastName}".Trim(),
+                        IdentificationCode = user.IdentificationCode,
+                        NationalCode = user.NationalCode,
+                        Username = user.Username,
+                        Email = user.Email
+                    };
+                })
+                .OrderBy(x => x.StudentFullName)
+                .ToList();
+            result.TotalCount = result.Results.Count;
+            result.PageCount = 1;
+
+            if (!result.Results.Any())
+            {
+                result.Status = false;
+                result.ErrorMessage = "برای این شماره موبایل دانش‌آموزی ثبت نشده است";
+                return BadRequest(result);
+            }
 
             if (result.Status)
             {
-                var resultVM = _mapper.Map<ListResultObject<StudentDetailsVM>>(result);
-                return Ok(resultVM);
+                return Ok(result);
             }
             return BadRequest(result);
         }

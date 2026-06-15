@@ -22,6 +22,9 @@ namespace AITechWebAPI.Models.Course
         [Display(Name = "توضیحات")]
         public string? Note { get; set; }
 
+        [Display(Name = "دوره منتخب")]
+        public bool IsSelected { get; set; } = false;
+
         [Display(Name = "زبان های دیگر")]
         public string? OtherLangs { get; set; } = "";
 

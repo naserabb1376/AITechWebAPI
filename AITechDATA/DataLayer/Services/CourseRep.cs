@@ -82,7 +82,8 @@ namespace AITechDATA.DataLayer.Services
       string searchText = "",
       string sortQuery = "",
       long clientUserId = 0,
-      long clientRoleId = 0)
+      long clientRoleId = 0,
+      bool? isSelected = null)
         {
             var results = new CourseListCustomResponse<CourseDto>();
 
@@ -96,6 +97,7 @@ namespace AITechDATA.DataLayer.Services
                         Title = a.Title,
                         Description = a.Description,
                         Note = a.Note,
+                        IsSelected = a.IsSelected,
                         CategoryId = a.CategoryId,
                         Category = a.Category,
                         CreateDate = a.CreateDate,
@@ -137,6 +139,11 @@ namespace AITechDATA.DataLayer.Services
                 if (categoryId > 0)
                 {
                     query = query.Where(x => x.CategoryId == categoryId);
+                }
+
+                if (isSelected.HasValue)
+                {
+                    query = query.Where(x => x.IsSelected == isSelected.Value);
                 }
 
                 if (!string.IsNullOrWhiteSpace(searchText))
@@ -187,6 +194,7 @@ namespace AITechDATA.DataLayer.Services
                         Title = a.Title,
                         Description = a.Description,
                         Note = a.Note,
+                        IsSelected = a.IsSelected,
                         CategoryId = a.CategoryId,
                         Category = a.Category,
                         CreateDate = a.CreateDate,
@@ -285,6 +293,7 @@ namespace AITechDATA.DataLayer.Services
                     UpdateDate = courseDto.Result.UpdateDate,
                     Description = courseDto.Result.Description,
                     ID = courseDto.Result.ID,
+                    IsSelected = courseDto.Result.IsSelected,
                     Note = courseDto.Result.Note,
                     Title = courseDto.Result.Title,
                     
